@@ -5,12 +5,14 @@ Source: `entry/src/main/js/MainAbility/common/store.js`.
 ## Sorted pagination
 
 The public offset/limit API and pinned-first, created-descending, ID tie-break
-ordering are unchanged. One continuation stores only the previous last metadata
-record, filter key, catalog sequence and next offset. Consecutive requests scan
-each small index page once instead of repeating a scan for every skipped dozen.
-All commits invalidate the continuation; changed filters and arbitrary offsets
-fall back to the existing bounded top-12 selection. Arbitrary large offset jumps
-still require repeated scans. No full catalog or bodies are cached in memory.
+ordering are unchanged. One continuation stores the previous selection boundary, filter key, catalog
+sequence, next offset and at most twelve prefetched metadata records (no bodies).
+Consecutive requests consume that bounded buffer or scan each small index page
+once instead of repeating a scan for every skipped dozen. All commits invalidate
+the continuation; changed filters and arbitrary offsets restart a bounded
+selection. Arbitrary large offset jumps still require repeated top-12 scans.
+Each scan processes one six-record page at a time, with at most two native
+slot reads in flight. No full catalog or bodies are cached in memory.
 The metadata page bound remains six records, list limit 1–12, reads ≤4096 bytes,
 and native operation watchdog remains 10000 ms.
 

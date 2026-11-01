@@ -15,8 +15,9 @@ function forgetLocations() { idBits = []; idComplete = false; idCatalog = -1; lo
 function idBit(id) { return Number(hash(id)) % 4096; }
 function bitSet(bit) { var word=Math.floor(bit/32); idBits[word]=(idBits[word]||0)|(1<<(bit%32)); }
 function bitKnown(bit) { return !!((idBits[Math.floor(bit/32)]||0)&(1<<(bit%32))); }
-function rememberId(id) { bitSet(idBit(id)); bitSet(Number(hash('x'+id))%4096); }
-function possiblyKnown(id) { return bitKnown(idBit(id)) && bitKnown(Number(hash('x'+id))%4096); }
+function otherBit(id){var h=5381;for(var i=0;i<id.length;i++)h=(h*33+id.charCodeAt(i))%4096;return h;}
+function rememberId(id) { bitSet(idBit(id)); bitSet(otherBit(id)); }
+function possiblyKnown(id) { return bitKnown(idBit(id)) && bitKnown(otherBit(id)); }
 function recordRoots(state) {
   var blobs = [], i;
   if (!state.data || !Array.isArray(state.data.items) || state.data.items.length > PAGE) return null;
@@ -424,10 +425,8 @@ function save(input, cb) {
             if (de && de.code !== 301) return done(de);
             io('delete', {uri: dir + '/i0.json'}, function (other) {
               if (other && other.code !== 301) return done(other);
-              // No empty generation is needed for an UNREACHABLE page: its
-              // first body is journaled and verified before index seq 0, and
-              // only a verified catalog commit makes that index visible.
-              persist({seq: -1, data: {items: []}});
+              // Keep a verified empty rollback generation on a new unreachable page.
+              write(dir+'/i0.json',seal(0,{items:[]}),function(we){if(we)return done(we);persist({seq:0,data:{items:[]}});});
             });
           });
         });
@@ -480,23 +479,27 @@ function list(q, cb) {
     catalog(function (e, c) {
       if (e) return done(e);
       var queryKey = filter + '|' + (q.day || '') + '|' + (q.month || '') + '|' + c.seq;
-      var resume = listResume && listResume.key === queryKey && listResume.offset <= offset ? listResume : null;
+      var resume = listResume && listResume.key === queryKey && listResume.offset === offset ? listResume : null;
       var cursor = resume ? resume.cursor : null, remaining = resume ? offset-resume.offset : offset, total = resume ? resume.total : 0, first = !resume;
+      if(resume&&remaining===0&&resume.buffer&&(resume.buffer.length>=limit||(!resume.more&&resume.buffer.length>0))){var cached=resume.buffer.splice(0,limit);resume.offset+=cached.length;if(!resume.more&&!resume.buffer.length)listResume=null;return done(null,{items:cached,hasMore:resume.more||resume.buffer.length>0,total:total});}
       listResume = null;
       function scan() {
-        var p = 0, best = [], wanted = remaining > 0 ? Math.min(12, remaining) : limit + 1;
+        var p = 0, active = 0, failure = null, best = [], wanted = remaining > 0 ? Math.min(12, remaining) : limit+Math.min(12,limit)+1;
         function step() {
-          if (p >= c.data.pages) {
+          if(failure){if(!active)done(failure);return;}
+          if (p >= c.data.pages && !active) {
             if (remaining > 0) {
               if (best.length < wanted) return done(null, {items: [], hasMore: false, total: total});
               remaining -= best.length; cursor = best[best.length - 1]; first = false; return scan();
             }
-            var more = best.length > limit; if (more) best.pop();
-            if (more && best.length) listResume = {key: queryKey, offset: offset + best.length, cursor: clone(best[best.length - 1]),total:total};
-            return done(null, {items: best, hasMore: more, total: total});
+            var cap=limit+Math.min(12,limit),more=best.length>cap;if(more)best.pop();var buffer=best.splice(limit);
+            if ((more||buffer.length) && best.length) listResume = {key:queryKey,offset:offset+best.length,cursor:clone((buffer.length?buffer:best)[(buffer.length?buffer:best).length-1]),total:total,buffer:buffer,more:more};
+            return done(null, {items: best, hasMore: more||buffer.length>0, total: total});
           }
-          page(p, function (pe, state) {
-            if (pe) return done(pe);
+          if(p>=c.data.pages||active>=1)return;
+          var index=p++;active++;
+          page(index, function (pe, state) {
+            active--;if(pe){failure=failure||pe;step();return;}
             var i, m, at;
             for (i = 0; i < state.data.items.length; i++) {
               m = state.data.items[i].meta;
@@ -509,8 +512,9 @@ function list(q, cb) {
               at = 0; while (at < best.length && compare(best[at], m) <= 0) at++;
               if (at < wanted) { best.splice(at, 0, clone(m)); if (best.length > wanted) best.pop(); }
             }
-            p++; step();
+            state=null;step();
           });
+          step();
         }
         step();
       }
