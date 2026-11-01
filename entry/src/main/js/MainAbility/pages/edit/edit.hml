@@ -8,10 +8,10 @@
   <div class="body-hit" @click="pickLine" style="left:0px;top:{{hy+hit+5}}px;width:{{w}}px;height:{{(open?keysY:footY)-17-hy-hit-5}}px;"></div>
   <div class="header" style="left:{{hx}}px;top:{{hy}}px;width:{{hw}}px;height:{{hit}}px;">
    <div class="command" @click="cancel"><text class="cancel">&#x53D6;&#x6D88;</text></div>
-   <div class="middle" if="{{!open}}" style="width:{{hw-102}}px;"><text class="title">{{title}}</text></div>
+   <div class="middle" if="{{!open}}" style="width:{{hw-(saving?122:102)}}px;"><text class="title">{{title}}</text></div>
    <div class="icon" if="{{open}}" @click="toggle"><image class="exact-icon" src="/common/icons/back_editor_muted.png"></image></div>
    <div class="icon" if="{{open}}" @click="tools"><image class="exact-icon" src="/common/icons/dots_editor_warm.png"></image></div>
-   <div class="command" @click="save"><text class="done">&#x5B8C;&#x6210;</text></div>
+   <div class="command" @click="save" style="width:{{saving?66:46}}px;"><text class="done">{{saving ? $t('strings.saving') : $t('strings.done')}}</text></div>
   </div>
   <text class="status" style="left:{{statusX}}px;top:{{statusY}}px;width:{{statusW}}px;">{{viewCounter}}</text>
   <text class="composing" if="{{open && hasPinyin}}" style="left:{{statusX}}px;top:{{statusY}}px;width:{{statusW}}px;">{{composition}}</text>

@@ -346,7 +346,7 @@ test('new HML bindings are declared page data; no rich-only font/line CSS or uns
       assert.doesNotMatch(source,/\bscrollpage=|\bdisabled=|class="\{\{/);
       const fields=new Set(Object.keys(h.p.data)), locals=new Set(['i','line','c','in','true','false']);
       for(const expression of source.matchAll(/\{\{([\s\S]*?)\}\}/g)) {
-        const stripped=expression[1].replace(/'[^']*'|"[^"]*"/g,'');
+        const stripped=expression[1].replace(/'[^']*'|"[^"]*"/g,'').replace(/\$t\s*\(/g,'(');
         for(const word of stripped.matchAll(/(?<![\w.])\b([A-Za-z][A-Za-z0-9_]*)\b/g)) {
           assert.ok(fields.has(word[1])||locals.has(word[1]),name+' HML field '+word[1]+' must be declared in data');
         }
