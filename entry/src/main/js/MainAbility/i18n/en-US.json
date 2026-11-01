@@ -2,6 +2,8 @@
   "strings": {
     "appName": "Liubai",
     "loading": "Loading",
-    "retry": "Tap to retry"
+    "retry": "Tap to retry",
+    "saving": "Saving",
+    "done": "Done"
   }
 }

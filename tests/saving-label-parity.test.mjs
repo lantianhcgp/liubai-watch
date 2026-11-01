@@ -5,4 +5,6 @@ test('approved V3 completion control visibly distinguishes saving from idle comp
  assert.match(h,/width:\{\{saving\?66:46\}\}px/);
  const strings=JSON.parse(fs.readFileSync('entry/src/main/js/MainAbility/i18n/zh-CN.json','utf8')).strings;
  assert.equal(strings.saving,'保存中');assert.equal(strings.done,'完成');
+ const en=JSON.parse(fs.readFileSync('entry/src/main/js/MainAbility/i18n/en-US.json','utf8')).strings;
+ assert.equal(en.saving,'Saving');assert.equal(en.done,'Done');
 });
