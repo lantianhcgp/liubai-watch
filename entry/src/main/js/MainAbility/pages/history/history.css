@@ -9,7 +9,8 @@
 .section-label{font-family:HYQiHei-65S;color:#adb1a9;}
 .filter{font-family:HYQiHei-65S;text-align:center;}
 .note-list{background-color:#060808;}
-.row{border-bottom-width:1px;border-bottom-color:#2a2f2e;align-items:center;justify-content:flex-start;}
+.row{align-items:center;justify-content:flex-start;}
+.row-divider{background-color:#2a2f2e;}
 .copy{flex-direction:column;align-items:flex-start;justify-content:center;}
 .title-row{flex-direction:row;align-items:center;justify-content:flex-start;}
 .row-title{font-family:HYQiHei-65S;color:#f1f0e8;text-overflow:ellipsis;}

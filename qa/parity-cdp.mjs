@@ -2,7 +2,8 @@ import fs from 'node:fs';
 const port=process.env.PARITY_CDP_PORT||'9257';
 export async function connect(match='/__baseline'){
  const targets=await(await fetch('http://127.0.0.1:'+port+'/json/list')).json();
- const t=targets.find(t=>t.type==='page'&&t.url.includes(match));
+ const exact=match==='app'?'http://127.0.0.1:8792/__app':match.startsWith('http')?match:'http://127.0.0.1:8792'+match;
+ const t=targets.find(t=>t.type==='page'&&t.url===exact);
  if(!t)throw Error('Missing isolated target '+match);
  const ws=new WebSocket(t.webSocketDebuggerUrl);await new Promise((r,j)=>{ws.onopen=r;ws.onerror=j;});
  let serial=0;const pending=new Map();

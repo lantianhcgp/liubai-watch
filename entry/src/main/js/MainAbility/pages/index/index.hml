@@ -7,21 +7,23 @@
 <image src="/common/icons/plus_cta_ink.png" style="width:{{plusSize}}px;height:{{plusSize}}px;margin-left:{{newPad}}px;"></image>
 <image src="/common/type/write_note.png" style="width:{{writeW}}px;height:{{writeH}}px;margin-left:{{newGap}}px;"></image></div>
 <div class="section" style="left:{{contentX}}px;top:{{sectionY}}px;width:{{contentW}}px;height:44px;">
-<text class="section-label" style="width:{{contentW-44}}px;height:{{hit}}px;font-size:{{sectionFont}}px;">{{sectionTitle}}</text>
-<div class="hit" style="width:44px;height:{{hit}}px;" @click="toggleFilter"><text class="filter" style="width:44px;height:{{hit}}px;font-size:{{filterFont}}px;color:{{filter==='pinned'?'#e6c78c':'#adb1a9'}};">&#x7F6E;&#x9876;</text></div></div>
+<text class="section-label" style="width:{{contentW-44}}px;height:{{24*w/412}}px;font-size:{{sectionFont}}px;">{{sectionTitle}}</text>
+<div class="hit" style="width:44px;height:{{hit}}px;" @click="toggleFilter"><text class="filter" style="width:44px;height:{{25*w/412}}px;font-size:{{filterFont}}px;color:{{filter==='pinned'?'#e6c78c':'#adb1a9'}};">&#x7F6E;&#x9876;</text></div></div>
 <list class="note-list" ref="crown" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px;" @swipe="onSwipe" @scrollend="onScrollEnd">
 <list-item class="row" for="{{rows}}" tid="id" style="width:{{contentW}}px;height:{{rowH}}px;" @click="open($item)">
-<div class="copy" style="width:{{titleW}}px;height:{{rowCopyH}}px;margin-left:{{rowInset}}px;">
+<stack class="row-surface" style="width:{{contentW}}px;height:{{rowH}}px;">
+<div class="copy" style="left:{{rowInset}}px;top:{{rowPad}}px;width:{{titleW}}px;height:{{rowCopyH}}px;">
 <div class="title-row" style="width:{{titleW}}px;height:{{titleH}}px;">
 <image if="{{$item.pinned}}" src="/common/icons/pin_row_gold.png" style="width:{{pinSize}}px;height:{{pinSize}}px;margin-right:{{pinGap}}px;"></image>
 <text class="row-title" style="width:{{titleW-($item.pinned?pinSize+pinGap:0)}}px;height:{{titleH}}px;font-size:{{titleFont}}px;">{{$item.title}}</text></div>
-<text class="row-meta" style="width:{{titleW}}px;height:{{metaH}}px;font-size:{{metaFont}}px;margin-top:{{copyGap}}px;">{{$item.meta}}</text></div></list-item>
+<text class="row-meta" style="width:{{titleW}}px;height:{{metaH}}px;font-size:{{metaFont}}px;margin-top:{{copyGap}}px;">{{$item.meta}}</text></div>
+<div class="row-divider" style="left:0px;top:{{rowH-1}}px;width:{{contentW}}px;height:1px;"></div></stack></list-item>
 <list-item if="{{hasMore || hasPrev}}" class="pager" style="width:{{contentW}}px;height:{{hit}}px;">
 <div class="hit" if="{{hasPrev}}" style="width:{{contentW/2}}px;height:{{hit}}px;" @click="prev"><text class="pager-text">&#x4E0A;&#x4E00;&#x5C4F;</text></div>
 <div class="hit" if="{{hasMore}}" style="width:{{contentW/2}}px;height:{{hit}}px;" @click="next"><text class="pager-text">&#x4E0B;&#x4E00;&#x5C4F;</text></div></list-item>
 </list>
 <div class="notice" if="{{message || loading}}" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px;" @click="retry"><text class="quiet" style="width:{{contentW}}px;height:{{quietH}}px;font-size:{{quietFont}}px;">{{message || '&#x6B63;&#x5728;&#x8BFB;&#x53D6;'}}</text></div>
-<div class="quiet-status" if="{{empty && !message && !loading}}" style="left:{{contentX}}px;top:{{listY+16*w/412}}px;width:{{contentW}}px;height:{{quietH}}px;" @click="retry"><text class="quiet" style="width:{{contentW}}px;height:{{quietH}}px;font-size:{{quietFont}}px;">{{emptyText}}</text></div>
+<div class="quiet-status" if="{{empty && !message && !loading}}" style="left:{{contentX}}px;top:{{listY+16+16*w/412}}px;width:{{contentW}}px;height:{{32.3*w/412}}px;" @click="retry"><text class="quiet" style="width:{{contentW}}px;height:{{28.3*w/412}}px;font-size:{{quietFont}}px;">{{emptyText}}</text></div>
 <div class="dock" style="left:{{dockX}}px;top:{{dockY}}px;width:{{dockW}}px;height:{{hit}}px;border-radius:{{dockRadius}}px;">
 <div class="nav" style="width:{{dockHalfW}}px;height:{{dockInnerH}}px;" @click="home"><image src="/common/icons/book_nav_gold.png" style="width:20px;height:20px;margin-right:{{navGap}}px;"></image><text class="selected" style="width:{{navFont*2}}px;height:{{28*w/412}}px;font-size:{{navFont}}px;">&#x968F;&#x8BB0;</text></div>
 <div class="dock-divider" style="width:1px;height:{{dockInnerH}}px;"></div>

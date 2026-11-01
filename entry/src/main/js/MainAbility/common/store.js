@@ -370,9 +370,12 @@ function metadata(id, body, created, revision, pinned, deleted) {
     if (line) { title = U.sliceBytes(line, 72); break; }
     pos = end + 1;
   }
+  // Frozen V3 shows the body after the first title paragraph, not the title twice.
+  var preview = body.slice(end < body.length ? end + 1 : body.length).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+  if (!preview) preview = '\u70b9\u5f00\u9605\u8bfb';
   return {id: id, created: created, date: date.getFullYear() + '-' + two(date.getMonth() + 1) + '-' + two(date.getDate()),
     time: two(date.getHours()) + ':' + two(date.getMinutes()), title: title,
-    preview: U.sliceBytes(body.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''), 96),
+    preview: U.sliceBytes(preview, 96),
     pinned: pinned, deleted: deleted, revision: revision, bytes: U.bytes(body)};
 }
 function checkFlags(x) {

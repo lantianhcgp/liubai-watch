@@ -23,6 +23,9 @@ class Handler(host.Handler):
         if not self.allowed():
             return self.send_bytes(b'Forbidden', 'text/plain', 403)
         route = urlsplit(self.path).path
+        if route == '/__app':
+            self.path = '/'
+            return super().do_GET()
         if route == '/__baseline':
             return self.send_bytes(APPROVED.read_bytes(), 'text/html; charset=utf-8')
         if route == '/__artifact':
