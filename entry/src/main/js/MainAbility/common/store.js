@@ -6,6 +6,8 @@ var ROOT = 'internal://app/lb1';
 var PAGE = 6, MAX_PAGES = 256, CHUNK = 2800, MAX_BODY = 32768;
 var TIMEOUT = 10000, ready = false, closed = false, busy = false;
 var pending = null, fence = false, serial = 0, queue=[],savePending=false;
+// One continuation, at most one metadata record: no full-index heap cache.
+var listResume = null, GC_MAX = 32;
 function error(text) { return new Error(text); }
 function deliver(cb, e, v) { if (typeof cb === 'function') cb(e || null, v); }
 function validKey(s) { return typeof s === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(s); }
@@ -92,6 +94,7 @@ function pair(base, empty, cb) {
   part(0);
 }
 function commit(base, old, data, cb) {
+  listResume = null;
   var seq = old.seq + 1, uri = base + (seq % 2) + '.json', text = seal(seq, data);
   write(uri, text, function (e) {
     if (!e) return cb(null, {seq: seq, data: data});
@@ -157,6 +160,123 @@ function locate(c, id, cb) {
   step();
 }
 function token() { serial++; return 't' + new Date().getTime().toString(36) + '_' + serial.toString(36) + '_' + Math.floor(Math.random() * 1000000000).toString(36); }
+// Durable bounded candidate journal: register BEFORE creating immutable chunks.
+// Both valid metadata slots are roots, not just the newest selected generation.
+// No file.list: known token/count descriptors let us delete exact chunk paths.
+function gcBlobs(data) {
+  var out = [], i, b;
+  if (!data || !Array.isArray(data.blobs) || data.blobs.length > GC_MAX) return null;
+  for (i = 0; i < data.blobs.length; i++) {
+    b = data.blobs[i];
+    if (!b || !validKey(b.token) || typeof b.count !== 'number' || b.count < 0 || b.count > 16 || b.count % 1) return null;
+    out.push({token: b.token, count: b.count});
+  }
+  return out;
+}
+function gcUnion(a, b) {
+  var out = a.slice(), i, j;
+  for (i = 0; i < b.length; i++) {
+    for (j = 0; j < out.length && out[j].token !== b[i].token; j++);
+    if (j === out.length) out.push({token: b[i].token, count: b[i].count});
+    else if (out[j].count < b[i].count) out[j].count = b[i].count;
+  }
+  return out;
+}
+function gcRoots(dir, kind, cb) {
+  if (kind === 'orphan') return cb(null, []);
+  var roots = [], found = false, valid = false;
+  function step(slot) {
+    read(dir + (kind === 'draft' ? '/d' : '/i') + slot + '.json', function (e, text) {
+      if (e && e.code !== 301 && !/Corrupt/.test(e.message)) return cb(e);
+      if (!e || e.code !== 301) found = true;
+      var x = !e && unpack(text), descriptors = [], i;
+      if (x) {
+        valid = true;
+        if (kind === 'draft') {
+          if (x.data.value) descriptors.push(x.data.value.blob);
+        } else {
+          if (!Array.isArray(x.data.items) || x.data.items.length > PAGE) return cb(error('Corrupt GC index roots'));
+          for (i = 0; i < x.data.items.length; i++) descriptors.push(x.data.items[i].blob);
+        }
+        descriptors = gcBlobs({blobs: descriptors});
+        if (!descriptors) return cb(error('Corrupt GC blob roots'));
+        roots = gcUnion(roots, descriptors);
+      }
+      if (slot === 0) return step(1);
+      if (found && !valid) return cb(error('Corrupt GC metadata roots'));
+      cb(null, roots);
+    });
+  }
+  step(0);
+}
+function gcCollect(dir, kind, cb) {
+  pair(dir + '/g', {blobs: []}, function (e, journal) {
+    if (e) return cb(e);
+    if (journal.seq < 0) return cb(null);
+    var candidates = gcBlobs(journal.data);
+    if (!candidates) return cb(error('Corrupt GC journal'));
+    gcRoots(dir, kind, function (re, roots) {
+      if (re) return cb(re);
+      var survivors = [], at = 0, changed = false;
+      function next() {
+        if (at >= candidates.length) {
+          if (!changed) return cb(null);
+          return commit(dir + '/g', journal, {blobs: survivors}, cb);
+        }
+        var b = candidates[at++], i, n = 0, failed = false;
+        for (i = 0; i < roots.length; i++) if (roots[i].token === b.token) { survivors.push(b); return next(); }
+        function chunk() {
+          if (n >= b.count) {
+            if (failed) survivors.push(b); else changed = true;
+            return next();
+          }
+          io('delete', {uri: dir + '/b' + b.token + '_' + n++ + '.txt'}, function (de) {
+            if (closed) return cb(error('Store disposed'));
+            if (de && de.code !== 301) failed = true;
+            chunk();
+          });
+        }
+        chunk();
+      }
+      next();
+    });
+  });
+}
+function gcRegister(dir, kind, candidate, cb) {
+  gcCollect(dir, kind, function (e) {
+    if (e) return cb(e);
+    pair(dir + '/g', {blobs: []}, function (je, journal) {
+      if (je) return cb(je);
+      var known = gcBlobs(journal.data);
+      if (!known) return cb(error('Corrupt GC journal'));
+      gcRoots(dir, kind, function (re, roots) {
+        if (re) return cb(re);
+        known = gcUnion(gcUnion(known, roots), [candidate]);
+        if (known.length > GC_MAX) return cb(error('GC cleanup capacity reached; retry cleanup before writing'));
+        commit(dir + '/g', journal, {blobs: known}, cb);
+      });
+    });
+  });
+}
+function gcFinish(dir, kind, e, value, cb) {
+  if (fence || closed) return cb(e, value);
+  gcCollect(dir, kind, function () { cb(e, value); });
+}
+function gcRecover(c, cb) {
+  var p = 0;
+  gcCollect(ROOT, 'draft', function (e) {
+    if (e) return cb(e);
+    function step() {
+      if (p > c.data.pages || p >= MAX_PAGES) return cb(null);
+      var n = p++;
+      gcCollect(ROOT + '/p' + n, n === c.data.pages ? 'orphan' : 'index', function (pe) {
+        if (pe) return cb(pe);
+        step();
+      });
+    }
+    step();
+  });
+}
 function blobWrite(dir, text, cb) {
   var t = token(), pos = 0, count = 0;
   function step() {
@@ -167,7 +287,12 @@ function blobWrite(dir, text, cb) {
       pos = end; count++; step();
     });
   }
-  step();
+  var chunks = 0, position = 0;
+  while (position < text.length) { position = U.endBytes(text, position, CHUNK); chunks++; }
+  gcRegister(dir, dir === ROOT ? 'draft' : 'index', {token: t, count: chunks}, function (e) {
+    if (e) return cb(e);
+    step();
+  });
 }
 function blobRead(dir, blob, cb) {
   var n = 0, body = '';
@@ -227,13 +352,13 @@ function save(input, cb) {
         var dir = ROOT + '/p' + p;
         function persist(state) {
           blobWrite(dir, input.body, function (writeError, blob) {
-            if (writeError) return done(writeError);
+            if (writeError) return gcFinish(dir, 'index', writeError, undefined, done);
             var items = state.data.items;
             if (old) items[hit.index] = {meta: meta, blob: blob}; else items.push({meta: meta, blob: blob});
             commit(dir + '/i', state, {items: items}, function (indexError) {
-              if (indexError) return done(indexError);
-              if (!newPage) return done(null, clone(meta));
-              commit(ROOT + '/c', c, {pages: c.data.pages + 1}, function (catError) { done(catError, catError ? undefined : clone(meta)); });
+              if (indexError) return gcFinish(dir, 'index', indexError, undefined, done);
+              if (!newPage) return gcFinish(dir, 'index', null, clone(meta), done);
+              commit(ROOT + '/c', c, {pages: c.data.pages + 1}, function (catError) { gcFinish(dir, catError ? 'orphan' : 'index', catError, catError ? undefined : clone(meta), done); });
             });
           });
         }
@@ -284,7 +409,7 @@ function flag(id, flags, cb) {
         if (flags.pinned !== undefined) m.pinned = flags.pinned;
         if (flags.deleted !== undefined) m.deleted = flags.deleted;
         // revision denotes BODY version: flag-only writes do not invalidate anchors.
-        commit(ROOT + '/p' + hit.p + '/i', hit.state, hit.state.data, function (ce) { done(ce, ce ? undefined : clone(m)); });
+        commit(ROOT + '/p' + hit.p + '/i', hit.state, hit.state.data, function (ce) { gcFinish(ROOT + '/p' + hit.p, 'index', ce, ce ? undefined : clone(m), done); });
       });
     });
   });
@@ -301,7 +426,10 @@ function list(q, cb) {
     if (typeof offset !== 'number' || offset < 0 || offset % 1 || typeof limit !== 'number' || limit < 1 || limit > 12 || limit % 1 || !/^(all|pinned|trash|day|month)$/.test(filter) || (filter === 'day' && !/^\d{4}-\d{2}-\d{2}$/.test(q.day || '')) || (filter === 'month' && !/^\d{4}-\d{2}$/.test(q.month || ''))) return done(error('Invalid list query (limit 1..12)'));
     catalog(function (e, c) {
       if (e) return done(e);
-      var cursor = null, remaining = offset, total = 0, first = true;
+      var queryKey = filter + '|' + (q.day || '') + '|' + (q.month || '') + '|' + c.seq;
+      var resume = listResume && listResume.key === queryKey && listResume.offset === offset ? listResume : null;
+      var cursor = resume ? resume.cursor : null, remaining = resume ? 0 : offset, total = 0, first = true;
+      listResume = null;
       function scan() {
         var p = 0, best = [], wanted = remaining > 0 ? Math.min(12, remaining) : limit + 1;
         function step() {
@@ -311,6 +439,7 @@ function list(q, cb) {
               remaining -= best.length; cursor = best[best.length - 1]; first = false; return scan();
             }
             var more = best.length > limit; if (more) best.pop();
+            if (more && best.length) listResume = {key: queryKey, offset: offset + best.length, cursor: clone(best[best.length - 1])};
             return done(null, {items: best, hasMore: more, total: total});
           }
           page(p, function (pe, state) {
@@ -377,14 +506,14 @@ function draftPut(value,cb){
     if(typeof value.body!=='string'||!U.valid(value.body)||(value.text!==undefined&&value.text!==value.body)||(value.id!==undefined&&value.id!==null&&value.id!==''&&!validKey(value.id)))return done(error('Invalid draft'));
     delete value.text;var text=value.body,meta=clone(value);delete meta.body;
     if(U.bytes(text)>MAX_BODY||U.bytes(JSON.stringify(meta))>3000)return done(error('Draft safe-load metadata budget exceeded; original preserved'));
-    aux(ROOT+'/d',function(e,state){if(e)return done(e);blobWrite(ROOT,text,function(be,blob){if(be)return done(be);commit(ROOT+'/d',state,{value:{blob:blob,meta:meta}},function(ce){done(ce,ce?undefined:clone(value));});});});
+    aux(ROOT+'/d',function(e,state){if(e)return done(e);blobWrite(ROOT,text,function(be,blob){if(be)return gcFinish(ROOT,'draft',be,undefined,done);commit(ROOT+'/d',state,{value:{blob:blob,meta:meta}},function(ce){gcFinish(ROOT,'draft',ce,ce?undefined:clone(value),done);});});});
   });
 }
 function draftClear(cb) {
   task(cb, function (done) {
     aux(ROOT + '/d', function (e, state) {
       if (e) return done(e);
-      commit(ROOT + '/d', state, {value: null}, function (ce) { done(ce, null); });
+      commit(ROOT + '/d', state, {value: null}, function (ce) { gcFinish(ROOT, 'draft', ce, null, done); });
     });
   });
 }
@@ -394,13 +523,13 @@ function init(cb) {
       if (e) return done(e);
       catalog(function (ce, c) {
         if (ce) return done(ce);
-        if (c.seq >= 0) { ready = true; return done(null, true); }
+        if (c.seq >= 0) return gcRecover(c, function (ge) { if (!ge) ready = true; done(ge, !ge); });
         commit(ROOT + '/c', c, {pages: 0}, function (we) { if (!we) ready = true; done(we, !we); });
       });
     });
   }, true);
 }
-function dispose() { closed = true; ready = false; if (pending) pending(); while(queue.length)deliver(queue.shift().cb,error('Store disposed')); }
+function dispose() { listResume = null; closed = true; ready = false; if (pending) pending(); while(queue.length)deliver(queue.shift().cb,error('Store disposed')); }
 export default {init: init, list: list, load: load, save: save, flag: flag,
   draftGet: draftGet, draftPut: draftPut, draftClear: draftClear,
   settingGet: auxiliaryGet, settingPut: auxiliaryPut, dispose: dispose};

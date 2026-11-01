@@ -6,7 +6,7 @@ function page(n,mocks){let s=fs.readFileSync(new URL('pages/'+n+'/'+n+'.js',root
 let passed=0;function test(n,f){f();passed++;console.log('PASS '+n);}
 const prefix='../../common/';const mocks={};let saves=[],navs=[],session=null;
 mocks[prefix+'shell']={focus(){},clear(){},nav(p,n,q){navs.push({n,q});},params(){return{};}};
-mocks[prefix+'store']={save(input,cb){saves.push({input,cb});},draftClear(cb){cb(null);}};
+mocks[prefix+'store-page']={save(input,cb){saves.push({input,cb});},draftClear(cb){cb(null);}};
 mocks[prefix+'session']={get(){return session;},set(s){session=s;},clear(){session=null;},clipboardPut(){},clipboardGet(){return'';}};
 mocks[prefix+'utf8']={bytes(s){return Buffer.byteLength(s);}};
 function editor(){let p=page('edit',mocks);p.alive=true;p.text='complete full text';p.id='same-id';p.created=123;p.kb={snapshot(){return{text:p.text,cursor:3,type:0,pinyin:''};}};return p;}

@@ -1,10 +1,11 @@
 <stack class="page" @swipe="onSwipe">
  <div class="loading" if="{{ !ready }}" @click="retry"><text>{{ message }}</text></div>
  <stack class="surface" if="{{ ready }}" style="width: {{ w }}px; height: {{ h }}px;">
+ <list ref="crown" @scrollend="onScrollEnd" style="left:0px; top:0px; width:{{ w }}px; height:{{ h }}px;"><list-item style="width:{{ w }}px; height:{{ h+1 }}px;"></list-item></list>
  <div class="header" style="left: {{ hx }}px; top: {{ hy }}px; width: {{ hw }}px; height: {{ hit }}px;"><div class="hit" @click="back" style="width: {{ hit }}px; height: {{ hit }}px;"><text class="back">&#x2039;</text></div><text class="title" style="width: {{ hw-hit }}px;">{{ title }}</text></div>
- <div class="fonts" if="{{ mode === 'read' }}" style="left: {{ bodyX }}px; top: {{ bodyY-74 }}px; width: {{ bodyW }}px; height: 58px;"><div class="font" for="{{ (i, f) in fonts }}" @click="setFont(f.key)" style="width: {{ bodyW/3 }}px; height: 46px;"><text class="font-label">{{ f.label }}</text></div></div>
- <div class="row" for="{{ (i, r) in visibleRows }}" @click="choose(r.action)" style="left: {{ bodyX }}px; top: {{ bodyY+i*rowH }}px; width: {{ bodyW }}px; height: {{ rowH }}px;"><text class="label" style="width: {{ bodyW-30 }}px;">{{ r.title }}</text><text class="arrow">&#x203a;</text></div>
- <text class="message" @click="retry" style="left: {{ bodyX }}px; top: {{ h*.86 }}px; width: {{ bodyW }}px; height: 28px;">{{ message }}</text>
- <div class="pagination" style="left: {{ bodyX }}px; top: {{ h*.91 }}px; width: {{ bodyW }}px; height: 30px;"><div class="step" @click="prev" style="width: {{ bodyW/2 }}px;"><text>&#x2039;</text></div><div class="step" @click="next" style="width: {{ bodyW/2 }}px;"><text>&#x203a;</text></div></div>
+ <div class="fonts" if="{{ mode === 'read' }}" style="left: {{ contentX }}px; top: {{ fontY }}px; width: {{ contentW }}px; height: 46px;"><div class="font" for="{{ (i, f) in fonts }}" @click="setFont(f.key)" style="width: {{ fontW }}px; height: 46px;"><text class="font-label">{{ f.label }}</text></div></div>
+ <div class="row" for="{{ (i, r) in visibleRows }}" @click="choose(r.action)" style="left: {{ contentX }}px; top: {{ listY+i*rowH }}px; width: {{ contentW }}px; height: {{ rowH }}px;"><text class="label" style="width: {{ contentW-30 }}px;">{{ r.title }}</text><text class="arrow">&#x203a;</text></div>
+ <div class="pagination" style="left: {{ contentX }}px; top: {{ dockY }}px; width: {{ contentW }}px; height: 44px;"><div class="step" @click="prev" style="width: {{ contentW/2 }}px; height:44px;"><text>&#x2039;</text></div><div class="step" @click="next" style="width: {{ contentW/2 }}px; height:44px;"><text>&#x203a;</text></div></div>
+ <div if="{{ message }}" class="notice" @click="retry" style="left: {{ contentX }}px; top: {{ dockY }}px; width: {{ contentW }}px; height:44px;"><text class="message">{{ message }}</text></div>
  </stack>
 </stack>

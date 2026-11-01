@@ -15,9 +15,9 @@ function fixture(name='index',params={},options={}){
  const realPut=session.clipboardPut;session.clipboardPut=s=>{calls.push(['clipboard',s]);realPut(s);};
  if(params.mode==='tool'||params.mode==='exit')session.set(options.session===undefined?{id:params.id||'',text:'complete body',cursor:4,type:2,pinyin:'zh',open:false,viewAnchor:2,created:123,original:'base',revision:2}:options.session);
  const file=root+'/common/list-page.js';assert.ok(fs.existsSync(file),'native list controller is not implemented');
- const list=loadFile(file,{'./store':store,'./shell':shell,'./layout':layout});
+ const list=loadFile(file,{'./store-page':store,'./shell':shell,'./layout':layout});
  const pageFile=root+'/pages/'+name+'/'+name+'.js';assert.ok(fs.existsSync(pageFile),name+' native page missing');
- const p=loadFile(pageFile,{'../../common/list-page':list,'../../common/store':store,'../../common/shell':shell,'../../common/layout':layout,'../../common/session':session});Object.assign(p,JSON.parse(JSON.stringify(p.data)));p.onInit();return {p,store,shell,list,calls,pending,session,readyPending,settings};
+ const p=loadFile(pageFile,{'../../common/list-page':list,'../../common/store-page':store,'../../common/shell':shell,'../../common/layout':layout,'../../common/session':session});Object.assign(p,JSON.parse(JSON.stringify(p.data)));p.onInit();return {p,store,shell,list,calls,pending,session,readyPending,settings};
 }
 const meta=(id,date='2026-11-01')=>({id,date,time:'12:00',created:1,title:'Title '+id,preview:'short preview',pinned:false,deleted:false,revision:1,bytes:20});
 test('lists request bounded metadata and never load record body',()=>{const f=fixture();assert.equal(f.calls[0][0],'list');assert.equal(f.calls[0][1].limit,3);assert.equal(f.calls[0][1].filter,'all');f.pending.shift()(null,{items:[meta('a'),meta('b'),meta('c')],hasMore:true});assert.equal(f.p.rows.length,3);assert.equal(f.p.hasMore,true);assert.ok(f.p.rows.every(x=>x.body===undefined));assert.equal(f.calls.filter(c=>c[0]==='load').length,0);});

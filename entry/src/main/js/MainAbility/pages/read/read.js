@@ -1,7 +1,7 @@
 import shell from '../../common/shell';
 import layout from '../../common/layout';
 import reader from '../../common/reader';
-import store from '../../common/store';
+import store from '../../common/store-page';
 export default {
  data:{ready:false,message:'',w:0,h:0,hx:0,hy:0,hw:0,hit:46,lines:[],date:'',time:'',counter:'',progressW:0,trackW:0,trackX:0,footerY:0},
  onInit:function(){var p=this;this.token=1;this.id=shell.params(this).id||'';this.font=shell.params(this).font||'normal';this.anchor=shell.params(this).anchor||0;this.starts=[0];this.index=0;this.text='';shell.init(this,function(info){p.g=layout.reader(info,p.font);p.hx=p.g.hx;p.hy=p.g.hy;p.hw=p.g.hw;p.hit=p.g.hit;p.footerY=p.g.footerY;p.trackW=Math.round(p.w*.27);p.trackX=(p.w-p.trackW)/2;shell.ensure(p,function(initErr){if(initErr){p.message=String(initErr);return;}store.load(p.id,function(e,n){if(p.token!==1)return;if(e){p.message=String(e);return;}p.text=n.body;p.revision=n.revision;p.date=n.date;p.time=n.time;store.settingGet('read-'+p.id,function(err,s){if(p.token!==1)return;if(s&&s.revision===p.revision){if(!shell.params(p).font)p.font=s.font||'normal';if(!shell.params(p).fromStart)p.anchor=s.anchor||0;}p.g=layout.reader(info,p.font);p.total=reader.count(p.text,p.g,{});p.locate();});});});});},

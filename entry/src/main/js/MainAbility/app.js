@@ -1,4 +1,5 @@
 import Store from './common/store';
+import Session from './common/session';
 
 var routeParams = {};
 // Store operations stay callback-based. Pages remain free to render while init runs.
@@ -16,6 +17,8 @@ export default {
   },
   getLiubaiParams: function () { return routeParams; },
   setLiubaiParams: function (p) { routeParams = p && typeof p === 'object' ? p : {}; },
+  getStore:function(){return Store;},
+  getSession:function(){return Session;},
   getLiubaiStoreState: function () { return state; },
   whenLiubaiReady: function (callback) {
     if (typeof callback !== 'function') return;
