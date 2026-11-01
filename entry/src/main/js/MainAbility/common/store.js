@@ -482,7 +482,7 @@ function list(q, cb) {
     catalog(function (e, c) {
       if (e) return done(e);
       var queryKey = filter + '|' + (q.day || '') + '|' + (q.month || '') + '|' + c.seq;
-      var resume = listResume && listResume.key === queryKey && listResume.offset === offset ? listResume : null;
+      var resume = listResume && listResume.key === queryKey && listResume.offset === offset && listResume.limit === limit ? listResume : null;
       var cursor = resume ? resume.cursor : null, remaining = resume ? offset-resume.offset : offset, total = resume ? resume.total : 0, first = !resume;
       if(resume&&remaining===0&&resume.buffer&&(resume.buffer.length>=limit||(!resume.more&&resume.buffer.length>0))){var cached=resume.buffer.splice(0,limit);resume.offset+=cached.length;if(!resume.more&&!resume.buffer.length)listResume=null;return done(null,{items:cached,hasMore:resume.more||resume.buffer.length>0,total:total});}
       listResume = null;
@@ -496,7 +496,7 @@ function list(q, cb) {
               remaining -= best.length; cursor = best[best.length - 1]; first = false; return scan();
             }
             var cap=limit+Math.min(12,limit),more=best.length>cap;if(more)best.pop();var buffer=best.splice(limit);
-            if ((more||buffer.length) && best.length) listResume = {key:queryKey,offset:offset+best.length,cursor:clone((buffer.length?buffer:best)[(buffer.length?buffer:best).length-1]),total:total,buffer:buffer,more:more};
+            if ((more||buffer.length) && best.length) listResume = {key:queryKey,limit:limit,offset:offset+best.length,cursor:clone((buffer.length?buffer:best)[(buffer.length?buffer:best).length-1]),total:total,buffer:buffer,more:more};
             return done(null, {items: best, hasMore: more||buffer.length>0, total: total});
           }
           if(p>=c.data.pages||active>=1)return;

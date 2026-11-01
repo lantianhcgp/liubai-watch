@@ -6,6 +6,7 @@ qa/vendor/
 qa/output/
 qa/.profile/
 qa/.state/
+qa/.state-before-functional/
 build/
 entry/build/
 .hvigor/
