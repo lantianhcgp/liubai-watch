@@ -1,0 +1,17 @@
+<stack class="page">
+<stack if="{{ready}}" style="width:{{w}}px;height:{{h}}px;align-items:flex-start;justify-content:flex-start">
+<div class="header" style="left:{{hx}}px;top:{{hy}}px;width:{{hw}}px;height:{{hit}}px">
+<div class="hit" style="width:{{hit}}px;height:{{hit}}px" @click="back"><text class="back">&#x2039;</text></div>
+<text class="head-title" style="width:{{headCenterW}}px;height:{{hit}}px;font-size:{{headFont}}px">{{headerTitle}}</text>
+<div class="hit" style="width:{{hit}}px;height:{{hit}}px" @click="home"><text class="dots">&#x2022;&#x2022;&#x2022;</text></div>
+</div>
+<list class="note-list" ref="crown" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px" @swipe="onSwipe" @scrollend="onScrollEnd">
+<list-item class="row" for="{{rows}}" tid="id" style="width:{{contentW}}px;height:{{rowH}}px" @click="open($item)">
+<div class="copy" style="width:{{titleW}}px;height:{{rowCopyH}}px"><text class="row-title" style="width:{{titleW}}px;height:{{titleH}}px;font-size:{{titleFont}}px;color:{{$item.pinColor}}">{{$item.title}}</text><text class="row-meta" style="width:{{titleW}}px;height:{{metaH}}px;font-size:{{metaFont}}px">&#x70B9;&#x6309;&#x6062;&#x590D; &#x00B7; &#x4E0D;&#x4F1A;&#x81EA;&#x52A8;&#x6E05;&#x9664;</text></div>
+</list-item>
+<list-item if="{{hasMore || hasPrev}}" class="pager" style="width:{{contentW}}px;height:{{hit}}px"><div class="hit" if="{{hasPrev}}" style="width:{{contentW / 2}}px;height:{{hit}}px" @click="prev"><text class="pager-text">&#x4E0A;&#x4E00;&#x5C4F;</text></div><div class="hit" if="{{hasMore}}" style="width:{{contentW / 2}}px;height:{{hit}}px" @click="next"><text class="pager-text">&#x4E0B;&#x4E00;&#x5C4F;</text></div></list-item>
+</list>
+<div class="notice" if="{{empty || message || loading}}" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px" @click="retry"><text class="quiet" style="width:{{contentW}}px;height:88px">{{message || (loading ? '&#x6B63;&#x5728;&#x8BFB;&#x53D6;' : emptyText)}}</text></div>
+<div class="dock" style="left:{{dockX}}px;top:{{dockY}}px;width:{{dockW}}px;height:{{hit}}px"><div class="nav" style="width:{{dockW}}px;height:{{hit}}px" @click="home"><text class="nav-label" style="font-size:{{navFont}}px">&#x2039; &#x8FD4;&#x56DE;&#x968F;&#x8BB0;</text></div></div>
+</stack><div class="loading" if="{{!ready}}" @click="retry"><text class="quiet">{{message}}</text></div>
+</stack>

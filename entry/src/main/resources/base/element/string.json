@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "留白笔记"
+    },
+    {
+      "name": "MainAbility_desc",
+      "value": "离线随手记录"
+    },
+    {
+      "name": "MainAbility_label",
+      "value": "留白"
+    }
+  ]
+}

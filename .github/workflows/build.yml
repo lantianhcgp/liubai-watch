@@ -1,0 +1,35 @@
+name: build
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: System dependencies
+        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev
+      - name: Download actual HarmonyOS compiler
+        uses: ErBWs/setup-ohos@v2
+        with:
+          version: 6.1.1.280
+          cache: true
+      - name: Expose toolchain
+        shell: bash
+        run: |
+          for p in "$HOME/ohos-sdk/command-line-tools/bin" "$HOME/ohos-sdk/command-line-tools/tool/node/bin"; do
+            if [ -d "$p" ]; then printf '%s\n' "$p" >> "$GITHUB_PATH"; fi
+          done
+          if [ -d "$HOME/ohos-sdk/command-line-tools/sdk" ]; then
+            printf '%s\n' "HOS_SDK_HOME=$HOME/ohos-sdk/command-line-tools/sdk" >> "$GITHUB_ENV"
+          fi
+      - name: Compile and verify unsigned app
+        run: bash scripts/build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: liubai-unsigned-${{ github.run_number }}
+          path: build/outputs/default/*.app
+          if-no-files-found: error
