@@ -22,7 +22,7 @@ text { font-family:HYQiHei-65S; color:#f1f0e8; }
 .day-num { width:46px; font-size:29px; color:#e6c78c; }
 .day-next { width:20px; font-size:23px; color:#adb1a9; text-align:right; }
 .dock { flex-direction:row; align-items:center; background-color:#171b1b; border-width:1px; border-color:#292e2b; border-radius:25px; }
-.nav { align-items:center; justify-content:center; }
+.nav { flex-direction:row; align-items:center; justify-content:center; }
 .nav-label { color:#adb1a9; text-align:center; }
 .selected { color:#e6c78c; text-align:center; }
 .quiet { color:#adb1a9; font-size:19px; text-align:center; }

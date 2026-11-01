@@ -4,9 +4,9 @@
   <list class="crown" ref="crown" @scrollend="onScroll" style="width: {{ w }}px; height: {{ h }}px;"><list-item class="sensor" style="width: {{ w }}px; height: {{ h }}px;"></list-item></list>
   <text class="reading-line" for="{{ (i, line) in lines }}" style="left: {{ line.x }}px; top: {{ line.y }}px; width: {{ line.width }}px; height: {{ line.height }}px; font-size: {{ line.font }}px;">{{ line.text }}</text>
   <div class="header" style="left: {{ hx }}px; top: {{ hy }}px; width: {{ hw }}px; height: {{ hit }}px;">
-   <div class="icon" @click="back" style="width: {{ hit }}px; height: {{ hit }}px;"><text class="back">&#x2039;</text></div>
+   <div class="icon" @click="back" style="width: {{ hit }}px; height: {{ hit }}px;"><image src="/common/icons/back_warm.png" style="width:24px;height:24px;"></image></div>
    <div class="date-box" style="width: {{ hw - 2 * hit }}px; height: {{ hit }}px;"><text class="date">{{ date }}</text><text class="time">{{ time }}</text></div>
-   <div class="icon" @click="more" style="width: {{ hit }}px; height: {{ hit }}px;"><text class="more">&#x2022;&#x2022;&#x2022;</text></div>
+   <div class="icon" @click="more" style="width: {{ hit }}px; height: {{ hit }}px;"><image class="more" src="/common/icons/dots_gold.png" style="width:24px;height:24px;"></image></div>
   </div>
   <text class="counter" style="left: {{ trackX }}px; top: {{ footerY }}px; width: {{ trackW }}px;">{{ counter }}</text>
   <div class="track" style="left: {{ trackX }}px; top: {{ footerY + 20 }}px; width: {{ trackW }}px;"><div class="progress" style="width: {{ progressW }}px;"></div></div>
