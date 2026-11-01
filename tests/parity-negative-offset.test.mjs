@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
+test('small circle pan wait expression remains valid for a negative sheet offset',()=>{const s=fs.readFileSync('qa/parity-matrix.mjs','utf8'),m=s.match(/c\.wait\((`Math\.abs\([^`]*targetOffset[^`]*`)\)/);assert.ok(m);const text=vm.runInNewContext(m[1],{D:'page',targetOffset:-140.94});assert.doesNotThrow(()=>new vm.Script(text));assert.equal(vm.runInNewContext(text,{page:{kb:{snapshot(){return{sheetOffset:-140.94}}}}}),true);});

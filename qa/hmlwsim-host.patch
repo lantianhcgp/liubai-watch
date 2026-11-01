@@ -1,0 +1,123 @@
+--- a/js/css-adapter.js
++++ b/js/css-adapter.js
+@@ -6,9 +6,19 @@
+ 
+   function getWatchBaseStyles() {
+     return `
++/* Host-only native font alias: same installed sans used by approved HTML.
++   Does not ship in .app or claim the real device typeface is identical. */
++@font-face {
++  font-family: 'HYQiHei-65S';
++  src: local('Noto Sans CJK SC');
++  font-style: normal;
++  font-weight: 400;
++}
+ * {
+   margin: 0;
+   padding: 0;
++  border-style: solid;
++  border-width: 0;
+   box-sizing: border-box;
+   -webkit-tap-highlight-color: transparent;
+   flex-shrink: 0;
+--- a/js/runtime/sandbox.js
++++ b/js/runtime/sandbox.js
+@@ -10,6 +10,7 @@
+   let _lastViewModel = null;
+   let _lastError = null;
+   let _imageSrcResolver = null;
++  let _localeTables = [];
+   const _activeTimers = new Set();
+   const _globalKeys = [];
+   let _destroyed = false;
+@@ -400,7 +401,20 @@
+     if (initialVal) renderContent();
+     if (deps.size > 0) {
+       let wasVisible = !!initialVal;
+-      _reactive.addCleanup(_reactive.subscribe(deps, () => { const v = !!getCondition(); if (v === wasVisible) return; wasVisible = v; if (v) renderContent(); else clearNodes(); }));
++      const observed = new Set(deps);
++      function updateCondition() {
++        // A short-circuit such as open && hasPinyin can discover new
++        // dependencies only after open flips. Keep the union subscribed.
++        const tracked = _reactive.track(getCondition);
++        const added = new Set();
++        for (const key of tracked.deps) if (!observed.has(key)) { observed.add(key); added.add(key); }
++        if (added.size) _reactive.addCleanup(_reactive.subscribe(added, updateCondition));
++        const v = !!tracked.value;
++        if (v === wasVisible) return;
++        wasVisible = v;
++        if (v) renderContent(); else clearNodes();
++      }
++      _reactive.addCleanup(_reactive.subscribe(deps, updateCondition));
+     }
+     return { _l: true, state, mount };
+   }
+@@ -486,6 +500,7 @@
+   function ViewModel(definition) {
+     definition = definition || {};
+     const data = definition.data || {};
++    if (typeof data.$t !== 'function') data.$t = translate;
+     const renderFn = definition.render || null;
+     const styleSheet = definition.styleSheet || null;
+ 
+@@ -630,6 +645,34 @@
+ 
+   function arrayBufferToText(ab) { return new TextDecoder().decode(ab); }
+ 
++  function loadLocaleTables(appData) {
++    const found = new Map();
++    const stores = [(appData && appData.modules) || {}, (appData && appData.hapFiles) || {}];
++    for (const store of stores) for (const key of Object.keys(store)) {
++      const match = key.match(/(?:^|\/)i18n\/([^/]+)\.json$/);
++      if (!match || found.has(match[1])) continue;
++      try {
++        const value = store[key];
++        const text = typeof value === 'string' ? value : arrayBufferToText(value);
++        found.set(match[1], JSON.parse(text));
++      } catch (e) { console.warn('[Sandbox] Invalid packaged i18n:', key, e.message); }
++    }
++    const locale = typeof navigator !== 'undefined' && navigator.language ? navigator.language : 'zh-CN';
++    const exact = found.has(locale) ? locale : Array.from(found.keys()).find(k => k.split('-')[0] === locale.split('-')[0]);
++    const order = [exact, 'zh-CN', 'en-US', ...found.keys()].filter((k, i, a) => k && a.indexOf(k) === i);
++    _localeTables = order.map(k => found.get(k)).filter(Boolean);
++  }
++
++  function translate(key) {
++    const parts = String(key).split('.');
++    for (const table of _localeTables) {
++      let value = table;
++      for (const part of parts) value = value && Object.prototype.hasOwnProperty.call(value, part) ? value[part] : undefined;
++      if (typeof value === 'string' || typeof value === 'number') return String(value);
++    }
++    return String(key);
++  }
++
+   function executeModule(code, moduleKey, appData) {
+     if (_moduleCache.has(moduleKey)) return _moduleCache.get(moduleKey);
+     if (!code && appData.hapFiles) {
+@@ -673,6 +716,7 @@
+ 
+   function initApp(appJsCode, appData) {
+     _moduleCache.clear();
++    loadLocaleTables(appData);
+     DeviceFeatureAppLifecycle.setAppData(appData);
+     DeviceFeaturePageNav.setAppData(appData);
+     _imports = {
+--- a/js/runtime/deviceFeature_pageNav.js
++++ b/js/runtime/deviceFeature_pageNav.js
+@@ -218,7 +218,14 @@
+           changeEvent.progress = val;
+           el.dispatchEvent(changeEvent);
+         } else if (el.tagName === 'LIST') {
+-          el.scrollTop -= delta * 30;
++          const requested = el.scrollTop - delta * 30;
++          const max = Math.max(0, el.scrollHeight - el.clientHeight);
++          el.scrollTop = requested;
++          if ((delta < 0 && requested >= max) || (delta > 0 && requested <= 0)) {
++            const end = new CustomEvent('scrollend', { bubbles: true, cancelable: true });
++            end.direction = delta < 0 ? 'bottom' : 'top';
++            el.dispatchEvent(end);
++          }
+         }
+       });
+     });

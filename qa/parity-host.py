@@ -19,6 +19,11 @@ APP_INDEX = BASE / '.parity-artifact-path'
 APPROVED = Path('/storage/emulated/0/Documents/watch-notes-concept-2026-11-01/approved-v3/留白-网页效果稿-v3.html')
 
 class Handler(host.Handler):
+    def end_headers(self):
+        if not getattr(self, '_parity_cache_header', False):
+            self.send_header('Cache-Control', 'no-store')
+        super().end_headers()
+
     def do_GET(self):
         if not self.allowed():
             return self.send_bytes(b'Forbidden', 'text/plain', 403)

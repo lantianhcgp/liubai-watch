@@ -28,12 +28,15 @@
 
 ```sh
 bash scripts/build.sh
-python3 scripts/verify-source.py
-python3 scripts/verify-app.py --sanitize build/outputs/default/*.app
-bash qa/start-sim.sh
-# Alpine Node 的原生 WebSocket；无 npm 安装
-proot-distro login alpine -- /usr/bin/node "$HOME/liubai-watch/qa/cdp.mjs" init /绝对路径/真实.app 412 484
+python scripts/verify-source.py
+python scripts/verify-app.py /path/to/actual.app
+
+# 本次隔离车道：hmlwsim 真实包解析、CDP 9257、HTTP 8792。
+# 使用前准备独立模拟器副本和当前 .app 路径，详见 ui-restoration.md。
+node qa/import-parity-artifact.mjs
+node qa/parity-functional.mjs
+node qa/parity-matrix.mjs fit3
 ```
 
-verify-app 拒绝缺失产物/无 HAP/无页面/身份版本不符；sanitize 仅移除 Lite 不兼容构建注入字段并读回验证，不会编造 app。模拟器使用独立 `~/liubai-watch-sim` 副本，http 8791 与 CDP 9247 仅 127.0.0.1，独立 profile。
-**尚未执行真实编译、未产生真实 .app；CI 由父任务创建仓库后触发。** hmlwsim/V8 的离线 callback 文件宿主不是目标真机文件系统、JerryScript heap 或签名安装证明。
+verify-app 拒绝缺失产物/无 HAP/无页面/身份版本不符；sanitize 仅移除 Lite 不兼容构建注入字段并读回验证，不会编造 app。本次模拟器为独立 `~/liubai-watch-ui-sim` 副本，HTTP 8792 与 CDP 9257 仅 127.0.0.1，独立 profile；旧 8791/9247 配方不用于本次最终验收。
+**已执行真实 CLT 构建，最终 UI 源码 `359bd3df0109c9bcc1100ed2eff49333c95fdc43`，CI `41345098484` 为 success。** 原始 `.app` SHA-256 为 `96702166d0c15e0b6f3f4f44607193c6ad93a4fe7c36ed9a764cb6bb991a3523`；独立 hmlwsim 读取同一真实包、20项交互回归已通过。回调文件宿主不等于真机文件系统，V8 不证明 JerryScript heap 或签名安装；签名/真机项目仍单独待验。最终截图验收记录见 `docs/ui-restoration.md`。

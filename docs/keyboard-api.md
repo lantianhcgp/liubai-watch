@@ -20,7 +20,7 @@ var initial = controller.snapshot();
 
 - `cursor` is a UTF-16 offset, clamped away from surrogate / combining / emoji-cluster interiors.
 - Types: `0` Chinese pinyin, `1` lowercase English, `2` uppercase English, `3` digits/symbols. Original CrabKeyboard mappings are preserved.
-- `image` is `/common/keyboard/common/key0.png` through `key3.png`.
+- `image` is `/common/keyboard/common/0.png` through `3.png`; `key0.png` through `key3.png` are the original type icons, not the large keyboard sheets.
 - Key viewport height is **141 px**. The original sheet uses 57 px columns, 60 px rows and 29 px per-row stagger, scaled by `141/180`. Sheet widths are `570*141/180` (types 0..2) and `741*141/180` (type 3). Render the whole image at this width and **141 px height**, clipped inside the parent's actual-device key viewport, translated by `sheetOffset`.
 - The approved merged candidate/composition slot remains **44 px**; this controller does not restore the original wide space bar.
 - Snapshots copy candidate objects; parent mutations cannot change controller state.
