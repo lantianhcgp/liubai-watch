@@ -22,7 +22,7 @@
 </list>
 <div class="notice" if="{{message || loading}}" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px;" @click="retry"><text class="quiet" style="width:{{contentW}}px;height:{{quietH}}px;font-size:{{quietFont}}px;">{{message || '&#x6B63;&#x5728;&#x8BFB;&#x53D6;'}}</text></div>
 <div class="quiet-empty" if="{{empty && !message && !loading}}" style="left:{{emptyX}}px;top:{{emptyY}}px;width:{{emptyW}}px;height:{{emptyH}}px;">
-<image src="{{'/common/icons/'+emptyIcon+'_gold.png'}}" style="width:{{emptyIconSize}}px;height:{{emptyIconSize}}px;margin-bottom:{{emptyIconGap}}px;"></image>
+<image src="{{'/common/icons/empty_'+emptyIcon+'_gold.png'}}" style="width:{{emptyIconSize}}px;height:{{emptyIconSize}}px;margin-bottom:{{emptyIconGap}}px;"></image>
 <text class="empty-title" style="width:{{emptyW}}px;height:{{emptyTitleH}}px;font-size:{{emptyTitleFont}}px;margin-bottom:{{emptyTitleGap}}px;">{{emptyText}}</text>
 <text class="empty-prompt" style="width:{{emptyW}}px;height:{{emptyPromptH}}px;font-size:{{emptyPromptFont}}px;">{{emptyPrompt}}</text></div>
 <div class="dock" style="left:{{dockX}}px;top:{{dockY}}px;width:{{dockW}}px;height:{{hit}}px;border-radius:{{dockRadius}}px;">

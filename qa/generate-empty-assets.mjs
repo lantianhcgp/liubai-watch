@@ -1,0 +1,7 @@
+import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import{connect}from'./parity-cdp.mjs';
+const c=await connect('/__baseline');
+try{
+ const out=await c.eval(`(async()=>{const out={};for(const name of ['book','restore','copy','trash','alert']){if(typeof symbols[name]!=='string')throw Error('Missing frozen V3 symbol '+name);const size=43;const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="#e6c78c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+symbols[name]+'</svg>';const im=new Image();im.src='data:image/svg+xml;base64,'+btoa(svg);await im.decode();const cv=document.createElement('canvas');cv.width=cv.height=size;cv.getContext('2d').drawImage(im,0,0);out[name]=cv.toDataURL();}return out})()`);
+ const records=[];for(const[name,url]of Object.entries(out)){const file=path.join('entry/src/main/js/MainAbility/common/icons','empty_'+name+'_gold.png');const bytes=Buffer.from(url.split(',')[1],'base64');fs.writeFileSync(file,bytes);records.push({file,width:43,height:43,sha256:crypto.createHash('sha256').update(bytes).digest('hex')});}
+ fs.writeFileSync('/storage/emulated/0/Documents/liubai-watch-delivery/ui-restoration/empty-assets.json',JSON.stringify({source:'unchanged final approved-v3 symbols; 43px intrinsic raster; stroke 1.7 in original 24px viewBox',assets:records},null,2));console.log(JSON.stringify({generated:records.length,files:records.map(r=>r.file)}));
+}finally{c.close()}

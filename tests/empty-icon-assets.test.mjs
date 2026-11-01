@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
+const root='entry/src/main/js/MainAbility/';
+for(const name of ['book','restore','copy','trash','alert'])test('native-size V3 empty icon '+name,()=>{const file=root+'common/icons/empty_'+name+'_gold.png';assert.ok(fs.existsSync(file),'missing native-size empty icon');const bytes=fs.readFileSync(file);assert.equal(bytes.readUInt32BE(16),43);assert.equal(bytes.readUInt32BE(20),43);assert.ok(bytes.length>160);});
+for(const page of ['history','trash','menu'])test(page+' empty state uses dedicated icon rather than enlarging a 24px menu icon',()=>{const h=fs.readFileSync(root+'pages/'+page+'/'+page+'.hml','utf8');assert.ok(h.includes("'/common/icons/empty_'+emptyIcon+'_gold.png'"),'dedicated empty icon source binding');});

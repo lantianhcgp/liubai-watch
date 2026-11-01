@@ -21,13 +21,14 @@
 .key-viewport{height:141px;background-color:#1c1c1c;}
 .key-sheet{height:141px;top:0px;}
 .keybar{height:44px;flex-direction:row;align-items:center;}
-.key-mode,.small-key{width:44px;height:44px;border-radius:14px;background-color:#292929;align-items:center;justify-content:center;}
-.space{height:44px;border-radius:14px;margin-left:5px;background-color:#292929;align-items:center;justify-content:center;}
+.key-mode,.small-key{width:44px;height:44px;border-radius:24px;background-color:#292929;align-items:center;justify-content:center;}
+.space{height:44px;border-radius:24px;margin-left:5px;background-color:#292929;align-items:center;justify-content:center;}
 .small-key{margin-left:5px;}
 .type-img{width:25px;height:25px;}
 .space-symbol{height:33px;}
 .candidates{height:44px;flex-direction:row;}
-.candidate{height:44px;align-items:center;justify-content:center;}
+.candidate{height:44px;align-items:center;justify-content:center;margin-right:3px;}
+.candidate-keybar{background-color:#1c1c1c;border-radius:24px;}
 .candidate-text{font-size:21px;height:32px;color:#f1f0e8;font-family:HYQiHei-65S;}
 .folded-bar{height:44px;flex-direction:row;align-items:center;}
 .fold-nav{width:44px;height:44px;border-radius:22px;background-color:#171b1b;align-items:center;justify-content:center;}
