@@ -4,7 +4,7 @@
 .notice{font-size:18px;color:#e6c78c;font-family:HYQiHei-65S;}
 .crown{left:0px;top:0px;}
 .sensor{background-color:#060808;}
-.reading-line{color:#f1f0e8;font-family:HYQiHei-65S;text-overflow:clip;}
+.reading-line,.reading-weight{color:#f1f0e8;font-family:HYQiHei-65S;text-overflow:clip;}
 .header{flex-direction:row;align-items:center;justify-content:space-between;background-color:#060808;}
 .icon{align-items:center;justify-content:center;}
 .date-box{flex-direction:column;align-items:center;justify-content:center;}

@@ -3,6 +3,7 @@
  <stack class="surface" if="{{ ready }}" style="width: {{ w }}px; height: {{ h }}px;">
   <list class="crown" ref="crown" @scrollend="onScroll" style="width: {{ w }}px; height: {{ h }}px;"><list-item class="sensor" style="width: {{ w }}px; height: {{ h }}px;"></list-item></list>
   <text class="reading-line" for="{{ (i, line) in lines }}" style="left: {{ line.x }}px; top: {{ line.y }}px; width: {{ line.width }}px; height: {{ line.height }}px; font-size: {{ line.font }}px;">{{ line.text }}</text>
+  <div for="{{ (i,line) in lines }}" style="left:{{line.x+0.45}}px;top:{{line.y}}px;width:{{line.width-0.45}}px;height:{{line.height}}px;"><text class="reading-weight" if="{{line.bold}}" style="width:{{line.width-0.45}}px;height:{{line.height}}px;font-size:{{line.font}}px;">{{line.text}}</text></div>
   <div class="header" style="left: {{ hx }}px; top: {{ hy }}px; width: {{ hw }}px; height: {{ hit }}px;">
    <div class="icon" @click="back" style="width: {{ hit }}px; height: {{ hit }}px;"><image src="/common/icons/back_warm.png" style="width:23px;height:23px;"></image></div>
    <div class="date-box" style="width: {{ hw - 2 * hit }}px; height: {{ hit }}px;"><text class="date">{{ date }}</text><text class="time">{{ time }}</text></div>

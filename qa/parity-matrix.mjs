@@ -8,7 +8,10 @@ async function nav(page,params={}){await c.eval(`(()=>{const app=DeviceFeaturePa
 async function capture(name,scene){
  await c.wait('Array.from(document.getElementById("watch-content").shadowRoot.querySelectorAll("img")).every(i=>i.complete&&i.naturalWidth>0)');
  await b.wait('Array.from(document.querySelectorAll("#watch img")).every(i=>i.complete&&i.naturalWidth>0)');
- await Promise.all([c.eval('document.fonts.ready.then(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))))'),b.eval('document.fonts.ready.then(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))))')]);
+ await c.send('Page.bringToFront');
+ await c.eval('document.fonts.ready.then(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))))');
+ await b.send('Page.bringToFront');
+ await b.eval('document.fonts.ready.then(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))))');
  const aPath=out+'/matrix/'+name+'-'+scene+'-actual.png',bPath=out+'/matrix/'+name+'-'+scene+'-approved.png';
  await c.shot(aPath,'#watch-content');await b.shot(bPath,'#watch');
  const g=await c.eval(`(()=>{const root=document.getElementById('watch-content'),sr=root.shadowRoot,r=root.getBoundingClientRect(),p=DeviceFeaturePageNav.getCurrentPage(),d=p.data;return{page:p.uri,ready:d.ready,message:d.message,mode:d.mode,w:d.w,h:d.h,open:d.open,id:d.id,fonts:d.font,lines:Array.from(d.lines||[]).map(l=>({text:l.text,start:l.start,end:l.end,x:l.x,y:l.y,width:l.width,height:l.height,font:l.font,bold:l.bold})),rows:Array.from(d.rows||[]).map(m=>({id:m.id,title:m.title,meta:m.meta})),nodes:Array.from(sr.querySelectorAll('text,img,.header,.dock,.new-note,.section,.row-divider,.key-viewport,.keybar,.folded-bar,.body-hit')).map(e=>{let b=e.getBoundingClientRect(),s=getComputedStyle(e);return{tag:e.tagName,cls:e.className,t:e.tagName==='TEXT'?e.textContent:undefined,x:b.x-r.x,y:b.y-r.y,w:b.width,h:b.height,font:s.fontSize,line:s.lineHeight,image:e.tagName==='IMG'?{complete:e.complete,natural:[e.naturalWidth,e.naturalHeight]}:undefined}})}})()`);

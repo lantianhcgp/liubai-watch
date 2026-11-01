@@ -1,10 +1,10 @@
 <stack class="page"><stack class="surface" if="{{ready}}" style="width:{{w}}px;height:{{h}}px;">
 <div class="header" style="left:{{hx}}px;top:{{hy}}px;width:{{hw}}px;height:{{hit}}px;">
 <div class="hit" style="width:{{hit}}px;height:{{hit}}px;" @click="back"><image src="/common/icons/back_warm.png" style="width:{{rowIcon}}px;height:{{rowIcon}}px;"></image></div>
-<text class="head-title" style="width:{{headCenterW}}px;height:{{hit}}px;font-size:{{headFont}}px;">{{headerTitle}}</text></div>
+<text class="head-title" style="width:{{headCenterW}}px;height:{{35*w/412}}px;font-size:{{headFont}}px;">{{headerTitle}}</text></div>
 <div class="section" style="left:{{contentX}}px;top:{{newY}}px;width:{{contentW}}px;height:{{hit}}px;">
 <div class="hit" style="width:{{hit}}px;height:{{hit}}px;" @click="monthPrev"><image src="/common/icons/back_warm.png" style="width:{{rowIcon}}px;height:{{rowIcon}}px;"></image></div>
-<text class="head-title" style="width:{{contentW-2*hit}}px;height:{{hit}}px;font-size:{{monthFont}}px;">{{monthLabel}}</text>
+<text class="head-title" style="width:{{contentW-2*hit}}px;height:{{32*w/412}}px;font-size:{{monthFont}}px;">{{monthLabel}}</text>
 <div class="hit" style="width:{{hit}}px;height:{{hit}}px;" @click="monthNext"><image src="/common/icons/right_warm.png" style="width:{{rowIcon}}px;height:{{rowIcon}}px;"></image></div></div>
 <list class="note-list" ref="crown" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px;" @swipe="onSwipe" @scrollend="onScrollEnd">
 <list-item class="row" for="{{rows}}" tid="id" style="width:{{contentW}}px;height:{{rowH}}px;" @click="open($item)">

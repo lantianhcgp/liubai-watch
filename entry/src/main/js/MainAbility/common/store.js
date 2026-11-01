@@ -469,8 +469,8 @@ function flag(id, flags, cb) {
     });
   });
 }
-function compare(a, b) {
-  if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+function compare(a, b, prioritisePins) {
+  if (prioritisePins && a.pinned !== b.pinned) return a.pinned ? -1 : 1;
   if (a.created !== b.created) return a.created > b.created ? -1 : 1;
   return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 }
@@ -511,8 +511,8 @@ function list(q, cb) {
               if (filter === 'day' && m.date !== q.day) continue;
               if (filter === 'month' && m.date.slice(0, 7) !== q.month) continue;
               if (first) total++;
-              if (cursor && compare(m, cursor) <= 0) continue;
-              at = 0; while (at < best.length && compare(best[at], m) <= 0) at++;
+              if (cursor && compare(m, cursor, filter !== 'day' && filter !== 'month') <= 0) continue;
+              at = 0; while (at < best.length && compare(best[at], m, filter !== 'day' && filter !== 'month') <= 0) at++;
               if (at < wanted) { best.splice(at, 0, clone(m)); if (best.length > wanted) best.pop(); }
             }
             state=null;step();

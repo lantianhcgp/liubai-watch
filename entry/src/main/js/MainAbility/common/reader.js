@@ -13,12 +13,12 @@ var closing='\uff0c\u3002\uff01\uff1f\uff1b\uff1a\u3001\uff09\u300b\u3011\u3015\
 function lastStart(s,a,end){var i=a,p=a;while(i<end){p=i;i=next(s,i);}return p;}
 function page(s,anchor,g,o){check(g);o=o||{};var start=bound(s,anchor),i=start,y=g.top,lines=[],titleEnd=s.indexOf('\n'),title=!o.editor&&start===0&&titleEnd>0&&titleEnd<=16&&s.charAt(titleEnd+1)==='\n'&&/[^\s]/.test(s.slice(titleEnd+2))&&g.bottom-g.top>=2*g.lineHeight;
 while(y+g.lineHeight<=g.bottom+.0001){if(i>=s.length){if(o.editor&&(i===start||s.charAt(i-1)==='\n')){var eb=layout.shapeBand(g.w,g.h,g.round,y,y+g.lineHeight,g.pad);lines.push({start:i,end:i,text:'',x:eb.x,y:y,width:eb.width,height:g.lineHeight,font:g.font,bold:false});}break;}
-if(!o.editor&&(s.charAt(i)==='\n'||s.charAt(i)==='\r')){while(i<s.length&&(s.charAt(i)==='\n'||s.charAt(i)==='\r'))i=next(s,i);y+=Math.min(8,g.lineHeight*.2);continue;}
-var font=title&&i===0?g.font*1.08:g.font,height=g.lineHeight*(font/g.font);if(y+height>g.bottom)break;var band=layout.shapeBand(g.w,g.h,g.round,y,y+height,g.pad),a=i,end=i,width=0,lastSpace=-1;
+if(!o.editor&&(s.charAt(i)==='\n'||s.charAt(i)==='\r')){while(i<s.length&&(s.charAt(i)==='\n'||s.charAt(i)==='\r'))i=next(s,i);y+=g.font*.34;continue;}
+var font=title&&i<titleEnd?g.font*1.12:g.font,height=title&&i<titleEnd?font*1.3:g.lineHeight;if(y+height>g.bottom)break;var band=layout.shapeBand(g.w,g.h,g.round,y,y+height,g.pad),a=i,end=i,width=0,lastSpace=-1;
 while(end<s.length&&s.charAt(end)!=='\n'&&s.charAt(end)!=='\r'){var j=next(s,end),w=glyph(s,end,font);if(width+w>band.width+.0001)break;width+=w;end=j;if(/\s/.test(s.charAt(end-1)))lastSpace=end;}
 if(end===a&&s.charAt(a)!=='\n'&&s.charAt(a)!=='\r')throw new Error('Glyph cannot fit without clipping');
 if(end<s.length&&end>a&&s.charAt(end)!=='\n'&&s.charAt(end)!=='\r'){if(/[A-Za-z]/.test(s.charAt(end))&&/[A-Za-z]/.test(s.charAt(end-1))&&lastSpace>a)end=lastSpace;while(end>a&&(closing.indexOf(s.charAt(end))>=0||opening.indexOf(s.charAt(lastStart(s,a,end)))>=0))end=lastStart(s,a,end);if(end===a)throw new Error('Punctuation group cannot fit');}
-lines.push({start:a,end:end,text:s.slice(a,end),x:band.x,y:y,width:band.width,height:height,font:font,bold:font!==g.font});i=end;y+=height;if(i<s.length&&(s.charAt(i)==='\n'||s.charAt(i)==='\r')){i=next(s,i);if(!o.editor){while(i<s.length&&(s.charAt(i)==='\n'||s.charAt(i)==='\r'))i=next(s,i);y+=Math.min(8,g.lineHeight*.2);}}
+lines.push({start:a,end:end,text:s.slice(a,end),x:band.x,y:y,width:band.width,height:height,font:font,bold:font!==g.font});i=end;y+=height;if(i<s.length&&(s.charAt(i)==='\n'||s.charAt(i)==='\r')){i=next(s,i);if(!o.editor){while(i<s.length&&(s.charAt(i)==='\n'||s.charAt(i)==='\r'))i=next(s,i);y+=g.font*.34;}}
 }
 return {start:start,end:i,lines:lines};}
 function count(s,g,o){check(g);var n=0,i=0,p;do{p=page(s,i,g,o);n++;if(p.end===s.length){if(o&&o.editor&&s.length&&/[\r\n]$/.test(s)&&!p.lines.length)break;if(o&&o.editor&&/[\r\n]$/.test(s)&&!hasEnd(p,s.length))n++;break;}if(p.end<=i)throw new Error('Pagination did not progress');i=p.end;}while(true);return n;}

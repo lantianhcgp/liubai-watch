@@ -9,7 +9,7 @@
 .reading-options{flex-direction:column;}
 .font-heading{font-family:HYQiHei-65S;font-size:16px;color:#adb1a9;margin-bottom:6px;}
 .font-segments{flex-direction:row;background-color:#2c312d;border-width:1px;border-color:#30372f;border-radius:10px;}
-.font{align-items:center;justify-content:center;margin-right:1px;border-radius:9px;}
+.font{align-items:center;justify-content:center;margin-right:1px;}
 .font-label{font-family:HYQiHei-65S;font-size:17px;text-align:center;}
 .menu-row{flex-direction:row;align-items:center;border-bottom-width:1px;border-color:#292e2d;}
 .label{font-family:HYQiHei-65S;color:#f1f0e8;text-align:left;}
@@ -24,7 +24,7 @@
 .empty-title{font-family:HYQiHei-65S;color:#f1f0e8;text-align:center;}
 .empty-prompt{font-family:HYQiHei-65S;color:#adb1a9;text-align:center;}
 .dock{flex-direction:row;align-items:center;background-color:#171b1b;border-width:1px;border-color:#292e2b;border-radius:25px;}
-.dock-control{flex-direction:row;align-items:center;justify-content:center;border-color:#2c312d;border-radius:24px;}
+.dock-control{flex-direction:row;align-items:center;justify-content:center;border-color:#2c312d;}
 .dock-label{font-family:HYQiHei-65S;color:#adb1a9;text-align:center;}
 .notice{font-family:HYQiHei-65S;font-size:14px;color:#e6c78c;text-align:center;}
 .message{height:44px;font-family:HYQiHei-65S;color:#eca18b;font-size:14px;}
