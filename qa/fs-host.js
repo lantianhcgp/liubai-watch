@@ -10,10 +10,11 @@
     const bundle = DeviceFeatureVirtualFS.getBundleName() || 'com.hcbiu.liubai';
     // Build resources stay in imported VirtualFS, never written to persistent app data.
     if (String(args.uri).startsWith('internal://app/rawfile/') && (method==='get'||method==='readText')) {
-      const uri = '/user/ace/run/' + bundle + '/resources/' + args.uri.slice('internal://app/'.length);
+      const uri = '/user/ace/run/' + bundle + '/assets/entry/resources/' + args.uri.slice('internal://app/'.length);
       const fn = method==='get' ? upstream.getInfo : upstream.readText;
       return fn(uri, {...params, success:value=>{
         if(method==='get') value={uri:args.uri,type:'file',length:value.size};
+        else { const binary=atob(value.text),raw=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)raw[i]=binary.charCodeAt(i);const start=args.position||0,end=args.length===undefined?raw.length:start+args.length;value={text:new TextDecoder().decode(raw.slice(start,end))}; }
         if(typeof params.success==='function') params.success(value);
       }});
     }

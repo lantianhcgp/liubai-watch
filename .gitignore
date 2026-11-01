@@ -1,5 +1,7 @@
 # Generated SDK/compiler, dependencies and local simulator state
 qa/sdk/
+qa/sdk
+qa/.parity-artifact-path
 qa/vendor/
 qa/output/
 qa/.profile/

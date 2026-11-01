@@ -32,19 +32,19 @@
    <list-item class="menu-item" for="{{(i,r) in displayRows}}" style="width:{{contentW}}px;height:{{r.height}}px;">
     <div class="menu-row" @click="activate(r.action)" style="width:{{contentW}}px;height:{{r.height}}px;border-color:{{mode==='clipboard'?'#282e2b':'#292e2d'}};">
      <image if="{{mode!=='clipboard'}}" src="{{'/common/icons/'+r.icon+(r.action==='delete-confirm'?'_gold.png':'_warm.png')}}" style="width:{{rowIcon}}px;height:{{rowIcon}}px;"></image>
-     <text class="label" style="width:{{mode==='clipboard'?contentW:contentW-rowIcon-rowGap}}px;height:{{r.textH}}px;margin-left:{{mode==='clipboard'?0:rowGap}}px;font-size:{{rowFont}}px;line-height:{{rowFont*1.4}}px;color:{{r.action==='delete-confirm'?'#eca18b':'#f1f0e8'}};">{{r.title}}</text>
+     <text class="label" style="width:{{mode==='clipboard'?contentW:contentW-rowIcon-rowGap}}px;height:{{r.textH}}px;margin-left:{{mode==='clipboard'?0:rowGap}}px;font-size:{{rowFont}}px;color:{{r.action==='delete-confirm'?'#eca18b':'#f1f0e8'}};">{{r.title}}</text>
     </div>
    </list-item>
    <list-item if="{{hint}}" style="width:{{contentW}}px;height:{{hintH}}px;">
     <div class="hint-box" style="width:{{contentW}}px;height:{{hintH}}px;">
-     <text class="hint" style="width:{{contentW}}px;height:{{hintH-(quiet?16:7)}}px;font-size:{{hintFont}}px;line-height:{{hintFont*(quiet?1.7:1.5)}}px;margin-top:{{quiet?16:7}}px;">{{hint}}</text>
+     <text class="hint" style="width:{{contentW}}px;height:{{hintH-(quiet?16:7)}}px;font-size:{{hintFont}}px;margin-top:{{quiet?16:7}}px;">{{hint}}</text>
     </div>
    </list-item>
   </list>
   <div class="quiet-empty" if="{{empty}}" style="left:{{emptyX}}px;top:{{emptyY}}px;width:{{emptyW}}px;height:{{emptyH}}px;">
    <image src="{{'/common/icons/'+emptyIcon+'_gold.png'}}" style="width:{{emptyIconSize}}px;height:{{emptyIconSize}}px;margin-bottom:{{emptyIconGap}}px;"></image>
    <text class="empty-title" style="width:{{emptyW}}px;height:{{emptyTitleH}}px;font-size:{{emptyTitleFont}}px;margin-bottom:{{emptyTitleGap}}px;">{{emptyTitle}}</text>
-   <text class="empty-prompt" style="width:{{emptyW}}px;height:{{emptyPromptH}}px;font-size:{{emptyPromptFont}}px;line-height:{{emptyPromptFont*1.6}}px;">{{emptyPrompt}}</text>
+   <text class="empty-prompt" style="width:{{emptyW}}px;height:{{emptyPromptH}}px;font-size:{{emptyPromptFont}}px;">{{emptyPrompt}}</text>
   </div>
   <div class="dock" style="left:{{dockX}}px;top:{{dockY}}px;width:{{dockW}}px;height:{{hit}}px;">
    <div class="dock-control" for="{{(i,c) in dock}}" @click="activate(c.action)" style="width:{{dockCellW}}px;height:{{hit}}px;background-color:{{c.emphasis?'#e6c78c':'#171b1b'}};border-left-width:{{i?1:0}}px;">

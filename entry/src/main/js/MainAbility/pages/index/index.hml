@@ -1,19 +1,29 @@
-<stack class="page">
-<stack if="{{ready}}" style="width:{{w}}px;height:{{h}}px;align-items:flex-start;justify-content:flex-start">
-<div class="header" style="left:{{hx}}px;top:{{hy}}px;width:{{hw}}px;height:{{hit}}px">
-<text class="brand" style="width:{{hit * 1.4}}px;height:{{hit}}px">&#x7559;&#x767D;</text>
-<text class="head-small" style="width:{{hw - hit * 2.4}}px;height:{{hit}}px">{{dateLabel}}</text>
-<div class="hit" style="width:{{hit}}px;height:{{hit}}px" @click="appMenu"><image src="/common/icons/dots_gold.png" style="width:24px;height:24px;"></image></div>
-</div>
-<div class="new-note" style="left:{{contentX}}px;top:{{newY}}px;width:{{contentW}}px;height:{{newH}}px" @click="newNote"><image src="/common/icons/plus_dark.png" style="width:24px;height:24px;margin-left:18px;"></image><div class="new-copy" style="width:{{contentW-56}}px;height:{{newH}}px;"><text class="new-label">&#x5199;&#x4E00;&#x6761;</text></div></div>
-<div class="section" style="left:{{contentX}}px;top:{{sectionY}}px;width:{{contentW}}px;height:44px"><text class="section-label" style="font-size:{{sectionFont}}px">{{sectionTitle}}</text><div class="hit" style="width:{{hit}}px;height:44px" @click="toggleFilter"><text class="filter" style="color:{{filter === 'pinned' ? '#e6c78c' : '#adb1a9'}}">&#x7F6E;&#x9876;</text></div></div>
-<list class="note-list" ref="crown" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px" @swipe="onSwipe" @scrollend="onScrollEnd">
-<list-item class="row" for="{{rows}}" tid="id" style="width:{{contentW}}px;height:{{rowH}}px" @click="open($item)">
-<div class="copy" style="width:{{titleW}}px;height:{{rowCopyH}}px"><text class="row-title" style="width:{{titleW}}px;height:{{titleH}}px;font-size:{{titleFont}}px;color:{{$item.pinColor}}">{{$item.title}}</text><text class="row-meta" style="width:{{titleW}}px;height:{{metaH}}px;font-size:{{metaFont}}px">{{$item.meta}}</text></div>
-</list-item>
-<list-item if="{{hasMore || hasPrev}}" class="pager" style="width:{{contentW}}px;height:{{hit}}px"><div class="hit" if="{{hasPrev}}" style="width:{{contentW / 2}}px;height:{{hit}}px" @click="prev"><text class="pager-text">&#x4E0A;&#x4E00;&#x5C4F;</text></div><div class="hit" if="{{hasMore}}" style="width:{{contentW / 2}}px;height:{{hit}}px" @click="next"><text class="pager-text">&#x4E0B;&#x4E00;&#x5C4F;</text></div></list-item>
+<stack class="page"><stack class="surface" if="{{ready}}" style="width:{{w}}px;height:{{h}}px;">
+<div class="header" style="left:{{hx}}px;top:{{hy}}px;width:{{hw}}px;height:{{hit}}px;">
+<image src="/common/type/app_name.png" style="width:{{typeW}}px;height:{{typeH}}px;"></image>
+<text class="head-small" style="width:{{60*w/412}}px;height:{{26*w/412}}px;font-size:{{dateFont}}px;">{{dateLabel}}</text>
+<div class="hit" style="width:{{hit}}px;height:{{hit}}px;" @click="appMenu"><image src="/common/icons/dots_header_warm.png" style="width:{{rowIcon}}px;height:{{rowIcon}}px;"></image></div></div>
+<div class="new-note" style="left:{{contentX}}px;top:{{newY}}px;width:{{contentW}}px;height:{{newH}}px;border-radius:{{newRadius}}px;" @click="newNote">
+<image src="/common/icons/plus_cta_ink.png" style="width:{{plusSize}}px;height:{{plusSize}}px;margin-left:{{newPad}}px;"></image>
+<image src="/common/type/write_note.png" style="width:{{writeW}}px;height:{{writeH}}px;margin-left:{{newGap}}px;"></image></div>
+<div class="section" style="left:{{contentX}}px;top:{{sectionY}}px;width:{{contentW}}px;height:44px;">
+<text class="section-label" style="width:{{contentW-44}}px;height:{{hit}}px;font-size:{{sectionFont}}px;">{{sectionTitle}}</text>
+<div class="hit" style="width:44px;height:{{hit}}px;" @click="toggleFilter"><text class="filter" style="width:44px;height:{{hit}}px;font-size:{{filterFont}}px;color:{{filter==='pinned'?'#e6c78c':'#adb1a9'}};">&#x7F6E;&#x9876;</text></div></div>
+<list class="note-list" ref="crown" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px;" @swipe="onSwipe" @scrollend="onScrollEnd">
+<list-item class="row" for="{{rows}}" tid="id" style="width:{{contentW}}px;height:{{rowH}}px;" @click="open($item)">
+<div class="copy" style="width:{{titleW}}px;height:{{rowCopyH}}px;margin-left:{{rowInset}}px;">
+<div class="title-row" style="width:{{titleW}}px;height:{{titleH}}px;">
+<image if="{{$item.pinned}}" src="/common/icons/pin_row_gold.png" style="width:{{pinSize}}px;height:{{pinSize}}px;margin-right:{{pinGap}}px;"></image>
+<text class="row-title" style="width:{{titleW-($item.pinned?pinSize+pinGap:0)}}px;height:{{titleH}}px;font-size:{{titleFont}}px;">{{$item.title}}</text></div>
+<text class="row-meta" style="width:{{titleW}}px;height:{{metaH}}px;font-size:{{metaFont}}px;margin-top:{{copyGap}}px;">{{$item.meta}}</text></div></list-item>
+<list-item if="{{hasMore || hasPrev}}" class="pager" style="width:{{contentW}}px;height:{{hit}}px;">
+<div class="hit" if="{{hasPrev}}" style="width:{{contentW/2}}px;height:{{hit}}px;" @click="prev"><text class="pager-text">&#x4E0A;&#x4E00;&#x5C4F;</text></div>
+<div class="hit" if="{{hasMore}}" style="width:{{contentW/2}}px;height:{{hit}}px;" @click="next"><text class="pager-text">&#x4E0B;&#x4E00;&#x5C4F;</text></div></list-item>
 </list>
-<div class="notice" if="{{empty || message || loading}}" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px" @click="retry"><text class="quiet" style="width:{{contentW}}px;height:88px">{{message || (loading ? '&#x6B63;&#x5728;&#x8BFB;&#x53D6;' : emptyText)}}</text></div>
-<div class="dock" style="left:{{dockX}}px;top:{{dockY}}px;width:{{dockW}}px;height:{{hit}}px"><div class="nav" style="width:{{dockW / 2}}px;height:{{hit}}px" @click="home"><image src="/common/icons/book_gold.png" style="width:18px;height:18px;margin-right:7px;"></image><text class="selected" style="font-size:{{navFont}}px">&#x968F;&#x8BB0;</text></div><div class="nav" style="width:{{dockW / 2}}px;height:{{hit}}px;border-left-width:1px;border-left-color:#2c312d;" @click="history" ><image src="/common/icons/calendar_muted.png" style="width:18px;height:18px;margin-right:7px;"></image><text class="nav-label" style="font-size:{{navFont}}px">&#x56DE;&#x770B;</text></div></div>
-</stack><div class="loading" if="{{!ready}}" @click="retry"><text class="quiet">{{message}}</text></div>
-</stack>
+<div class="notice" if="{{message || loading}}" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px;" @click="retry"><text class="quiet" style="width:{{contentW}}px;height:{{quietH}}px;font-size:{{quietFont}}px;">{{message || '&#x6B63;&#x5728;&#x8BFB;&#x53D6;'}}</text></div>
+<div class="quiet-status" if="{{empty && !message && !loading}}" style="left:{{contentX}}px;top:{{listY+16*w/412}}px;width:{{contentW}}px;height:{{quietH}}px;" @click="retry"><text class="quiet" style="width:{{contentW}}px;height:{{quietH}}px;font-size:{{quietFont}}px;">{{emptyText}}</text></div>
+<div class="dock" style="left:{{dockX}}px;top:{{dockY}}px;width:{{dockW}}px;height:{{hit}}px;border-radius:{{dockRadius}}px;">
+<div class="nav" style="width:{{dockHalfW}}px;height:{{dockInnerH}}px;" @click="home"><image src="/common/icons/book_nav_gold.png" style="width:20px;height:20px;margin-right:{{navGap}}px;"></image><text class="selected" style="width:{{navFont*2}}px;height:{{28*w/412}}px;font-size:{{navFont}}px;">&#x968F;&#x8BB0;</text></div>
+<div class="dock-divider" style="width:1px;height:{{dockInnerH}}px;"></div>
+<div class="nav" style="width:{{dockHalfW}}px;height:{{dockInnerH}}px;" @click="history"><image src="/common/icons/calendar_nav_muted.png" style="width:20px;height:20px;margin-right:{{navGap}}px;"></image><text class="nav-label" style="width:{{navFont*2}}px;height:{{28*w/412}}px;font-size:{{navFont}}px;">&#x56DE;&#x770B;</text></div></div>
+</stack><div class="loading" if="{{!ready}}" @click="retry"><text class="quiet">{{message}}</text></div></stack>

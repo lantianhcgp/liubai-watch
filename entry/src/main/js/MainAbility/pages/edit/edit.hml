@@ -1,34 +1,38 @@
 <stack class="page" @swipe="bodySwipe">
  <div class="loading" if="{{ !ready }}" @click="retry"><text class="notice">{{ message }}</text></div>
- <stack class="surface" if="{{ ready }}" style="width: {{ w }}px; height: {{ h }}px;">
-  <list class="crown" ref="crown" @scrollend="onScroll" @swipe="bodySwipe" style="width: {{ w }}px; height: {{ h }}px;"><list-item class="sensor" style="width: {{ w }}px; height: {{ h }}px;"></list-item></list>
-  <text class="line" for="{{ (i, line) in lines }}" @click="pickLine" style="left: {{ line.x }}px; top: {{ line.y }}px; width: {{ line.width }}px; height: {{ line.height }}px; font-size: {{ line.font }}px;">{{ line.text }}</text>
-  <div class="caret" if="{{ caretShow }}" style="left: {{ caretX }}px; top: {{ caretY }}px; height: {{ caretH }}px;"></div>
-  <div class="header" style="left: {{ hx }}px; top: {{ hy }}px; width: {{ hw }}px; height: {{ hit }}px;">
+ <stack class="surface" if="{{ ready }}" style="width:{{w}}px;height:{{h}}px;">
+  <list class="crown" ref="crown" @scrollend="onScroll" style="width:{{w}}px;height:{{h}}px;"><list-item class="sensor" style="width:{{w}}px;height:{{h}}px;"></list-item></list>
+  <text class="line" for="{{ (i,line) in lines }}" style="left:{{line.x}}px;top:{{line.y}}px;width:{{line.width}}px;height:{{line.height}}px;font-size:{{line.font}}px;">{{line.text}}</text>
+  <text class="placeholder" if="{{empty}}" @click="pickLine" style="left:{{placeholderX}}px;top:{{placeholderY}}px;width:{{placeholderW}}px;height:{{placeholderH}}px;font-size:{{placeholderFont}}px;">&#x5199;&#x4E0B;&#x73B0;&#x5728;&#x7684;&#x5FF5;&#x5934;</text>
+  <div class="caret" if="{{caretShow}}" style="left:{{caretX}}px;top:{{caretY}}px;height:{{caretH}}px;"></div>
+  <div class="body-hit" @click="pickLine" style="left:0px;top:{{hy+hit+5}}px;width:{{w}}px;height:{{(open?keysY:footY)-17-hy-hit-5}}px;"></div>
+  <div class="header" style="left:{{hx}}px;top:{{hy}}px;width:{{hw}}px;height:{{hit}}px;">
    <div class="command" @click="cancel"><text class="cancel">&#x53D6;&#x6D88;</text></div>
-   <div class="middle" if="{{ !open }}" style="width: {{ hw - 92 }}px;"><text class="title">{{ title }}</text></div>
-   <div class="middle" if="{{ open }}" style="width: {{ hw - 92 }}px;"><div class="icon" @click="toggle"><text class="arrow">&#x2304;</text></div><div class="icon" @click="tools"><text class="dots">&#x2022;&#x2022;&#x2022;</text></div></div>
+   <div class="middle" if="{{!open}}" style="width:{{hw-102}}px;"><text class="title">{{title}}</text></div>
+   <div class="icon" if="{{open}}" @click="toggle"><image class="exact-icon" src="/common/icons/back_editor_muted.png"></image></div>
+   <div class="icon" if="{{open}}" @click="tools"><image class="exact-icon" src="/common/icons/dots_editor_warm.png"></image></div>
    <div class="command" @click="save"><text class="done">&#x5B8C;&#x6210;</text></div>
   </div>
-  <text class="status" style="left: {{ footX }}px; top: {{ keysY - 14 }}px; width: {{ footW }}px;" if="{{ open }}">{{ hasPinyin ? pinyin : viewCounter }}</text>
-  <stack class="key-viewport" if="{{ open }}" @touchstart="startKey" @touchmove="moveKey" @touchend="endKey" @longpress="longKey" style="left: {{ keyX }}px; top: {{ keysY }}px; width: {{ keyW }}px;">
-   <image class="key-sheet" src="{{ image }}" style="width: {{ sheetWidth }}px; left: {{ sheetOffset }}px;"></image>
+  <text class="status" style="left:{{statusX}}px;top:{{statusY}}px;width:{{statusW}}px;">{{viewCounter}}</text>
+  <text class="composing" if="{{open && hasPinyin}}" style="left:{{statusX}}px;top:{{statusY}}px;width:{{statusW}}px;">{{composition}}</text>
+  <stack class="key-viewport" if="{{open}}" @touchstart="startKey" @touchmove="moveKey" @touchend="endKey" @longpress="longKey" style="left:{{keyX}}px;top:{{keysY}}px;width:{{keyW}}px;">
+   <image class="key-sheet" src="{{image}}" style="width:{{sheetWidth}}px;left:{{sheetOffset}}px;"></image>
   </stack>
-  <div class="keybar" if="{{ open && !hasPinyin }}" style="left: {{ footX }}px; top: {{ footY }}px; width: {{ footW }}px;">
-   <div class="key-mode" @click="mode"><image class="type-img" src="{{ typeImage }}"></image></div>
-   <div class="space" @click="space" style="width: {{ spaceW }}px;"><image class="space-symbol" src="/common/keyboard/rect/space.png" style="width: {{ spaceW }}px; height:44px;"></image></div>
-   <div class="small-key" @click="del"><text class="key-label">&#x232B;</text></div>
-   <div class="small-key" @click="enter"><text class="key-label">&#x21B5;</text></div>
+  <div class="keybar" if="{{open && !hasPinyin}}" style="left:{{footX}}px;top:{{footY}}px;width:{{footW}}px;">
+   <div class="key-mode" @click="mode"><image class="type-img" src="{{typeImage}}"></image></div>
+   <div class="space" @click="space" style="width:{{spaceW}}px;"><image class="space-symbol" src="{{spaceImage}}" style="width:{{spaceW}}px;"></image></div>
+   <div class="small-key" @click="del"><image class="exact-icon" src="/common/icons/delete_key_warm.png"></image></div>
+   <div class="small-key" @click="enter"><image class="exact-icon" src="/common/icons/enter_key_warm.png"></image></div>
   </div>
-  <div class="keybar" if="{{ open && hasPinyin }}" style="left: {{ footX }}px; top: {{ footY }}px; width: {{ footW }}px;">
-   <list class="candidates" style="width: {{ footW - 49 }}px;" scrollpage="true"><list-item class="candidate" for="{{ (i,c) in candidates }}" @click="choose(i)"><text class="candidate-text">{{ c.text }}</text></list-item></list>
-   <div class="small-key" @click="del"><text class="key-label">&#x232B;</text></div>
+  <div class="keybar" if="{{open && hasPinyin}}" style="left:{{footX}}px;top:{{footY}}px;width:{{footW}}px;">
+   <list class="candidates" style="width:{{footW-49}}px;"><list-item class="candidate" for="{{(i,c) in candidates}}" @click="choose(i)" style="width:{{c.width}}px;"><text class="candidate-text" style="color:{{i===0?'#70b5ff':'#f1f0e8'}};">{{c.text}}</text></list-item></list>
+   <div class="small-key" @click="del"><image class="exact-icon" src="/common/icons/delete_key_warm.png"></image></div>
   </div>
-  <div class="folded-bar" if="{{ !open }}" style="left: {{ footX }}px; top: {{ footY }}px; width: {{ footW }}px;">
-   <div class="fold-nav" @click="prev"><text class="nav-label">&#x2303;</text></div>
-   <div class="expand" @click="toggle" style="width: {{ footW - 98 }}px;"><text class="expand-label">&#x5C55;&#x5F00;&#x952E;&#x76D8;</text></div>
-   <div class="fold-nav" @click="next"><text class="nav-label">&#x2304;</text></div>
+  <div class="folded-bar" if="{{!open}}" style="left:{{footX}}px;top:{{footY}}px;width:{{footW}}px;">
+   <div class="fold-nav" @click="prev" style="opacity:{{canPrev?1:0.4}};"><image class="exact-icon" src="/common/icons/back_nav_muted.png"></image></div>
+   <div class="expand" @click="toggle" style="width:{{footW-100}}px;"><text class="expand-label">&#x5C55;&#x5F00;&#x952E;&#x76D8;</text></div>
+   <div class="fold-nav" @click="next" style="opacity:{{canNext?1:0.4}};"><image class="exact-icon" src="/common/icons/right_nav_muted.png"></image></div>
   </div>
-  <text class="error" if="{{ message !== '' }}" style="left: {{ hx }}px; top: {{ hy + 46 }}px; width: {{ hw }}px;">{{ message }}</text>
+  <text class="error" if="{{message!==''}}" style="left:{{hx}}px;top:{{hy+46}}px;width:{{hw}}px;">{{message}}</text>
  </stack>
 </stack>

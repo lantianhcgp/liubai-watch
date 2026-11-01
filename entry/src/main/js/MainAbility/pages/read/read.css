@@ -1,1 +1,16 @@
-.page{width:100%;height:100%;background-color:#060808;}.surface{background-color:#060808;}.loading{width:100%;height:100%;align-items:center;justify-content:center;}.notice{font-size:18px;color:#e6c78c;font-family:HYQiHei-65S;}.crown{left:0px;top:0px;}.sensor{background-color:#060808;}.reading-line{color:#f1f0e8;font-family:HYQiHei-65S;text-overflow:clip;}.header{flex-direction:row;align-items:center;background-color:#060808;}.icon{align-items:center;justify-content:center;}.back{font-size:34px;color:#f1f0e8;height:42px;font-family:HYQiHei-65S;}.more{font-size:20px;letter-spacing:1px;color:#e6c78c;height:30px;font-family:HYQiHei-65S;}.date-box{flex-direction:column;align-items:center;justify-content:center;}.date{font-size:18px;height:23px;color:#f1f0e8;font-family:HYQiHei-65S;}.time{font-size:12px;height:16px;color:#adb1a9;font-family:HYQiHei-65S;}.counter{font-size:12px;height:16px;color:#adb1a9;text-align:center;font-family:HYQiHei-65S;}.track{height:2px;background-color:#353b35;}.progress{height:2px;background-color:#e6c78c;}.error{font-size:15px;height:30px;color:#eca18b;font-family:HYQiHei-65S;}
+.page{width:100%;height:100%;background-color:#060808;}
+.surface{background-color:#060808;}
+.loading{width:100%;height:100%;align-items:center;justify-content:center;}
+.notice{font-size:18px;color:#e6c78c;font-family:HYQiHei-65S;}
+.crown{left:0px;top:0px;}
+.sensor{background-color:#060808;}
+.reading-line{color:#f1f0e8;font-family:HYQiHei-65S;text-overflow:clip;}
+.header{flex-direction:row;align-items:center;justify-content:space-between;background-color:#060808;}
+.icon{align-items:center;justify-content:center;}
+.date-box{flex-direction:column;align-items:center;justify-content:center;}
+.date{height:20px;font-size:18px;color:#f1f0e8;text-align:center;font-family:HYQiHei-65S;}
+.time{height:15px;font-size:12px;margin-top:1px;color:#adb1a9;text-align:center;font-family:HYQiHei-65S;}
+.counter{height:15px;font-size:12px;color:#adb1a9;text-align:center;font-family:HYQiHei-65S;}
+.track{height:2px;background-color:#353b35;}
+.progress{height:2px;background-color:#e6c78c;}
+.error{height:24px;font-size:14px;color:#eca18b;text-align:center;font-family:HYQiHei-65S;}
