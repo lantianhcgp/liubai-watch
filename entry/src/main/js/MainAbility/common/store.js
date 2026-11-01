@@ -5,9 +5,25 @@ import U from './utf8.js';
 var ROOT = 'internal://app/lb1';
 var PAGE = 6, MAX_PAGES = 256, CHUNK = 2800, MAX_BODY = 32768;
 var TIMEOUT = 10000, ready = false, closed = false, busy = false;
-var pending = null, fence = false, serial = 0, queue=[],savePending=false;
-// One continuation, at most one metadata record: no full-index heap cache.
-var listResume = null, GC_MAX = 32;
+// Only the two independent generation reads may overlap. Public tasks and all
+// writes remain serialized; cancellation handles never grow with record count.
+var pending = [], fence = false, serial = 0, queue=[],savePending=false;
+// One continuation and one ID/page hint; never retain index pages or bodies.
+// Fixed 4096-bit absence summary (128 words), independent of record count.
+var listResume = null, GC_MAX = 32, idBits = [], idComplete = false, idCatalog = -1, location = null;
+function forgetLocations() { idBits = []; idComplete = false; idCatalog = -1; location = null; }
+function idBit(id) { return Number(hash(id)) % 4096; }
+function bitSet(bit) { var word=Math.floor(bit/32); idBits[word]=(idBits[word]||0)|(1<<(bit%32)); }
+function bitKnown(bit) { return !!((idBits[Math.floor(bit/32)]||0)&(1<<(bit%32))); }
+function rememberId(id) { bitSet(idBit(id)); bitSet(Number(hash('x'+id))%4096); }
+function possiblyKnown(id) { return bitKnown(idBit(id)) && bitKnown(Number(hash('x'+id))%4096); }
+function recordRoots(state) {
+  var blobs = [], i;
+  if (!state.data || !Array.isArray(state.data.items) || state.data.items.length > PAGE) return null;
+  for (i = 0; i < state.data.items.length; i++) blobs.push(state.data.items[i].blob);
+  return gcBlobs({blobs: blobs});
+}
+function draftRoots(state) { return gcBlobs({blobs: state.data.value ? [state.data.value.blob] : []}); }
 function error(text) { return new Error(text); }
 function deliver(cb, e, v) { if (typeof cb === 'function') cb(e || null, v); }
 function validKey(s) { return typeof s === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(s); }
@@ -19,7 +35,9 @@ function hash(s) {
 function seal(seq, data) { return JSON.stringify({v: 1, seq: seq, data: data, hash: hash(JSON.stringify(data))}); }
 function clone(x) { return JSON.parse(JSON.stringify(x)); }
 function io(method, args, cb) {
-  var done = false, timed = false, timer;
+  if (closed) return cb(error('Store disposed'));
+  if (pending.length >= 2) return cb(error('Native I/O capacity reached'));
+  var done = false, timed = false, timer, cancel;
   var writing = method === 'writeText';
   function rollback() {
     // A late native write may still happen AFTER a watchdog fires. Fence all
@@ -32,13 +50,16 @@ function io(method, args, cb) {
   }
   function finish(e, value) {
     if (done) { if (timed && writing) { timed = false; rollback(); } return; }
-    done = true; clearTimeout(timer); pending = null;
+    done = true; clearTimeout(timer);
+    var at = pending.indexOf(cancel);
+    if (at >= 0) pending.splice(at, 1);
     cb(e, value);
   }
-  pending = function () {
+  cancel = function () {
     if (writing) { timed = true; fence = true; }
     finish(error('Store disposed'));
   };
+  pending.push(cancel);
   timer = setTimeout(function () {
     if (writing) { timed = true; fence = true; }
     finish(error('File ' + method + ' timeout'));
@@ -48,12 +69,16 @@ function io(method, args, cb) {
   try { File[method](args); } catch (e) { if (done) throw e; finish(error('File ' + method + ': ' + String(e))); }
 }
 function read(uri, cb) {
-  io('get', {uri: uri, recursive: false}, function (e, info) {
+  // A short bounded byte read reached EOF. Only a full buffer needs stat to
+  // distinguish exactly 4096 bytes from a truncated oversized file.
+  io('readText', {uri: uri, encoding: 'UTF-8', position: 0, length: 4096}, function (e, result) {
     if (e) return cb(e);
-    if (!info || info.type !== 'file' || info.length > 4096) return cb(error('Corrupt or oversized small file'));
-    io('readText', {uri: uri, encoding: 'UTF-8', position: 0, length: 4096}, function (err, result) {
+    if (!result || typeof result.text !== 'string' || !U.valid(result.text)) return cb(error('Corrupt file text'));
+    var length = U.bytes(result.text);
+    if (length < 4096) return cb(null, result.text);
+    io('get', {uri: uri, recursive: false}, function (err, info) {
       if (err) return cb(err);
-      if (!result || typeof result.text !== 'string' || U.bytes(result.text) !== info.length) return cb(error('Corrupt file length'));
+      if (!info || info.type !== 'file' || info.length > 4096 || info.length !== length) return cb(error('Corrupt or oversized small file'));
       cb(null, result.text);
     });
   });
@@ -79,19 +104,31 @@ function unpack(text) {
   if (!x || x.v !== 1 || typeof x.seq !== 'number' || x.seq < 0 || x.seq % 1 || x.seq > 9007199254740000 || !x.data || x.hash !== hash(JSON.stringify(x.data))) return null;
   return x;
 }
-function pair(base, empty, cb) {
-  var best = null, found = false;
+function pair(base, empty, cb, rootsOf) {
+  var best = null, bestSlot = -1, found = false, roots = [], left = 2, failure = null;
   function part(slot) {
     read(base + slot + '.json', function (e, text) {
-      if (e && e.code !== 301 && !/Corrupt/.test(e.message)) return cb(e);
+      if (e && e.code !== 301 && !/Corrupt/.test(e.message) && !failure) failure = e;
       if (!e || (e && e.code !== 301)) found = true;
-      if (!e) { var x = unpack(text); if (x && (!best || x.seq > best.seq)) best = x; }
-      if (slot === 0) return part(1);
+      if (!e) {
+        var x = unpack(text), descriptors;
+        if (x && rootsOf) {
+          descriptors = rootsOf(x);
+          if (!descriptors) failure = failure || error('Corrupt GC metadata roots');
+          else roots = gcUnion(roots, descriptors);
+        }
+        // Equal sequence selection must not depend on native completion order.
+        if (x && (!best || x.seq > best.seq || (x.seq === best.seq && slot < bestSlot))) { best = x; bestSlot = slot; }
+      }
+      // Drain BOTH reads on every path before releasing the serialized task.
+      // Otherwise a failed slot could leave stale I/O overlapping the next job.
+      if (--left) return;
+      if (failure) return cb(failure);
       if (!best && found) return cb(error('Corrupt storage: both generations damaged'));
-      cb(null, best || {seq: -1, data: empty});
+      cb(null, best || {seq: -1, data: empty}, roots);
     });
   }
-  part(0);
+  part(0); part(1);
 }
 function commit(base, old, data, cb) {
   listResume = null;
@@ -115,7 +152,7 @@ function catalog(cb) {
   });
 }
 function page(p, cb) {
-  pair(ROOT + '/p' + p + '/i', {items: []}, function (e, state) {
+  pair(ROOT + '/p' + p + '/i', {items: []}, function (e, state, roots) {
     if (e) return cb(e);
     var items = state.data.items, i, rec, m, b;
     if (!items || items.length > PAGE || state.seq < 0) return cb(error('Corrupt index page'));
@@ -123,8 +160,9 @@ function page(p, cb) {
       rec = items[i]; m = rec.meta; b = rec.blob;
       if (!m || !validKey(m.id) || typeof m.created !== 'number' || !isFinite(m.created) || typeof m.revision !== 'number' || m.revision < 1 || typeof m.bytes !== 'number' || m.bytes > MAX_BODY || m.bytes < 1 || typeof m.pinned !== 'boolean' || typeof m.deleted !== 'boolean' || typeof m.title !== 'string' || typeof m.preview !== 'string' || !b || !validKey(b.token) || b.bytes !== m.bytes || b.count < 1 || b.count > 16 || b.count % 1 || typeof b.hash !== 'string') return cb(error('Corrupt record index'));
     }
+    state.roots = roots;
     cb(null, state);
-  });
+  }, recordRoots);
 }
 function task(cb, work, initializing, priority) {
   if (closed) return deliver(cb, error('Store disposed'));
@@ -141,19 +179,51 @@ function task(cb, work, initializing, priority) {
 function runTask(job){
   busy=true;var done=false;
   function end(e,v){if(done)return;done=true;busy=false;if(job.priority)savePending=false;
+    if(e) { forgetLocations(); listResume = null; }
     try{deliver(job.cb,e,v);}finally{if(closed||fence){while(queue.length)deliver(queue.shift().cb,error(closed?'Store disposed':'Uncertain native write; wait for rollback'));savePending=false;}else if(!busy&&queue.length)runTask(queue.shift());}
   }
   try{job.work(end);}catch(e){end(e);}
 }
 function locate(c, id, cb) {
-  var p = 0, free = -1;
+  if (idCatalog !== c.seq) forgetLocations();
+  var p = 0, free = -1, freeState = null;
+  var absent = idComplete && !possiblyKnown(id);
+  function found(n, state) {
+    var i;
+    for (i = 0; i < state.data.items.length; i++) if (state.data.items[i].meta.id === id) {
+      location = {id: id, p: n};
+      cb(null, {p: n, state: state, index: i}); return true;
+    }
+    return false;
+  }
+  // Hints contain no records: reload BOTH slots even for a hot same-ID edit.
+  if (location && location.id === id && location.p < c.data.pages) {
+    return page(location.p, function (e, state) {
+      if (e) return cb(e);
+      if (!found(location.p, state)) { location = null; step(); }
+    });
+  }
+  // There are no physical removals: new IDs append to the last bounded page.
+  // Bloom collisions take the exact scan; they can never duplicate an ID.
+  if (absent && c.data.pages) {
+    var tail = c.data.pages - 1;
+    return page(tail, function (e, state) {
+      if (e) return cb(e);
+      if (found(tail, state)) return;
+      cb(null, {p: state.data.items.length < PAGE ? tail : -1, state: state.data.items.length < PAGE ? state : null, index: -1});
+    });
+  }
   function step() {
-    if (p >= c.data.pages) return cb(null, {p: free, state: null, index: -1});
+    if (p >= c.data.pages) {
+      idComplete = true; idCatalog = c.seq;
+      return cb(null, {p: free, state: freeState, index: -1});
+    }
     page(p, function (e, state) {
       if (e) return cb(e);
       var i;
-      for (i = 0; i < state.data.items.length; i++) if (state.data.items[i].meta.id === id) return cb(null, {p: p, state: state, index: i});
-      if (state.data.items.length < PAGE && free < 0) free = p;
+      for (i = 0; i < state.data.items.length; i++) rememberId(state.data.items[i].meta.id);
+      if (found(p, state)) return;
+      if (state.data.items.length < PAGE && free < 0) { free = p; freeState = state; }
       p++; step();
     });
   }
@@ -184,44 +254,24 @@ function gcUnion(a, b) {
 }
 function gcRoots(dir, kind, cb) {
   if (kind === 'orphan') return cb(null, []);
-  var roots = [], found = false, valid = false;
-  function step(slot) {
-    read(dir + (kind === 'draft' ? '/d' : '/i') + slot + '.json', function (e, text) {
-      if (e && e.code !== 301 && !/Corrupt/.test(e.message)) return cb(e);
-      if (!e || e.code !== 301) found = true;
-      var x = !e && unpack(text), descriptors = [], i;
-      if (x) {
-        valid = true;
-        if (kind === 'draft') {
-          if (x.data.value) descriptors.push(x.data.value.blob);
-        } else {
-          if (!Array.isArray(x.data.items) || x.data.items.length > PAGE) return cb(error('Corrupt GC index roots'));
-          for (i = 0; i < x.data.items.length; i++) descriptors.push(x.data.items[i].blob);
-        }
-        descriptors = gcBlobs({blobs: descriptors});
-        if (!descriptors) return cb(error('Corrupt GC blob roots'));
-        roots = gcUnion(roots, descriptors);
-      }
-      if (slot === 0) return step(1);
-      if (found && !valid) return cb(error('Corrupt GC metadata roots'));
-      cb(null, roots);
-    });
-  }
-  step(0);
+  pair(dir + (kind === 'draft' ? '/d' : '/i'), kind === 'draft' ? {value: null} : {items: []}, function (e, state, roots) {
+    cb(e, e ? undefined : roots);
+  }, kind === 'draft' ? draftRoots : recordRoots);
 }
-function gcCollect(dir, kind, cb) {
-  pair(dir + '/g', {blobs: []}, function (e, journal) {
+function gcCollect(dir, kind, cb, context) {
+  function collected(e, journal) {
     if (e) return cb(e);
-    if (journal.seq < 0) return cb(null);
     var candidates = gcBlobs(journal.data);
     if (!candidates) return cb(error('Corrupt GC journal'));
-    gcRoots(dir, kind, function (re, roots) {
+    function rooted(re, roots) {
       if (re) return cb(re);
       var survivors = [], at = 0, changed = false;
       function next() {
         if (at >= candidates.length) {
-          if (!changed) return cb(null);
-          return commit(dir + '/g', journal, {blobs: survivors}, cb);
+          if (!changed) return cb(null, {journal: journal, roots: roots});
+          return commit(dir + '/g', journal, {blobs: survivors}, function (ce, current) {
+            cb(ce, ce ? undefined : {journal: current, roots: roots});
+          });
         }
         var b = candidates[at++], i, n = 0, failed = false;
         for (i = 0; i < roots.length; i++) if (roots[i].token === b.token) { survivors.push(b); return next(); }
@@ -239,28 +289,27 @@ function gcCollect(dir, kind, cb) {
         chunk();
       }
       next();
-    });
-  });
+    }
+    if (context && context.roots) return rooted(null, context.roots);
+    gcRoots(dir, kind, rooted);
+  }
+  if (context && context.journal) return collected(null, context.journal);
+  pair(dir + '/g', {blobs: []}, collected);
 }
-function gcRegister(dir, kind, candidate, cb) {
-  gcCollect(dir, kind, function (e) {
+function gcRegister(dir, kind, candidate, cb, roots) {
+  gcCollect(dir, kind, function (e, context) {
     if (e) return cb(e);
-    pair(dir + '/g', {blobs: []}, function (je, journal) {
-      if (je) return cb(je);
-      var known = gcBlobs(journal.data);
-      if (!known) return cb(error('Corrupt GC journal'));
-      gcRoots(dir, kind, function (re, roots) {
-        if (re) return cb(re);
-        known = gcUnion(gcUnion(known, roots), [candidate]);
-        if (known.length > GC_MAX) return cb(error('GC cleanup capacity reached; retry cleanup before writing'));
-        commit(dir + '/g', journal, {blobs: known}, cb);
-      });
+    var known = gcUnion(gcUnion(gcBlobs(context.journal.data), context.roots), [candidate]);
+    if (known.length > GC_MAX) return cb(error('GC cleanup capacity reached; retry cleanup before writing'));
+    commit(dir + '/g', context.journal, {blobs: known}, function (ce, current) {
+      if (!ce) context.journal = current;
+      cb(ce, ce ? undefined : context);
     });
-  });
+  }, roots ? {roots: roots} : null);
 }
-function gcFinish(dir, kind, e, value, cb) {
+function gcFinish(dir, kind, e, value, cb, context) {
   if (fence || closed) return cb(e, value);
-  gcCollect(dir, kind, function () { cb(e, value); });
+  gcCollect(dir, kind, function () { cb(e, value); }, context);
 }
 function gcRecover(c, cb) {
   var p = 0;
@@ -277,22 +326,23 @@ function gcRecover(c, cb) {
     step();
   });
 }
-function blobWrite(dir, text, cb) {
-  var t = token(), pos = 0, count = 0;
+function blobWrite(dir, text, cb, roots) {
+  var t = token(), pos = 0, count = 0, context = null;
   function step() {
-    if (pos >= text.length) return cb(null, {token: t, count: count, bytes: U.bytes(text), hash: hash(text)});
+    if (pos >= text.length) return cb(null, {token: t, count: count, bytes: U.bytes(text), hash: hash(text)}, context);
     var end = U.endBytes(text, pos, CHUNK), chunk = text.slice(pos, end);
     write(dir + '/b' + t + '_' + count + '.txt', chunk, function (e) {
-      if (e) return cb(e);
+      if (e) return cb(e, undefined, context);
       pos = end; count++; step();
     });
   }
   var chunks = 0, position = 0;
   while (position < text.length) { position = U.endBytes(text, position, CHUNK); chunks++; }
-  gcRegister(dir, dir === ROOT ? 'draft' : 'index', {token: t, count: chunks}, function (e) {
+  gcRegister(dir, dir === ROOT ? 'draft' : 'index', {token: t, count: chunks}, function (e, registered) {
     if (e) return cb(e);
+    context = registered;
     step();
-  });
+  }, roots);
 }
 function blobRead(dir, blob, cb) {
   var n = 0, body = '';
@@ -351,16 +401,16 @@ function save(input, cb) {
         if (p >= MAX_PAGES) return done(error('Record capacity reached; existing files preserved'));
         var dir = ROOT + '/p' + p;
         function persist(state) {
-          blobWrite(dir, input.body, function (writeError, blob) {
+          blobWrite(dir, input.body, function (writeError, blob, gcContext) {
             if (writeError) return gcFinish(dir, 'index', writeError, undefined, done);
-            var items = state.data.items;
+            var oldActiveRoots=recordRoots(state), items = state.data.items;
             if (old) items[hit.index] = {meta: meta, blob: blob}; else items.push({meta: meta, blob: blob});
             commit(dir + '/i', state, {items: items}, function (indexError) {
               if (indexError) return gcFinish(dir, 'index', indexError, undefined, done);
-              if (!newPage) return gcFinish(dir, 'index', null, clone(meta), done);
-              commit(ROOT + '/c', c, {pages: c.data.pages + 1}, function (catError) { gcFinish(dir, catError ? 'orphan' : 'index', catError, catError ? undefined : clone(meta), done); });
+              if (!newPage) { rememberId(id); idCatalog=c.seq; location={id:id,p:p}; gcContext.roots=gcUnion(oldActiveRoots,recordRoots(state)); return gcFinish(dir, 'index', null, clone(meta), done, gcContext); }
+              commit(ROOT + '/c', c, {pages: c.data.pages + 1}, function (catError) { if(!catError){rememberId(id);idCatalog=c.seq+1;location={id:id,p:p};gcContext.roots=gcUnion(oldActiveRoots,recordRoots(state));} gcFinish(dir, catError ? 'orphan' : 'index', catError, catError ? undefined : clone(meta), done, catError?null:gcContext); });
             });
-          });
+          },state.roots||[]);
         }
         if (!newPage) {
           if (hit.state) return persist(hit.state);
@@ -372,9 +422,12 @@ function save(input, cb) {
           if (me) return done(me);
           io('delete', {uri: dir + '/i1.json'}, function (de) {
             if (de && de.code !== 301) return done(de);
-            write(dir + '/i0.json', seal(0, {items: []}), function (we) {
-              if (we) return done(we);
-              persist({seq: 0, data: {items: []}});
+            io('delete', {uri: dir + '/i0.json'}, function (other) {
+              if (other && other.code !== 301) return done(other);
+              // No empty generation is needed for an UNREACHABLE page: its
+              // first body is journaled and verified before index seq 0, and
+              // only a verified catalog commit makes that index visible.
+              persist({seq: -1, data: {items: []}});
             });
           });
         });
@@ -427,8 +480,8 @@ function list(q, cb) {
     catalog(function (e, c) {
       if (e) return done(e);
       var queryKey = filter + '|' + (q.day || '') + '|' + (q.month || '') + '|' + c.seq;
-      var resume = listResume && listResume.key === queryKey && listResume.offset === offset ? listResume : null;
-      var cursor = resume ? resume.cursor : null, remaining = resume ? 0 : offset, total = 0, first = true;
+      var resume = listResume && listResume.key === queryKey && listResume.offset <= offset ? listResume : null;
+      var cursor = resume ? resume.cursor : null, remaining = resume ? offset-resume.offset : offset, total = resume ? resume.total : 0, first = !resume;
       listResume = null;
       function scan() {
         var p = 0, best = [], wanted = remaining > 0 ? Math.min(12, remaining) : limit + 1;
@@ -439,7 +492,7 @@ function list(q, cb) {
               remaining -= best.length; cursor = best[best.length - 1]; first = false; return scan();
             }
             var more = best.length > limit; if (more) best.pop();
-            if (more && best.length) listResume = {key: queryKey, offset: offset + best.length, cursor: clone(best[best.length - 1])};
+            if (more && best.length) listResume = {key: queryKey, offset: offset + best.length, cursor: clone(best[best.length - 1]),total:total};
             return done(null, {items: best, hasMore: more, total: total});
           }
           page(p, function (pe, state) {
@@ -529,7 +582,7 @@ function init(cb) {
     });
   }, true);
 }
-function dispose() { listResume = null; closed = true; ready = false; if (pending) pending(); while(queue.length)deliver(queue.shift().cb,error('Store disposed')); }
+function dispose() { listResume = null; closed = true; ready = false; while (pending.length) pending[0](); while(queue.length)deliver(queue.shift().cb,error('Store disposed')); }
 export default {init: init, list: list, load: load, save: save, flag: flag,
   draftGet: draftGet, draftPut: draftPut, draftClear: draftClear,
   settingGet: auxiliaryGet, settingPut: auxiliaryPut, dispose: dispose};

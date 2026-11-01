@@ -5,12 +5,12 @@ text { font-family:HYQiHei-65S; color:#f1f0e8; }
 .back { font-size:28px; }
 .head-title { text-align:center; }
 .head-small { color:#adb1a9; text-align:center; font-size:18px; }
-.brand { font-size:26px; }
+.brand { font-weight:bold; letter-spacing:3px; font-size:26px; }
 .dots { font-size:27px; color:#e6c78c; }
 .new-note { background-color:#e6c78c; border-radius:15px; flex-direction:row; align-items:center; }
 .new-copy { flex-direction:column; justify-content:center; margin-left:14px; }
 .new-sub { font-size:12px; color:#45483e; height:19px; font-family:HYQiHei-65S; }
-.new-label { color:#232923; font-size:23px; height:29px; }
+.new-label { color:#232923; font-weight:bold; font-size:23px; height:29px; }
 .plus { color:#232923; font-size:29px; margin-left:18px; margin-right:12px; }
 .section { flex-direction:row; align-items:center; justify-content:space-between; }
 .section-label { color:#adb1a9; }

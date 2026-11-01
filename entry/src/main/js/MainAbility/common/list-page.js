@@ -9,7 +9,7 @@ function shiftMonth(s,delta) { validMonth(s); if(delta!==1&&delta!==-1)throw new
 function today() { var d=new Date();return d.getFullYear()+'-'+two(d.getMonth()+1)+'-'+two(d.getDate()); }
 function geometry(p,info,kind) {
   var g=layout.home(info),k;for(k in g)p[k]=g[k];
-  p.titleFont=Math.max(20,(g.round?20:22)*g.w/412);p.metaFont=Math.max(13,14*g.w/412);p.headFont=Math.max(20,24*g.w/412);p.navFont=Math.max(16,18*g.w/412);p.sectionFont=Math.max(15,16*g.w/412);
+  p.titleFont=Math.max(20,(g.round?20:22)*g.w/412);p.metaFont=Math.max(13,14*g.w/412);p.headFont=Math.max(20,26*g.w/412);p.navFont=Math.max(16,18*g.w/412);p.sectionFont=Math.max(15,16*g.w/412);
   if(kind==='history'){p.listY=g.newY+g.hit+9;p.listH=g.dockY-p.listY-8;p.slots=Math.max(1,Math.floor(p.listH/Math.max(60,65*g.w/412)));p.rowH=p.listH/p.slots;}
   else if(kind==='day'||kind==='trash'){p.listY=g.hy+g.hit+8;p.listH=g.dockY-p.listY-8;p.slots=Math.max(1,Math.floor(p.listH/Math.max(58,60*g.w/412)));p.rowH=p.listH/p.slots;}
   p.titleH=Math.max(26,p.titleFont*1.26);p.metaH=Math.max(18,p.metaFont*1.25);p.rowCopyH=p.titleH+p.metaH+3;p.rowPad=Math.max(0,(p.rowH-p.rowCopyH)/2);p.titleW=p.contentW-6;p.dayCopyW=p.contentW-66;p.listBottom=p.listY+p.listH;p.headCenterW=p.hw-2*p.hit;
