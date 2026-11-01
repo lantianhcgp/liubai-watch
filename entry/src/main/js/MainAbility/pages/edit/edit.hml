@@ -1,9 +1,10 @@
 <stack class="page" @swipe="bodySwipe">
  <div class="loading" if="{{ !ready }}" @click="retry"><text class="notice">{{ message }}</text></div>
- <stack class="surface" @click="pickLine" if="{{ ready }}" style="width: {{ w }}px; height: {{ h }}px;">
+ <stack class="surface" if="{{ ready }}" style="width: {{ w }}px; height: {{ h }}px;">
   <list class="crown" ref="crown" @scrollend="onScroll" @swipe="bodySwipe" style="width: {{ w }}px; height: {{ h }}px;"><list-item class="sensor" style="width: {{ w }}px; height: {{ h }}px;"></list-item></list>
   <text class="line" for="{{ (i, line) in lines }}" style="left: {{ line.x }}px; top: {{ line.y }}px; width: {{ line.width }}px; height: {{ line.height }}px; font-size: {{ line.font }}px;">{{ line.text }}</text>
   <div class="caret" if="{{ caretShow }}" style="left: {{ caretX }}px; top: {{ caretY }}px; height: {{ caretH }}px;"></div>
+  <div class="body-hit" @click="pickLine" style="left: 0px; top: {{ hy + hit + 5 }}px; width: {{ w }}px; height: {{ (open ? keysY : footY) - 17 - hy - hit - 5 }}px;"></div>
   <div class="header" style="left: {{ hx }}px; top: {{ hy }}px; width: {{ hw }}px; height: {{ hit }}px;">
    <div class="command" @click="cancel"><text class="cancel">&#x53D6;&#x6D88;</text></div>
    <div class="middle" if="{{ !open }}" style="width: {{ hw - 92 }}px;"><text class="title">{{ title }}</text></div>
