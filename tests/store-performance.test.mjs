@@ -38,7 +38,7 @@ test('140 sorted records page in one bounded scan per sequential request', {time
   assert.equal(host.calls.filter(c=>c.method==='list').length,0);
   // Different query, nonsequential jump, and writes must invalidate continuation.
   assert.equal((await call(r,'list',{filter:'pinned',limit:12})).total,5);
-  assert.deepEqual((await call(r,'list',{offset:50,limit:3})).items.map(m=>m.id),expected.slice(50,53));
+  assert.deepEqual(Array.from((await call(r,'list',{offset:50,limit:3})).items,m=>m.id),expected.slice(50,53));
   await call(r,'flag',expected[0],{deleted:true});
   assert.equal((await call(r,'list',{offset:53,limit:3})).total,139);
 });

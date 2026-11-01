@@ -27,7 +27,7 @@ function width(s, i) {
 }
 function bytes(s) {
   var n = 0, i = 0;
-  while (i < s.length) { n += width(s, i); i = next(s, i); }
+  for (; i < s.length; i++) { var c=s.charCodeAt(i);if(c<128)n++;else if(c<2048)n+=2;else if(high(c)&&low(s.charCodeAt(i+1))){n+=4;i++;}else n+=3; }
   return n;
 }
 function endBytes(s, start, max) {
@@ -35,7 +35,7 @@ function endBytes(s, start, max) {
   while (i < s.length) {
     w = width(s, i);
     if (used + w > max) break;
-    used += w; i = next(s, i);
+    used += w; i += high(s.charCodeAt(i))&&low(s.charCodeAt(i+1))?2:1;
   }
   return i;
 }
