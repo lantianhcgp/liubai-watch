@@ -10,6 +10,7 @@ export default {
  turn:function(d){if(!this.page)return;if(d>0){if(this.page.end>=this.text.length)return;var s=this.page.end;this.index++;this.starts[this.index]=s;this.renderPage(reader.page(this.text,s,this.g,{}));}else if(this.index>0){this.index--;this.renderPage(reader.page(this.text,this.starts[this.index],this.g,{}));}this.remember();},
  remember:function(){if(this.id)store.settingPut('read-'+this.id,{revision:this.revision,font:this.font,anchor:this.anchor},function(e){if(e)console.log('LIUBAI read position '+String(e));});},
  onSwipe:function(e){if(e&&e.direction==='up')this.turn(1);else if(e&&e.direction==='down')this.turn(-1);},
+ onScroll:function(e){if(e&&e.direction)this.turn(e.direction==='bottom'?1:-1);},
  onRotate:function(e){var v=e&&(e.rotate||e.rotation||e.delta||e);if(typeof v==='number'&&v!==0)this.turn(v>0?1:-1);},
  more:function(){this.remember();shell.nav(this,'menu',{mode:'read',id:this.id,anchor:this.anchor,font:this.font});},
  back:function(){this.remember();shell.nav(this,'index',{});},
