@@ -1,0 +1,42 @@
+name: r16-native-recheck
+on:
+  workflow_dispatch:
+    inputs:
+      source_run:
+        description: Fixed r16 build run (reuse exact compiler bytes)
+        type: string
+        required: true
+        default: '41418736638'
+permissions:
+  actions: read
+  contents: read
+jobs:
+  recheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ErBWs/setup-ohos@v2
+        with:
+          version: 6.1.1.280
+          cache: true
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.source_run }}
+          github-token: ${{ github.token }}
+          pattern: r16-startup-*
+          path: build/reused
+          merge-multiple: true
+      - name: Exercise exact bytes without recompiling or re-signing
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 qa/install-r16/native-parser.py --sdk "$HOME/ohos-sdk/command-line-tools/sdk" --bundle build/reused/r16-startup
+          python3 qa/install-r16/native-runtime.py --sdk "$HOME/ohos-sdk/command-line-tools/sdk" --bundle build/reused/r16-startup
+          R16_BUNDLES="$PWD/build/reused/r16-startup/variants" node --test qa/install-r16/test-startup.mjs qa/install-r16/test-source-launch.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r16-native-recheck-${{ github.run_number }}
+          path: build/reused/r16-startup
+          if-no-files-found: error
