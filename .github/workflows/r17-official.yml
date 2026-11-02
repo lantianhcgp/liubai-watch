@@ -44,6 +44,7 @@ jobs:
         run: |
           set -o pipefail
           python3 qa/install-r17-official/test_diagnostic.py
+          python3 qa/install-r17-official/test_date_control.py
           python3 qa/install-r17-official/diagnostic_capture.py --sim _sim --out build/r17-official
       - name: Upload raw evidence (no SDK binaries)
         if: always()

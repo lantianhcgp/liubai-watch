@@ -90,6 +90,20 @@ catch(e){console.info("LBQA index.vm.error "+String(e)+" name="+e.name+" message
     return text.encode('utf-8')
 
 
+def date_control(data):
+    """Counterfactual, not a release patch: remove only four proven-failing String.replace calls."""
+    text = data.decode('utf-8')
+    text = once(text, "m.date.slice(5).replace('-', ' / ')",
+                "m.date.slice(5, 7) + ' / ' + m.date.slice(8)")
+    text = once(text, "p.today.slice(5).replace('-', ' / ')",
+                "p.today.slice(5, 7) + ' / ' + p.today.slice(8)")
+    old = 'p.month.replace(\'-\', " \\u5E74 ")'
+    assert text.count(old) == 2
+    text = text.replace(old, 'p.month.slice(0, 4) + " \\u5E74 " + p.month.slice(5)')
+    assert text.count('.replace(') == 1, 'Native Router.replace must be the only remaining replace call'
+    return text.encode('utf-8')
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--sim', type=Path, required=True)
@@ -118,7 +132,22 @@ def main():
     row = native.run_one(a.sim, a.out, 'r16-logged', root, 3)
     (a.out / 'diagnostic-report.json').write_text(json.dumps(row, ensure_ascii=False, indent=2) + '\n')
     assert all(row['cleanup'].values()), 'Diagnostic engine not cleaned up'
-    if not row['nativeGate']:
+    control = dict(records)
+    control[key] = date_control(records[key])
+    control_root = a.sim / 'apps/liubai-date-control'
+    assert not control_root.exists(), 'Fresh single-variable control required'
+    for name, data in control.items():
+        q = control_root / name
+        q.parent.mkdir(parents=True, exist_ok=True)
+        q.write_bytes(data)
+    (a.out / 'date-control-index.js').write_bytes(control[key])
+    date_row = native.run_one(a.sim, a.out, 'r16-date-control', control_root, 4)
+    date_row['diagnosticOnly'] = True
+    date_row['changedRecords'] = [key]
+    date_row['indexSha256'] = native.sha(control[key])
+    (a.out / 'date-control-report.json').write_text(json.dumps(date_row, ensure_ascii=False, indent=2) + '\n')
+    assert all(date_row['cleanup'].values()), 'Date control engine not cleaned up'
+    if not row['nativeGate'] or not date_row['nativeGate']:
         raise SystemExit(1)
 
 if __name__ == '__main__':
