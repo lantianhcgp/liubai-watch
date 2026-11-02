@@ -15,6 +15,9 @@ class ResourcesTests(unittest.TestCase):
    target=sim/'sdk/openharmony/previewer/liteWearable/bin/file_system/app/ace/data/test.bundle/rawfile/pinyin/key0.dat'
    self.assertEqual(target.read_bytes(),src.read_bytes());self.assertEqual(proof['files'],1)
    self.assertTrue(proof['bytesExact']);self.assertFalse((target.parent.parent/'notes').exists())
+ def test_original_compiler_manifest_uses_observed_preview_sandbox_name(self):
+  self.assertEqual(self.m.sandbox_name({'appID':'com.hcbiu.liubai','pages':['pages/boot/boot']}),'undefined')
+  self.assertEqual(self.m.sandbox_name({'bundleName':'explicit.bundle'}),'explicit.bundle')
  def test_existing_changed_resource_is_not_silently_overwritten(self):
   with tempfile.TemporaryDirectory() as d:
    base=Path(d);sim=base/'sim';root=base/'payload';src=root/'assets/entry/resources/rawfile/a.dat';src.parent.mkdir(parents=True);src.write_bytes(b'a')

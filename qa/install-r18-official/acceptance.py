@@ -34,6 +34,11 @@ def checksum_records(records):
 def resource_args(root):
  return ['-arp',str(root/'assets/entry')]
 
+def sandbox_name(manifest):
+ # Exact same engine observed writing lb1/* under 'undefined' for an appID-only CLT manifest.
+ # Do not add bundleName to the tested manifest to hide that previewer difference.
+ return manifest.get('bundleName','undefined')
+
 def install_resources(sim,root,bundle):
  # Official NativeapiFs maps internal://app to cwd/file_system/app/ace/data/<bundle>.
  # Install only read-only bytes shipped by the real APP. No note/store seeding.
@@ -141,7 +146,7 @@ def main():
  proof={'appSha256':native.sha(a.app.read_bytes()),'records':checksum_records(records),'pages':json.loads(records['assets/js/MainAbility/manifest.json'])['pages'],'payloadModified':False}
  (a.out/'input-provenance.json').write_text(json.dumps(proof,indent=2)+'\n')
  geom=geometry();(a.out/'geometry.json').write_text(json.dumps(geom,indent=2)+'\n')
- cfg=json.loads(records['config.json']);resource_proof=install_resources(a.sim,root,cfg['app']['bundleName'])
+ cfg=json.loads(records['config.json']);manifest=json.loads(records['assets/js/MainAbility/manifest.json']);resource_proof=install_resources(a.sim,root,sandbox_name(manifest));resource_proof['compiledBundle']=cfg['app']['bundleName'];resource_proof['previewManifestUnmodified']=True
  (a.out/'resource-installation.json').write_text(json.dumps(resource_proof,indent=2)+'\n')
  first=run(a.sim,a.out/'flow',root,sem.user_plan(geom),31)
  result={'ok':first['ok'],'orderedSemanticsOk':first['orderedSemanticsOk'],'scope':'exact-compiler-native-user-path','signedProvenanceOk':False,'visualReviewed':False,'input':proof,'first':first}
