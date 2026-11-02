@@ -28,8 +28,7 @@ def instrument_index(data):
                 'console.info("LBQA native.types string.slice="+typeof String.prototype.slice+" string.substring="+typeof String.prototype.substring+" array.slice="+typeof Array.prototype.slice);\n' +
                 'try{console.info("LBQA native.slice.result "+"2026-11-02".slice(0,7));}catch(e){console.info("LBQA native.slice.error "+String(e));}\n' +
                 'try{console.info("LBQA native.substring.result "+"2026-11-02".substring(0,7));}catch(e){console.info("LBQA native.substring.error "+String(e));}\n' +
-                'try{console.info("LBQA native.replace.result "+"2026-11-02".replace("-"," / "));}catch(e){console.info("LBQA native.replace.error "+String(e));}\n' +
-                'try{console.info("LBQA native.regex.result "+(/a/.test("a")));}catch(e){console.info("LBQA native.regex.error "+String(e));}')
+                'try{console.info("LBQA native.replace.result "+"2026-11-02".replace("-"," / "));}catch(e){console.info("LBQA native.replace.error "+String(e));}')
     text = once(text, 'module.exports=new ViewModel(options);', '''
 console.info("LBQA index.vm.enter");
 var __qa_render=options.render;
