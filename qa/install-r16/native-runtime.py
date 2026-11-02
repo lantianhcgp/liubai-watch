@@ -45,20 +45,30 @@ def main():
  for name,text in probes.items():
   fixture=a.bundle/name;fixture.write_text(text);probe=subprocess.run([str(engines[0]),str(fixture)],capture_output=True,text=True,timeout=10);controls.append({'file':name,'returncode':probe.returncode,'output':probe.stdout+probe.stderr})
  (a.bundle/'native-runtime-controls.json').write_text(json.dumps(controls,indent=2)+'\n');print(json.dumps({'runtimeControls':controls}));assert controls[0]['returncode']==0 and controls[2]['returncode']==0
- variants=a.bundle/'variants';code=PREFIX
+ variants=a.bundle/'variants';code=PREFIX+'\nprint("CHECKPOINT prefix");\n'
  for part,target in [('app','r16App'),('boot','r16Page')]:
-  text=(variants/('liubai-'+part+'.js')).read_text();code+='\n'+target+' = '+text+'\n'
-  if part=='app':code+='\nvar $app=r16App; if(r16App.onCreate)r16App.onCreate();\n'
- code+='\nr16Page.onInit(); if(r16Page.onReady)r16Page.onReady(); if(r16Route!=="pages/index/index")throw new Error("BOOT_ROUTE_MISSING");\n'
- code+='\nr16Page = '+(variants/'liubai-index.js').read_text()+'\n'
- code+='\nr16Page.onInit();r16Drain();\n'
+  text=(variants/('liubai-'+part+'.js')).read_text();code+='\n'+target+' = '+text+'\n;print("CHECKPOINT '+part+' exported");\n'
+  if part=='app':code+='\nvar $app=r16App; if(r16App.onCreate)r16App.onCreate();print("CHECKPOINT app created");\n'
+ code+='\nr16Page.onInit();print("CHECKPOINT boot initialized"); if(r16Page.onReady)r16Page.onReady();print("CHECKPOINT boot ready route="+r16Route); if(r16Route!=="pages/index/index")throw new Error("BOOT_ROUTE_MISSING");\n'
+ code+='\nr16Page = '+(variants/'liubai-index.js').read_text()+'\n;print("CHECKPOINT index exported");\n'
+ code+='\nr16Page.onInit();print("CHECKPOINT index initialized");r16Drain();print("CHECKPOINT drained");\n'
  # Callbacks run before deadlines; canceled timers keep stable IDs during drain.
  code+='\nvar r16Result={store:r16App.getLiubaiStoreState(),ready:r16Page.ready,empty:r16Page.empty,message:r16Page.message,error:r16Page.errorDetail,fileCalls:r16Calls,route:r16Route};\n'
  code+='\nif(r16Result.store!=="ready"||r16Result.ready!==true||r16Result.empty!==true||r16Result.message!==""||r16Result.fileCalls<1)throw new Error("STARTUP_ASSERTION_FAILED");\n'
  code+='\nif(typeof print==="function")print(JSON.stringify(r16Result));\n'
  script=a.bundle/'native-runtime-fixture.js';script.write_text(code)
+ syntax=subprocess.run([str(engines[0]),'--parse-only',str(script)],capture_output=True,text=True,timeout=15)
  run=subprocess.run([str(engines[0]),str(script)],capture_output=True,text=True,timeout=25)
- report={'scope':'Real SDK JerryScript execution with bounded API/renderer doubles; not real watch renderer, file system or product heap','engineSha256':hashlib.sha256(engines[0].read_bytes()).hexdigest(),'returncode':run.returncode,'output':run.stdout+run.stderr}
+ report={'scope':'Real SDK JerryScript execution with bounded API/renderer doubles; not real watch renderer, file system or product heap','engineSha256':hashlib.sha256(engines[0].read_bytes()).hexdigest(),'fixtureParseReturncode':syntax.returncode,'fixtureParseOutput':syntax.stdout+syntax.stderr,'returncode':run.returncode,'output':run.stdout+run.stderr}
+ if syntax.returncode or run.returncode:
+  stages=[]
+  for i,line in enumerate(code.splitlines()):
+   if 'print("CHECKPOINT ' not in line:continue
+   partial='\n'.join(code.splitlines()[:i+1])+'\n';file=a.bundle/('runtime-stage-'+str(len(stages))+'.js');file.write_text(partial)
+   parse=subprocess.run([str(engines[0]),'--parse-only',str(file)],capture_output=True,text=True,timeout=15)
+   exe=subprocess.run([str(engines[0]),str(file)],capture_output=True,text=True,timeout=15)
+   stages.append({'checkpoint':line.strip(),'bytes':len(partial.encode()),'parseReturncode':parse.returncode,'returncode':exe.returncode,'output':exe.stdout+exe.stderr})
+  report['failureStages']=stages
  (a.bundle/'native-runtime.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
  # This evidence is diagnostic: preserve native engine failures, do not fake a pass.
  if run.returncode==0:
