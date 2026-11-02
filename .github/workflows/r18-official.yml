@@ -1,0 +1,50 @@
+name: r18-official-compiler-experiment
+on:
+  push:
+    branches: [fix/r18-native-runtime]
+    paths:
+      - 'qa/install-r18-official/**'
+      - '.github/workflows/r18-official.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  native:
+    runs-on: macos-14
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: lantianhcgp/deveco-sim-ci
+          ref: aa3a315a766f6dd4983ad8dad9eed2c948c6faba
+          ssh-key: ${{ secrets.LIUBAI_OFFICIAL_SIM_SSH_KEY }}
+          persist-credentials: false
+          path: _sim
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Decode native frames
+        run: python3 -m pip install --disable-pip-version-check pillow==11.3.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: r18-runtime-2
+          run-id: 41477695443
+          github-token: ${{ github.token }}
+          path: _compiler
+      - name: Diagnostic only - exact complete compiler bytes at 512KB
+        run: |
+          set -o pipefail
+          python3 qa/install-r18-official/test_flow.py
+          python3 qa/install-r18-official/flow.py --sim _sim --app _compiler/r18-runtime/liubai-r18-complete.app --out build/r18-official
+      - name: Save raw experiment evidence - not release approval
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r18-official-${{ github.run_number }}
+          path: build/r18-official
+          if-no-files-found: error
