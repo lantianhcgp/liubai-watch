@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Keep the exact installed r15 carrier; update only 6 SDK-built startup/icon records."""
 from pathlib import Path
-import argparse,hashlib,io,json,zipfile
+import argparse,copy,hashlib,io,json,zipfile
 BASE_SHA='94485304b5bca97a07f1d3c04b0c31ce486ef7787427044c265d0ed906d52189'
 FIX_SHA='c75e6bdf5fea6ae7aae3523661baf60ed575b76f5ed7cffad4e0cbe4d4934cc9'
 REPLACE=['assets/js/MainAbility/pages/boot/boot.js','assets/js/MainAbility/pages/boot/boot.js.map','assets/js/MainAbility/pages/index/index.js','assets/js/MainAbility/pages/index/index.js.map','assets/entry/resources/base/media/icon.png','assets/entry/resources/base/media/icon.png.bin']
@@ -11,7 +11,7 @@ def inner(data):
 def rewrite(z,changes):
  out=io.BytesIO()
  with zipfile.ZipFile(out,'w') as target:
-  for info in z.infolist():target.writestr(info,changes.get(info.filename,z.read(info)))
+  for info in z.infolist():target.writestr(copy.copy(info),changes.get(info.filename,z.read(info)))
  return out.getvalue()
 def main():
  p=argparse.ArgumentParser();p.add_argument('--base',type=Path,required=True);p.add_argument('--fix',type=Path,required=True);p.add_argument('--out',type=Path,required=True);a=p.parse_args();b=a.base.read_bytes();f=a.fix.read_bytes();assert sha(b)==BASE_SHA;assert sha(f)==FIX_SHA;assert a.out.resolve() not in (a.base.resolve(),a.fix.resolve())

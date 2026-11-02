@@ -79,7 +79,7 @@ def main():
   (a.bundle/'native-runtime.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({'runtimeAssertions':'PASS','printAvailable':report['printAvailable']}))
  else:
   # Native apps Eval separate page sources. The concatenated ~99KB diagnostic
-  # above exhausted parse capacity, so exercise the same exact sources separately.
+  # above failed combined parsing; exercise the exact same sources separately.
   parts=[('00-host.js',PREFIX),('01-app.js','r16App = '+(variants/'liubai-app.js').read_text()+'\n;'),('02-create.js','var $app=r16App;if(r16App.onCreate)r16App.onCreate();'),('03-boot.js','r16Page = '+(variants/'liubai-boot.js').read_text()+'\n;'),('04-route.js','r16Page.onInit();if(r16Page.onReady)r16Page.onReady();if(r16Route!=="pages/index/index")throw new Error("BOOT_ROUTE_MISSING");'),('05-index.js','r16Page = '+(variants/'liubai-index.js').read_text()+'\n;'),('06-finish.js','r16Page.onInit();r16Drain();var r16Result={store:r16App.getLiubaiStoreState(),ready:r16Page.ready,empty:r16Page.empty,message:r16Page.message,fileCalls:r16Calls,route:r16Route};if(r16Result.store!=="ready"||r16Result.ready!==true||r16Result.empty!==true||r16Result.message!==""||r16Result.fileCalls<1)throw new Error("STARTUP_ASSERTION_FAILED");print(JSON.stringify(r16Result));')]
   files=[]
   for name,text in parts:
@@ -87,6 +87,19 @@ def main():
   proper=subprocess.run([str(engines[0])]+files,capture_output=True,text=True,timeout=25)
   actual={'scope':report['scope'],'engineSha256':report['engineSha256'],'sourceMode':'separate-source evaluation in shared engine context','returncode':proper.returncode,'output':proper.stdout+proper.stderr,'sourceFiles':files,'concatenatedFixtureFailed':True}
   (a.bundle/'native-runtime-separate.json').write_text(json.dumps(actual,indent=2)+'\n');print(json.dumps(actual))
-  assert proper.returncode==0,actual
-  rows=[s for s in proper.stdout.splitlines() if s.startswith('{')];assert rows,'Engine must actually execute final assertions';value=json.loads(rows[-1]);assert value['store']=='ready' and value['ready'] and value['empty'] and value['fileCalls']>0,value
+  # CLI multi-file behavior may retain all parsed inputs before execution.
+  # Exercise native Eval semantics directly; eval exists ONLY in this host fixture.
+  finish=parts[-1][1]
+  exact=PREFIX+'\nprint("EVAL_CHECKPOINT host");\n'
+  for part,target in [('app','r16App'),('boot','r16Page'),('index','r16Page')]:
+   exact+='\n'+target+' = eval('+json.dumps((variants/('liubai-'+part+'.js')).read_text())+');\nprint("EVAL_CHECKPOINT '+part+' exported");\n'
+   if part=='app':exact+='var $app=r16App;if(r16App.onCreate)r16App.onCreate();\n'
+   if part=='boot':exact+='r16Page.onInit();if(r16Page.onReady)r16Page.onReady();if(r16Route!=="pages/index/index")throw new Error("BOOT_ROUTE_MISSING");r16Page=null;\n'
+  exact+='\n'+finish+'\n'
+  fixture=a.bundle/'native-runtime-eval-fixture.js';fixture.write_text(exact)
+  tested=subprocess.run([str(engines[0]),'--mem-stats',str(fixture)],capture_output=True,text=True,timeout=25)
+  evidence={'scope':report['scope'],'engineSha256':report['engineSha256'],'sourceMode':'exact page bytes evaluated independently; eval only in QA fixture, not product','pageSha256':{p:hashlib.sha256((variants/('liubai-'+p+'.js')).read_bytes()).hexdigest() for p in ['app','boot','index']},'returncode':tested.returncode,'output':tested.stdout+tested.stderr}
+  (a.bundle/'native-runtime-eval.json').write_text(json.dumps(evidence,indent=2)+'\n');print(json.dumps(evidence))
+  assert tested.returncode==0,evidence
+  rows=[s for s in tested.stdout.splitlines() if s.startswith('{')];assert rows,'Engine must actually execute final assertions';value=json.loads(rows[-1]);assert value['store']=='ready' and value['ready'] and value['empty'] and value['fileCalls']>0,value
 if __name__=='__main__':main()
