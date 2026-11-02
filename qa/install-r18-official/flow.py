@@ -115,7 +115,7 @@ def recompact(app,out,logging=False):
   if n.startswith(prefix) and (n.endswith('.js') or n.endswith('.js.map')):
    p=compiler/n[len(prefix):];p.parent.mkdir(parents=True,exist_ok=True)
    if logging and n in ['assets/js/MainAbility/pages/edit/edit.js','assets/js/MainAbility/pages/menu/menu.js']:
-    spec=importlib.util.spec_from_file_location('native_logging',HERE/'logging.py');assert spec and spec.loader
+    spec=importlib.util.spec_from_file_location('native_logging',HERE/'instrument.py');assert spec and spec.loader
     mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod);b=mod.instrument(b,n.split('/')[-2])
    p.write_bytes(b)
  compact=out/'compact'

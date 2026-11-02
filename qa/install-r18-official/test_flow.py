@@ -15,6 +15,10 @@ class FlowTests(unittest.TestCase):
    x,y=e['point'];self.assertTrue(0<=x<412 and 0<=y<=410)
   cmd=self.f.mouse('MousePress',31,84)
   self.assertEqual(cmd,{'version':'1.0.0','command':'MousePress','type':'action','args':{'x':31,'y':84,'button':0}})
+ def test_no_local_module_shadows_python_runtime_dependencies(self):
+  self.assertFalse((HERE/'logging.py').exists())
+  self.assertFalse((HERE/'socket.py').exists())
+  self.assertFalse((HERE/'threading.py').exists())
  def test_failures_are_never_release_success(self):
   self.assertFalse(self.f.release_success({'ok':False}))
   self.assertFalse(self.f.release_success({'ok':True,'scope':'diagnostic'}))
