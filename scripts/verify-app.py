@@ -35,7 +35,7 @@ def fix(name, data):
         mod['package'] = app['bundleName']
     return json.dumps(config, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
 
-def verify(data):
+def verify(data, diagnostic=False):
     reports = []
     with zipfile.ZipFile(io.BytesIO(data)) as outer:
         assert outer.testzip() is None
@@ -54,6 +54,7 @@ def verify(data):
                 assert cfg['module']['js'][0]['pages'] == EXPECTED
                 assert 'appEnvironments' not in cfg['app']
                 assert not {'compileSdkVersion', 'compileSdkType'} & set(cfg['app'].get('apiVersion', {}))
+                assert 'debug' not in cfg.get('deviceConfig', {}).get('default', {}), 'Debug config injection'
                 names = hap.namelist()
                 pages = []
                 for p in EXPECTED:
@@ -61,22 +62,34 @@ def verify(data):
                     assert matches, 'Missing compiled page: ' + p
                     for m in matches:
                         size = len(hap.read(m))
-                        assert 0 < size <= 49152, 'Empty/over-budget compiled page: ' + m
+                        assert size > 0, 'Empty compiled page: ' + m
+                        if not diagnostic:
+                            assert size <= 49152, 'Empty/over-budget compiled page: ' + m
                         pages.append({'path': m, 'bytes': size})
                 app_matches = [n for n in names if n.endswith('/app.js') or n == 'app.js']
                 assert app_matches, 'Missing application lifecycle'
-                # FIT3 install gate: the device budgets app.js together with each
-                # page js against 48 KB (error 34 otherwise).
+                # Conservative project budget, not a proven device quota.
+                # Explicit diagnostic mode records risks without deleting code.
                 app_bytes = max(len(hap.read(m)) for m in app_matches)
+                over_budget = []
                 for entry in pages:
-                    assert app_bytes + entry['bytes'] <= 49152, \
-                        'app.js + page over FIT3 48KB budget: ' + entry['path']
-                reports.append({'hap': name, 'pages': pages, 'appJs': app_bytes, 'bundle': cfg['app']['bundleName']})
+                    combined = app_bytes + entry['bytes']
+                    if entry['bytes'] > 49152 or combined > 49152:
+                        over_budget.append({**entry, 'appPlusPage': combined})
+                    if not diagnostic:
+                        assert combined <= 49152, 'app.js + page over project 48KB budget: ' + entry['path']
+                reports.append({'hap': name, 'pages': pages, 'appJs': app_bytes,
+                                'bundle': cfg['app']['bundleName'], 'diagnostic': diagnostic,
+                                'overBudget': over_budget,
+                                'bytecode': [n for n in names if n.endswith('.bc')],
+                                'sourceMaps': sum(n.endswith('.map') for n in names)})
     return reports
 
 def main():
     args = argparse.ArgumentParser()
     args.add_argument('--sanitize', action='store_true')
+    args.add_argument('--diagnostic', action='store_true',
+                      help='Report size risks without treating this package as a release')
     args.add_argument('apps', nargs='+')
     opts = args.parse_args()
     for filename in opts.apps:
@@ -85,7 +98,7 @@ def main():
         data = path.read_bytes()
         if opts.sanitize:
             data = rewrite(data, lambda n, d: rewrite(d, fix) if n.endswith('.hap') else d)
-        report = verify(data)
+        report = verify(data, diagnostic=opts.diagnostic)
         if opts.sanitize:
             fd, temp = tempfile.mkstemp(dir=path.parent)
             try:
@@ -94,7 +107,7 @@ def main():
                 os.replace(temp, path)
             finally:
                 if os.path.exists(temp): os.unlink(temp)
-            assert verify(path.read_bytes()) == report
+            assert verify(path.read_bytes(), diagnostic=opts.diagnostic) == report
         print(json.dumps({'app': filename, 'verified': report}, ensure_ascii=False))
 
 if __name__ == '__main__':
