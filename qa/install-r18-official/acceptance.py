@@ -34,6 +34,22 @@ def checksum_records(records):
 def resource_args(root):
  return ['-arp',str(root/'assets/entry')]
 
+def install_resources(sim,root,bundle):
+ # Official NativeapiFs maps internal://app to cwd/file_system/app/ace/data/<bundle>.
+ # Install only read-only bytes shipped by the real APP. No note/store seeding.
+ assert re.fullmatch(r'[A-Za-z0-9_.]+',bundle)
+ source=root/'assets/entry/resources/rawfile';assert source.is_dir()
+ sandbox=sim/'sdk/openharmony/previewer/liteWearable/bin/file_system/app/ace/data'/bundle/'rawfile'
+ files={}
+ for p in sorted(source.rglob('*')):
+  if not p.is_file():continue
+  rel=p.relative_to(source);q=sandbox/rel;data=p.read_bytes()
+  if q.exists():assert q.read_bytes()==data,'Emulator resource differs: '+str(rel)
+  else:q.parent.mkdir(parents=True,exist_ok=True);q.write_bytes(data)
+  assert q.read_bytes()==data
+  files[str(rel)]={'bytes':len(data),'sha256':native.sha(data)}
+ return {'files':len(files),'bytesExact':True,'root':str(sandbox),'records':files,'notesSeeded':False,'nativePathEvidence':'FileSystem::MakeVirtualFileSystemPath + NativeapiFs::GetFullPath (official binary static inspection)'}
+
 def run(sim,out,root,events,sequence,values=None):
  out.mkdir(parents=True,exist_ok=True);values=dict(values or {})
  manifest=json.loads((root/'assets/js/MainAbility/manifest.json').read_text());cfg=json.loads((root/'config.json').read_text())
@@ -120,6 +136,8 @@ def main():
  proof={'appSha256':native.sha(a.app.read_bytes()),'records':checksum_records(records),'pages':json.loads(records['assets/js/MainAbility/manifest.json'])['pages'],'payloadModified':False}
  (a.out/'input-provenance.json').write_text(json.dumps(proof,indent=2)+'\n')
  geom=geometry();(a.out/'geometry.json').write_text(json.dumps(geom,indent=2)+'\n')
+ cfg=json.loads(records['config.json']);resource_proof=install_resources(a.sim,root,cfg['app']['bundleName'])
+ (a.out/'resource-installation.json').write_text(json.dumps(resource_proof,indent=2)+'\n')
  first=run(a.sim,a.out/'flow',root,sem.user_plan(geom),31)
  result={'ok':first['ok'],'orderedSemanticsOk':first['orderedSemanticsOk'],'scope':'exact-compiler-native-user-path','signedProvenanceOk':False,'visualReviewed':False,'input':proof,'first':first}
  if first['ok'] and a.restart:

@@ -49,6 +49,7 @@ jobs:
           set -o pipefail
           python3 qa/install-r18-official/test_flow.py
           python3 qa/install-r18-official/test_semantics.py
+          python3 qa/install-r18-official/test_resources.py
           python3 qa/install-r18-official/acceptance.py --sim _sim --app _compiler/r18-runtime/liubai-r18-complete.app --restart --out build/r18-official
       - name: Save raw experiment evidence - not release approval
         if: always()
