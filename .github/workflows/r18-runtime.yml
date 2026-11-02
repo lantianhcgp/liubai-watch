@@ -19,6 +19,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Pin the genuine keyboard reference required by asset regression
+        run: |
+          set -o pipefail
+          git init "$GITHUB_WORKSPACE/../crabKeyboard"
+          git -C "$GITHUB_WORKSPACE/../crabKeyboard" remote add origin https://github.com/crabPangXie/crabKeyboard.git
+          git -C "$GITHUB_WORKSPACE/../crabKeyboard" fetch --depth=1 origin 656f8ad842a8692bc3b2b975d6b648880232c592
+          git -C "$GITHUB_WORKSPACE/../crabKeyboard" checkout --detach FETCH_HEAD
+          test "$(git -C "$GITHUB_WORKSPACE/../crabKeyboard" rev-parse HEAD)" = 656f8ad842a8692bc3b2b975d6b648880232c592
       - name: Source and behavior regression
         run: |
           set -o pipefail
