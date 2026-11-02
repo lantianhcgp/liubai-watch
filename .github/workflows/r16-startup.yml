@@ -1,0 +1,52 @@
+name: r16-startup
+on:
+  push:
+    branches:
+      - fix/r16-startup
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  startup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: System dependencies
+        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev
+      - uses: ErBWs/setup-ohos@v2
+        with:
+          version: 6.1.1.280
+          cache: true
+      - name: Expose exact toolchain
+        shell: bash
+        run: |
+          for p in "$HOME/ohos-sdk/command-line-tools/bin" "$HOME/ohos-sdk/command-line-tools/tool/node/bin"; do
+            if [ -d "$p" ]; then printf '%s\n' "$p" >> "$GITHUB_PATH"; fi
+          done
+          printf '%s\n' "HOS_SDK_HOME=$HOME/ohos-sdk/command-line-tools/sdk" >> "$GITHUB_ENV"
+      - name: Compile unchanged V3 design with isolated startup and icon fixes
+        env:
+          BUILD_MODE: debug
+          DIAGNOSTIC: '1'
+        run: bash scripts/build.sh
+      - name: Prepare precise startup candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix build/r16-tools acorn@8.15.0
+          export R15_ACORN_MODULE="$PWD/build/r16-tools/node_modules/acorn"
+          python3 qa/install-r16/prepare-candidate.py --app build/outputs/default/*.app --output build/r16-startup
+          python3 qa/install-r16/native-parser.py --sdk "$HOS_SDK_HOME" --bundle build/r16-startup
+          python3 qa/install-r16/native-runtime.py --sdk "$HOS_SDK_HOME" --bundle build/r16-startup
+          R16_BUNDLES="$PWD/build/r16-startup/variants" node --test qa/install-r16/test-startup.mjs qa/install-r16/test-source-launch.mjs
+          node --test qa/install-r15/test-regexp-control.mjs
+      - name: Preserve candidate and exact runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r16-startup-${{ github.run_number }}
+          path: |
+            build/r16-startup
+            build/outputs/default/*.app
+          if-no-files-found: error

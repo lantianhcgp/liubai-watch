@@ -3,6 +3,7 @@ on:
   push:
     branches-ignore:
       - diag/r15-jerry
+      - fix/r16-startup
   workflow_dispatch:
 permissions:
   contents: read

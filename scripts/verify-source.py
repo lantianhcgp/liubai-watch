@@ -25,7 +25,7 @@ for page in expected:
     for suffix in ['.js', '.hml', '.css']:
         name = ROOT / ('entry/src/main/js/MainAbility/' + page + suffix)
         assert name.is_file() and name.stat().st_size > 0, 'Missing page source: ' + str(name)
-for icon, size in [('icon.png', 48), ('icon_small.png', 32)]:
+for icon, size in [('icon.png', 114), ('icon_small.png', 32)]:
     data = (ROOT / 'entry/src/main/resources/base/media' / icon).read_bytes()
     assert data[:8] == b'\x89PNG\r\n\x1a\n'
     assert struct.unpack('>II', data[16:24]) == (size, size)
@@ -35,4 +35,4 @@ assert profile['compatibleSdkVersion'] == '4.0.0(10)'
 assert load('oh-package.json5')['modelVersion'] == '6.1.1'
 assert load('hvigor/hvigor-config.json5')['modelVersion'] == '6.1.1'
 assert load('entry/build-profile.json5')['apiType'] == 'faMode'
-print('PASS source prerequisites: 8 page triples, identity/version, 48/32 PNG, FA CLT settings')
+print('PASS source prerequisites: 8 page triples, identity/version, 114/32 PNG, FA CLT settings')
