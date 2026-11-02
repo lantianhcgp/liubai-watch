@@ -1,31 +1,31 @@
-<stack class="page"><stack class="surface" if="{{ready}}" style="width:{{w}}px;height:{{h}}px;">
-<div class="header" style="left:{{hx}}px;top:{{hy}}px;width:{{hw}}px;height:{{hit}}px;">
-<image src="/common/type/app_name.png" style="width:{{typeW}}px;height:{{typeH}}px;"></image>
-<text class="head-small" style="width:{{60*w/412}}px;height:{{26*w/412}}px;font-size:{{dateFont}}px;">{{dateLabel}}</text>
-<div class="hit" style="width:{{hit}}px;height:{{hit}}px;" @click="appMenu"><image src="/common/icons/dots_header_warm.png" style="width:{{rowIcon}}px;height:{{rowIcon}}px;"></image></div></div>
-<div class="new-note" style="left:{{contentX}}px;top:{{newY}}px;width:{{contentW}}px;height:{{newH}}px;border-radius:{{newRadius}}px;" @click="newNote">
-<image src="/common/icons/plus_cta_ink.png" style="width:{{plusSize}}px;height:{{plusSize}}px;margin-left:{{newPad}}px;"></image>
-<image src="/common/type/write_note.png" style="width:{{writeW}}px;height:{{writeH}}px;margin-left:{{newGap}}px;"></image></div>
-<div class="section" style="left:{{contentX}}px;top:{{sectionY}}px;width:{{contentW}}px;height:44px;">
-<text class="section-label" style="width:{{contentW-44}}px;height:{{24*w/412}}px;font-size:{{sectionFont}}px;">{{sectionTitle}}</text>
-<div class="hit" style="width:44px;height:{{hit}}px;" @click="toggleFilter"><text class="filter" style="width:44px;height:{{25*w/412}}px;font-size:{{filterFont}}px;color:{{filter==='pinned'?'#e6c78c':'#adb1a9'}};">&#x7F6E;&#x9876;</text></div></div>
-<list class="note-list" ref="crown" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px;" @swipe="onSwipe" @scrollend="onScrollEnd">
-<list-item class="row" for="{{rows}}" tid="id" style="width:{{contentW}}px;height:{{rowH}}px;" @click="open($item)">
-<stack class="row-surface" style="width:{{contentW}}px;height:{{rowH}}px;">
-<div class="copy" style="left:{{rowInset}}px;top:{{rowPad}}px;width:{{titleW}}px;height:{{rowCopyH}}px;">
-<div class="title-row" style="width:{{titleW}}px;height:{{titleH}}px;">
-<image if="{{$item.pinned}}" src="/common/icons/pin_row_gold.png" style="width:{{pinSize}}px;height:{{pinSize}}px;margin-right:{{pinGap}}px;"></image>
-<text class="row-title" style="width:{{titleW-($item.pinned?pinSize+pinGap:0)}}px;height:{{titleH}}px;font-size:{{titleFont}}px;">{{$item.title}}</text></div>
-<text class="row-meta" style="width:{{titleW}}px;height:{{metaH}}px;font-size:{{metaFont}}px;margin-top:{{copyGap}}px;">{{$item.meta}}</text></div>
-<div class="row-divider" style="left:0px;top:{{rowH-1}}px;width:{{contentW}}px;height:1px;"></div></stack></list-item>
-<list-item if="{{hasMore || hasPrev}}" class="pager" style="width:{{contentW}}px;height:{{hit}}px;">
-<div class="hit" if="{{hasPrev}}" style="width:{{contentW/2}}px;height:{{hit}}px;" @click="prev"><text class="pager-text">&#x4E0A;&#x4E00;&#x5C4F;</text></div>
-<div class="hit" if="{{hasMore}}" style="width:{{contentW/2}}px;height:{{hit}}px;" @click="next"><text class="pager-text">&#x4E0B;&#x4E00;&#x5C4F;</text></div></list-item>
+<stack class="page"><stack class="surface" if="{{ready}}" style="width:{{w}};height:{{h}};">
+<div class="header" style="left:{{hx}};top:{{hy}};width:{{hw}};height:{{hit}};">
+<image src="/common/type/app_name.png" style="width:{{typeW}};height:{{typeH}};"></image>
+<text class="head-small" style="width:{{60*w/412}};height:{{26*w/412}};font-size:{{dateFont}};">{{dateLabel}}</text>
+<div class="hit" style="width:{{hit}};height:{{hit}};" @click="appMenu"><image src="/common/icons/dots_header_warm.png" style="width:{{rowIcon}};height:{{rowIcon}};"></image></div></div>
+<div class="new-note" style="left:{{contentX}};top:{{newY}};width:{{contentW}};height:{{newH}};border-radius:{{newRadius}};" @click="newNote">
+<image src="/common/icons/plus_cta_ink.png" style="width:{{plusSize}};height:{{plusSize}};margin-left:{{newPad}};"></image>
+<image src="/common/type/write_note.png" style="width:{{writeW}};height:{{writeH}};margin-left:{{newGap}};"></image></div>
+<div class="section" style="left:{{contentX}};top:{{sectionY}};width:{{contentW}};height:44px;">
+<text class="section-label" style="width:{{contentW-44}};height:{{24*w/412}};font-size:{{sectionFont}};">{{sectionTitle}}</text>
+<div class="hit" style="width:44px;height:{{hit}};" @click="toggleFilter"><text class="filter" style="width:44px;height:{{25*w/412}};font-size:{{filterFont}};color:{{filter==='pinned'?'#e6c78c':'#adb1a9'}};">&#x7F6E;&#x9876;</text></div></div>
+<list class="note-list" ref="crown" style="left:{{contentX}};top:{{listY}};width:{{contentW}};height:{{listH}};" @swipe="onSwipe" @scrollend="onScrollEnd">
+<list-item class="row" for="{{rows}}" tid="id" style="width:{{contentW}};height:{{rowH}};" @click="open($item)">
+<stack class="row-surface" style="width:{{contentW}};height:{{rowH}};">
+<div class="copy" style="left:{{rowInset}};top:{{rowPad}};width:{{titleW}};height:{{rowCopyH}};">
+<div class="title-row" style="width:{{titleW}};height:{{titleH}};">
+<image if="{{$item.pinned}}" src="/common/icons/pin_row_gold.png" style="width:{{pinSize}};height:{{pinSize}};margin-right:{{pinGap}};"></image>
+<text class="row-title" style="width:{{titleW-($item.pinned?pinSize+pinGap:0)}};height:{{titleH}};font-size:{{titleFont}};">{{$item.title}}</text></div>
+<text class="row-meta" style="width:{{titleW}};height:{{metaH}};font-size:{{metaFont}};margin-top:{{copyGap}};">{{$item.meta}}</text></div>
+<div class="row-divider" style="left:0px;top:{{rowH-1}};width:{{contentW}};height:1px;"></div></stack></list-item>
+<list-item if="{{hasMore || hasPrev}}" class="pager" style="width:{{contentW}};height:{{hit}};">
+<div class="hit" if="{{hasPrev}}" style="width:{{contentW/2}};height:{{hit}};" @click="prev"><text class="pager-text">&#x4E0A;&#x4E00;&#x5C4F;</text></div>
+<div class="hit" if="{{hasMore}}" style="width:{{contentW/2}};height:{{hit}};" @click="next"><text class="pager-text">&#x4E0B;&#x4E00;&#x5C4F;</text></div></list-item>
 </list>
-<div class="notice" if="{{message || loading}}" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px;" @click="retry"><text class="quiet" style="width:{{contentW}}px;height:{{quietH}}px;font-size:{{quietFont}}px;">{{message || '&#x6B63;&#x5728;&#x8BFB;&#x53D6;'}}</text></div>
-<div class="quiet-status" if="{{empty && !message && !loading}}" style="left:{{contentX}}px;top:{{listY+16+16*w/412}}px;width:{{contentW}}px;height:{{32.3*w/412}}px;" @click="retry"><text class="quiet" style="width:{{contentW}}px;height:{{28.3*w/412}}px;font-size:{{quietFont}}px;">{{emptyText}}</text></div>
-<div class="dock" style="left:{{dockX}}px;top:{{dockY}}px;width:{{dockW}}px;height:{{hit}}px;border-radius:{{dockRadius}}px;">
-<div class="nav" style="width:{{dockHalfW}}px;height:{{dockInnerH}}px;" @click="home"><image src="/common/icons/book_nav_gold.png" style="width:20px;height:20px;margin-right:{{navGap}}px;"></image><text class="selected" style="width:{{navFont*2}}px;height:{{28*w/412}}px;font-size:{{navFont}}px;">&#x968F;&#x8BB0;</text></div>
-<div class="dock-divider" style="width:1px;height:{{dockInnerH}}px;"></div>
-<div class="nav" style="width:{{dockHalfW}}px;height:{{dockInnerH}}px;" @click="history"><image src="/common/icons/calendar_nav_muted.png" style="width:20px;height:20px;margin-right:{{navGap}}px;"></image><text class="nav-label" style="width:{{navFont*2}}px;height:{{28*w/412}}px;font-size:{{navFont}}px;">&#x56DE;&#x770B;</text></div></div>
+<div class="notice" if="{{message || loading}}" style="left:{{contentX}};top:{{listY}};width:{{contentW}};height:{{listH}};" @click="retry"><text class="quiet" style="width:{{contentW}};height:{{quietH}};font-size:{{quietFont}};">{{message || '&#x6B63;&#x5728;&#x8BFB;&#x53D6;'}}</text></div>
+<div class="quiet-status" if="{{empty && !message && !loading}}" style="left:{{contentX}};top:{{listY+16+16*w/412}};width:{{contentW}};height:{{32.3*w/412}};" @click="retry"><text class="quiet" style="width:{{contentW}};height:{{28.3*w/412}};font-size:{{quietFont}};">{{emptyText}}</text></div>
+<div class="dock" style="left:{{dockX}};top:{{dockY}};width:{{dockW}};height:{{hit}};border-radius:{{dockRadius}};">
+<div class="nav" style="width:{{dockHalfW}};height:{{dockInnerH}};" @click="home"><image src="/common/icons/book_nav_gold.png" style="width:20px;height:20px;margin-right:{{navGap}};"></image><text class="selected" style="width:{{navFont*2}};height:{{28*w/412}};font-size:{{navFont}};">&#x968F;&#x8BB0;</text></div>
+<div class="dock-divider" style="width:1px;height:{{dockInnerH}};"></div>
+<div class="nav" style="width:{{dockHalfW}};height:{{dockInnerH}};" @click="history"><image src="/common/icons/calendar_nav_muted.png" style="width:20px;height:20px;margin-right:{{navGap}};"></image><text class="nav-label" style="width:{{navFont*2}};height:{{28*w/412}};font-size:{{navFont}};">&#x56DE;&#x770B;</text></div></div>
 </stack><div class="loading" if="{{!ready}}" @click="retry"><text class="quiet">{{message}}</text></div></stack>

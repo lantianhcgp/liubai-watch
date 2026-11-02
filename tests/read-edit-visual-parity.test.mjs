@@ -146,7 +146,7 @@ test('editor header has three closed columns or four separate 46px open actions'
         assert.equal(children.length,open?4:3,'collapse/tools must not be a centered glyph pair');
         const styles=children.map(n=>style(n,editCss,h.p));
         for(const i of open?[0,1,2,3]:[0,2]) {
-          assert.equal(styles[i].width,'46px'); assert.equal(styles[i].height,'46px');
+          near(parseFloat(styles[i].width),46); near(parseFloat(styles[i].height),46);
         }
         const remaining=h.p.hw-styles.reduce((sum,s)=>sum+parseFloat(s.width),0);
         near(remaining,open?h.p.hw-184:10);

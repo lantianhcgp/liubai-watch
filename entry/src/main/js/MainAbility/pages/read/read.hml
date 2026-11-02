@@ -1,16 +1,16 @@
 <stack class="page" @swipe="onSwipe">
  <div class="loading" if="{{ !ready }}" @click="retry"><text class="notice">{{ message }}</text></div>
- <stack class="surface" if="{{ ready }}" style="width: {{ w }}px; height: {{ h }}px;">
-  <list class="crown" ref="crown" @scrollend="onScroll" style="width: {{ w }}px; height: {{ h }}px;"><list-item class="sensor" style="width: {{ w }}px; height: {{ h }}px;"></list-item></list>
-  <text class="reading-line" for="{{ (i, line) in lines }}" style="left: {{ line.x }}px; top: {{ line.y }}px; width: {{ line.width }}px; height: {{ line.height }}px; font-size: {{ line.font }}px;">{{ line.text }}</text>
-  <div for="{{ (i,line) in lines }}" style="left:{{line.x+0.45}}px;top:{{line.y}}px;width:{{line.width-0.45}}px;height:{{line.height}}px;"><text class="reading-weight" if="{{line.bold}}" style="width:{{line.width-0.45}}px;height:{{line.height}}px;font-size:{{line.font}}px;">{{line.text}}</text></div>
-  <div class="header" style="left: {{ hx }}px; top: {{ hy }}px; width: {{ hw }}px; height: {{ hit }}px;">
-   <div class="icon" @click="back" style="width: {{ hit }}px; height: {{ hit }}px;"><image src="/common/icons/back_warm.png" style="width:23px;height:23px;"></image></div>
-   <div class="date-box" style="width: {{ hw - 2 * hit }}px; height: {{ hit }}px;"><text class="date">{{ date }}</text><text class="time">{{ time }}</text></div>
-   <div class="icon" @click="more" style="width: {{ hit }}px; height: {{ hit }}px;"><image class="more" src="/common/icons/dots_reader_gold.png" style="width:26px;height:26px;"></image></div>
+ <stack class="surface" if="{{ ready }}" style="width: {{ w }}; height: {{ h }};">
+  <list class="crown" ref="crown" @scrollend="onScroll" style="width: {{ w }}; height: {{ h }};"><list-item class="sensor" style="width: {{ w }}; height: {{ h }};"></list-item></list>
+  <text class="reading-line" for="{{ (i, line) in lines }}" style="left: {{ line.x }}; top: {{ line.y }}; width: {{ line.width }}; height: {{ line.height }}; font-size: {{ line.font }};">{{ line.text }}</text>
+  <div for="{{ (i,line) in lines }}" style="left:{{line.x+0.45}};top:{{line.y}};width:{{line.width-0.45}};height:{{line.height}};"><text class="reading-weight" if="{{line.bold}}" style="width:{{line.width-0.45}};height:{{line.height}};font-size:{{line.font}};">{{line.text}}</text></div>
+  <div class="header" style="left: {{ hx }}; top: {{ hy }}; width: {{ hw }}; height: {{ hit }};">
+   <div class="icon" @click="back" style="width: {{ hit }}; height: {{ hit }};"><image src="/common/icons/back_warm.png" style="width:23px;height:23px;"></image></div>
+   <div class="date-box" style="width: {{ hw - 2 * hit }}; height: {{ hit }};"><text class="date">{{ date }}</text><text class="time">{{ time }}</text></div>
+   <div class="icon" @click="more" style="width: {{ hit }}; height: {{ hit }};"><image class="more" src="/common/icons/dots_reader_gold.png" style="width:26px;height:26px;"></image></div>
   </div>
-  <text class="counter" style="left: {{ trackX }}px; top: {{ footerY }}px; width: {{ trackW }}px;">{{ counter }}</text>
-  <div class="track" style="left: {{ trackX }}px; top: {{ footerY + 20 }}px; width: {{ trackW }}px;"><div class="progress" style="width: {{ progressW }}px;"></div></div>
-  <text class="error" if="{{ message !== '' }}" style="left: {{ hx }}px; top: {{ hy + hit }}px; width: {{ hw }}px;">{{ message }}</text>
+  <text class="counter" style="left: {{ trackX }}; top: {{ footerY }}; width: {{ trackW }};">{{ counter }}</text>
+  <div class="track" style="left: {{ trackX }}; top: {{ footerY + 20 }}; width: {{ trackW }};"><div class="progress" style="width: {{ progressW }};"></div></div>
+  <text class="error" if="{{ message !== '' }}" style="left: {{ hx }}; top: {{ hy + hit }}; width: {{ hw }};">{{ message }}</text>
  </stack>
 </stack>

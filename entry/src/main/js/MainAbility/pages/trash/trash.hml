@@ -1,22 +1,22 @@
-<stack class="page"><stack class="surface" if="{{ready}}" style="width:{{w}}px;height:{{h}}px;">
-<div class="header" style="left:{{hx}}px;top:{{hy}}px;width:{{hw}}px;height:{{hit}}px;">
-<div class="hit" style="width:{{hit}}px;height:{{hit}}px;" @click="back"><image src="/common/icons/back_warm.png" style="width:{{rowIcon}}px;height:{{rowIcon}}px;"></image></div>
-<text class="head-title" style="width:{{headCenterW}}px;height:{{35*w/412}}px;font-size:{{headFont}}px;">{{headerTitle}}</text></div>
-<list class="note-list" ref="crown" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px;" @swipe="onSwipe" @scrollend="onScrollEnd">
-<list-item class="row" for="{{rows}}" tid="id" style="width:{{contentW}}px;height:{{rowH}}px;" @click="open($item)">
-<stack class="row-surface" style="width:{{contentW}}px;height:{{rowH}}px;">
-<div class="copy" style="left:{{rowInset}}px;top:{{rowPad}}px;width:{{titleW}}px;height:{{rowCopyH}}px;">
-<text class="row-title" style="width:{{titleW}}px;height:{{titleH}}px;font-size:{{titleFont}}px;">{{$item.title}}</text>
-<text class="row-meta" style="width:{{titleW}}px;height:{{metaH}}px;font-size:{{metaFont}}px;margin-top:{{copyGap}}px;">&#x70B9;&#x6309;&#x6062;&#x590D; &#x00B7; &#x4E0D;&#x4F1A;&#x81EA;&#x52A8;&#x6E05;&#x9664;</text></div>
-<div class="row-divider" style="left:0px;top:{{rowH-1}}px;width:{{contentW}}px;height:1px;"></div></stack></list-item>
-<list-item if="{{hasMore || hasPrev}}" class="pager" style="width:{{contentW}}px;height:{{hit}}px;">
-<div class="hit" if="{{hasPrev}}" style="width:{{contentW/2}}px;height:{{hit}}px;" @click="prev"><text class="pager-text">&#x4E0A;&#x4E00;&#x5C4F;</text></div>
-<div class="hit" if="{{hasMore}}" style="width:{{contentW/2}}px;height:{{hit}}px;" @click="next"><text class="pager-text">&#x4E0B;&#x4E00;&#x5C4F;</text></div></list-item>
+<stack class="page"><stack class="surface" if="{{ready}}" style="width:{{w}};height:{{h}};">
+<div class="header" style="left:{{hx}};top:{{hy}};width:{{hw}};height:{{hit}};">
+<div class="hit" style="width:{{hit}};height:{{hit}};" @click="back"><image src="/common/icons/back_warm.png" style="width:{{rowIcon}};height:{{rowIcon}};"></image></div>
+<text class="head-title" style="width:{{headCenterW}};height:{{35*w/412}};font-size:{{headFont}};">{{headerTitle}}</text></div>
+<list class="note-list" ref="crown" style="left:{{contentX}};top:{{listY}};width:{{contentW}};height:{{listH}};" @swipe="onSwipe" @scrollend="onScrollEnd">
+<list-item class="row" for="{{rows}}" tid="id" style="width:{{contentW}};height:{{rowH}};" @click="open($item)">
+<stack class="row-surface" style="width:{{contentW}};height:{{rowH}};">
+<div class="copy" style="left:{{rowInset}};top:{{rowPad}};width:{{titleW}};height:{{rowCopyH}};">
+<text class="row-title" style="width:{{titleW}};height:{{titleH}};font-size:{{titleFont}};">{{$item.title}}</text>
+<text class="row-meta" style="width:{{titleW}};height:{{metaH}};font-size:{{metaFont}};margin-top:{{copyGap}};">&#x70B9;&#x6309;&#x6062;&#x590D; &#x00B7; &#x4E0D;&#x4F1A;&#x81EA;&#x52A8;&#x6E05;&#x9664;</text></div>
+<div class="row-divider" style="left:0px;top:{{rowH-1}};width:{{contentW}};height:1px;"></div></stack></list-item>
+<list-item if="{{hasMore || hasPrev}}" class="pager" style="width:{{contentW}};height:{{hit}};">
+<div class="hit" if="{{hasPrev}}" style="width:{{contentW/2}};height:{{hit}};" @click="prev"><text class="pager-text">&#x4E0A;&#x4E00;&#x5C4F;</text></div>
+<div class="hit" if="{{hasMore}}" style="width:{{contentW/2}};height:{{hit}};" @click="next"><text class="pager-text">&#x4E0B;&#x4E00;&#x5C4F;</text></div></list-item>
 </list>
-<div class="notice" if="{{message || loading}}" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px;" @click="retry"><text class="quiet" style="width:{{contentW}}px;height:{{quietH}}px;font-size:{{quietFont}}px;">{{message || '&#x6B63;&#x5728;&#x8BFB;&#x53D6;'}}</text></div>
-<div class="quiet-empty" if="{{empty && !message && !loading}}" style="left:{{emptyX}}px;top:{{emptyY}}px;width:{{emptyW}}px;height:{{emptyH}}px;">
-<image src="{{'/common/icons/empty_'+emptyIcon+'_gold.png'}}" style="width:{{emptyIconSize}}px;height:{{emptyIconSize}}px;margin-bottom:{{emptyIconGap}}px;"></image>
-<text class="empty-title" style="width:{{emptyW}}px;height:{{emptyTitleH}}px;font-size:{{emptyTitleFont}}px;margin-bottom:{{emptyTitleGap}}px;">{{emptyText}}</text>
-<text class="empty-prompt" style="width:{{emptyW}}px;height:{{emptyPromptH}}px;font-size:{{emptyPromptFont}}px;">{{emptyPrompt}}</text></div>
-<div class="dock" style="left:{{dockX}}px;top:{{dockY}}px;width:{{dockW}}px;height:{{hit}}px;border-radius:{{dockRadius}}px;"><div class="nav" style="width:{{dockSingleW}}px;height:{{dockInnerH}}px;" @click="home"><image src="/common/icons/back_nav_muted.png" style="width:20px;height:20px;margin-right:{{navGap}}px;"></image><text class="nav-label" style="width:{{navFont*4}}px;height:{{28*w/412}}px;font-size:{{navFont}}px;">&#x8FD4;&#x56DE;&#x968F;&#x8BB0;</text></div></div>
+<div class="notice" if="{{message || loading}}" style="left:{{contentX}};top:{{listY}};width:{{contentW}};height:{{listH}};" @click="retry"><text class="quiet" style="width:{{contentW}};height:{{quietH}};font-size:{{quietFont}};">{{message || '&#x6B63;&#x5728;&#x8BFB;&#x53D6;'}}</text></div>
+<div class="quiet-empty" if="{{empty && !message && !loading}}" style="left:{{emptyX}};top:{{emptyY}};width:{{emptyW}};height:{{emptyH}};">
+<image src="{{'/common/icons/empty_'+emptyIcon+'_gold.png'}}" style="width:{{emptyIconSize}};height:{{emptyIconSize}};margin-bottom:{{emptyIconGap}};"></image>
+<text class="empty-title" style="width:{{emptyW}};height:{{emptyTitleH}};font-size:{{emptyTitleFont}};margin-bottom:{{emptyTitleGap}};">{{emptyText}}</text>
+<text class="empty-prompt" style="width:{{emptyW}};height:{{emptyPromptH}};font-size:{{emptyPromptFont}};">{{emptyPrompt}}</text></div>
+<div class="dock" style="left:{{dockX}};top:{{dockY}};width:{{dockW}};height:{{hit}};border-radius:{{dockRadius}};"><div class="nav" style="width:{{dockSingleW}};height:{{dockInnerH}};" @click="home"><image src="/common/icons/back_nav_muted.png" style="width:20px;height:20px;margin-right:{{navGap}};"></image><text class="nav-label" style="width:{{navFont*4}};height:{{28*w/412}};font-size:{{navFont}};">&#x8FD4;&#x56DE;&#x968F;&#x8BB0;</text></div></div>
 </stack><div class="loading" if="{{!ready}}" @click="retry"><text class="quiet">{{message}}</text></div></stack>

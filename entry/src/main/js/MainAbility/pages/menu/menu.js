@@ -6,7 +6,7 @@ import session from '../../common/session';
 function row(a,t,icon){return {action:a,title:t,icon:icon||'right',subtitle:''};}
 function control(a,t,icon,emphasis){return {action:a,label:t,icon:icon||'',emphasis:!!emphasis};}
 export default {
- data:{ready:false,loading:true,message:'',w:0,h:0,hx:0,hy:0,hw:0,hit:46,title:'',titleFont:24,titleH:32,rows:[],visibleRows:[],displayRows:[],fonts:[],font:'normal',bodyX:0,bodyW:0,bodyY:0,rowH:50,slots:3,offset:0,listY:0,listH:0,contentX:0,contentW:0,fontW:0,fontLabel:'\u5b57\u53f7 \u00b7 \u4e0d\u6539\u53d8\u6b63\u6587\u5185\u5bb9',hint:'',hintH:0,hintFont:13,quiet:false,dock:[],dockX:0,dockY:0,dockW:0,dockCellW:0,dockFont:18,toolControls:[],toolW:0,typeImage:'',empty:false,emptyIcon:'book',emptyTitle:'',emptyPrompt:'',emptyX:0,emptyW:0,emptyY:0,emptyH:0,emptyIconSize:43,emptyIconGap:18,emptyTitleFont:25,emptyTitleH:34,emptyTitleGap:13,emptyPromptFont:18,emptyPromptH:58,rowFont:24,rowIcon:23,rowGap:16,rowTextH:36,noticeY:0},
+ data:{mode:'app',ready:false,loading:true,message:'',w:0,h:0,hx:0,hy:0,hw:0,hit:46,title:'',titleFont:24,titleH:32,rows:[],visibleRows:[],displayRows:[],fonts:[],font:'normal',bodyX:0,bodyW:0,bodyY:0,rowH:50,slots:3,offset:0,listY:0,listH:0,contentX:0,contentW:0,fontW:0,fontLabel:'\u5b57\u53f7 \u00b7 \u4e0d\u6539\u53d8\u6b63\u6587\u5185\u5bb9',hint:'',hintH:0,hintFont:13,quiet:false,dock:[],dockX:0,dockY:0,dockW:0,dockCellW:0,dockFont:18,toolControls:[],toolW:0,typeImage:'',empty:false,emptyIcon:'book',emptyTitle:'',emptyPrompt:'',emptyX:0,emptyW:0,emptyY:0,emptyH:0,emptyIconSize:43,emptyIconGap:18,emptyTitleFont:25,emptyTitleH:34,emptyTitleGap:13,emptyPromptFont:18,emptyPromptH:58,rowFont:24,rowIcon:23,rowGap:16,rowTextH:36,noticeY:0},
  onInit:function(){
   var p=this;this.alive=true;this.gen=(this.gen||0)+1;var gen=this.gen;
   this.params=shell.params(this);this.mode=this.params.mode||'app';
@@ -87,18 +87,19 @@ export default {
   this.paint();
  },
  paint:function(){
-  if(this.mode!=='tool')this.displayRows=this.empty?[]:this.rows;
-  this.visibleRows=this.displayRows;this.dockCellW=this.dockW/Math.max(1,this.dock.length);
+  var display=this.mode==='tool'?this.displayRows:this.empty?[]:this.rows;
+  this.dockCellW=this.dockW/Math.max(1,this.dock.length);
   if(this.mode==='clipboard'){
    // Native list scrolls whole clipboard values; never put record text in router params.
    var cols=Math.max(1,Math.floor(this.contentW/this.rowFont)),u=this.w/412;
-   for(var i=0;i<this.displayRows.length;i++){
-    var parts=this.displayRows[i].title.split('\n'),lines=0;
+   for(var i=0;i<display.length;i++){
+    var parts=display[i].title.split('\n'),lines=0;
     for(var j=0;j<parts.length;j++)lines+=Math.max(1,Math.ceil(parts[j].length/cols));
-    this.displayRows[i].height=Math.max(70*u,lines*this.rowFont*1.4+20*u);
-    this.displayRows[i].textH=this.displayRows[i].height-20*u;
+    display[i].height=Math.max(70*u,lines*this.rowFont*1.4+20*u);
+    display[i].textH=display[i].height-20*u;
    }
-  }else for(var k=0;k<this.displayRows.length;k++){this.displayRows[k].height=this.rowH;this.displayRows[k].textH=this.rowTextH;}
+  }else for(var k=0;k<display.length;k++){display[k].height=this.rowH;display[k].textH=this.rowTextH;}
+  this.displayRows=display;this.visibleRows=display;
   shell.focus(this);
  },
  activate:function(a){

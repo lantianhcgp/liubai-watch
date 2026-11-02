@@ -57,6 +57,7 @@ jobs:
         run: |
           set -o pipefail
           python3 qa/install-r18/test_prepare.py
+          python3 qa/install-r18/test_probe_semantics.py
           python3 qa/install-r18/prepare.py --app build/outputs/default/liubai-watch-default-unsigned.app --out build/r18-runtime --sdk "$HOME/ohos-sdk/command-line-tools/sdk"
       - name: Upload actual compiler and candidate, never SDK or keys
         if: always()

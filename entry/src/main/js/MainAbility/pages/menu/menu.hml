@@ -1,58 +1,58 @@
 <stack class="page">
  <div class="loading" if="{{ !ready }}" @click="retry"><text class="message">{{ message }}</text></div>
- <stack class="surface" if="{{ ready }}" style="width:{{w}}px;height:{{h}}px;">
-  <div class="header" style="left:{{hx}}px;top:{{hy}}px;width:{{hw}}px;height:{{hit}}px;">
-   <div class="hit" @click="back" style="width:{{hit}}px;height:{{hit}}px;"><image src="/common/icons/back_warm.png" style="width:{{rowIcon}}px;height:{{rowIcon}}px;"></image></div>
-   <text class="title" style="width:{{hw-hit-8}}px;height:{{titleH}}px;font-size:{{titleFont}}px;">{{title}}</text>
+ <stack class="surface" if="{{ ready }}" style="width:{{w}};height:{{h}};">
+  <div class="header" style="left:{{hx}};top:{{hy}};width:{{hw}};height:{{hit}};">
+   <div class="hit" @click="back" style="width:{{hit}};height:{{hit}};"><image src="/common/icons/back_warm.png" style="width:{{rowIcon}};height:{{rowIcon}};"></image></div>
+   <text class="title" style="width:{{hw-hit-8}};height:{{titleH}};font-size:{{titleFont}};">{{title}}</text>
   </div>
-  <list class="menu-list" ref="crown" @scrollend="onScrollEnd" style="left:{{contentX}}px;top:{{listY}}px;width:{{contentW}}px;height:{{listH}}px;">
-   <list-item if="{{mode==='read'}}" style="width:{{contentW}}px;height:77px;">
-    <div class="reading-options" style="width:{{contentW}}px;height:77px;">
-     <text class="font-heading" style="width:{{contentW}}px;height:22px;">{{fontLabel}}</text>
-     <div class="font-segments" style="width:{{contentW}}px;height:46px;">
-      <div class="font" for="{{(i,f) in fonts}}" @click="setFont(f.key)" style="width:{{fontW}}px;height:44px;background-color:{{font===f.key?'#e6c78c':'#161b17'}};">
-       <text class="font-label" style="width:{{fontW}}px;height:28px;color:{{font===f.key?'#242923':'#adb1a9'}};">{{f.label}}</text>
+  <list class="menu-list" ref="crown" @scrollend="onScrollEnd" style="left:{{contentX}};top:{{listY}};width:{{contentW}};height:{{listH}};">
+   <list-item if="{{mode==='read'}}" style="width:{{contentW}};height:77px;">
+    <div class="reading-options" style="width:{{contentW}};height:77px;">
+     <text class="font-heading" style="width:{{contentW}};height:22px;">{{fontLabel}}</text>
+     <div class="font-segments" style="width:{{contentW}};height:46px;">
+      <div class="font" for="{{(i,f) in fonts}}" @click="setFont(f.key)" style="width:{{fontW}};height:44px;background-color:{{font===f.key?'#e6c78c':'#161b17'}};">
+       <text class="font-label" style="width:{{fontW}};height:28px;color:{{font===f.key?'#242923':'#adb1a9'}};">{{f.label}}</text>
       </div>
      </div>
     </div>
    </list-item>
-   <list-item if="{{mode==='tool'}}" style="width:{{contentW}}px;height:71px;">
-    <div class="editor-tools" style="width:{{contentW}}px;height:71px;">
-     <stack class="source-toolbar" style="width:{{contentW}}px;height:44px;">
-      <image src="/common/keyboard/common/toolBar.png" style="left:{{(contentW-310*44/60)/2}}px;top:0px;width:{{310*44/60}}px;height:44px;transform:scaleX({{contentW/(310*44/60)}});"></image>
-      <div class="tool-hit" for="{{(i,c) in toolControls}}" @click="activate(c.action)" style="left:{{i*toolW}}px;top:0px;width:{{toolW}}px;height:44px;">
+   <list-item if="{{mode==='tool'}}" style="width:{{contentW}};height:71px;">
+    <div class="editor-tools" style="width:{{contentW}};height:71px;">
+     <stack class="source-toolbar" style="width:{{contentW}};height:44px;">
+      <image src="/common/keyboard/common/toolBar.png" style="left:{{(contentW-310*44/60)/2}};top:0px;width:{{310*44/60}};height:44px;transform:scaleX({{contentW/(310*44/60)}});"></image>
+      <div class="tool-hit" for="{{(i,c) in toolControls}}" @click="activate(c.action)" style="left:{{i*toolW}};top:0px;width:{{toolW}};height:44px;">
        <image if="{{c.action==='type'}}" src="{{typeImage}}" style="width:25px;height:25px;"></image>
       </div>
      </stack>
-     <div class="tool-labels" style="width:{{contentW}}px;height:27px;">
-      <text class="tool-label" for="{{(i,c) in toolControls}}" style="width:{{toolW}}px;height:24px;">{{c.label}}</text>
+     <div class="tool-labels" style="width:{{contentW}};height:27px;">
+      <text class="tool-label" for="{{(i,c) in toolControls}}" style="width:{{toolW}};height:24px;">{{c.label}}</text>
      </div>
     </div>
    </list-item>
-   <list-item class="menu-item" for="{{(i,r) in displayRows}}" style="width:{{contentW}}px;height:{{r.height}}px;">
-    <stack class="menu-surface" style="width:{{contentW}}px;height:{{r.height}}px;">
-    <div class="menu-row" @click="activate(r.action)" style="width:{{contentW}}px;height:{{r.height-1}}px;border-color:{{mode==='clipboard'?'#282e2b':'#292e2d'}};">
-     <image if="{{mode!=='clipboard'}}" src="{{'/common/icons/'+r.icon+(r.action==='delete-confirm'?'_gold.png':'_warm.png')}}" style="width:{{rowIcon}}px;height:{{rowIcon}}px;"></image>
-     <text class="label" style="width:{{mode==='clipboard'?contentW:contentW-rowIcon-rowGap}}px;height:{{r.textH}}px;margin-left:{{mode==='clipboard'?0:rowGap}}px;font-size:{{rowFont}}px;color:{{r.action==='delete-confirm'?'#eca18b':'#f1f0e8'}};">{{r.title}}</text>
+   <list-item class="menu-item" for="{{(i,r) in displayRows}}" style="width:{{contentW}};height:{{r.height}};">
+    <stack class="menu-surface" style="width:{{contentW}};height:{{r.height}};">
+    <div class="menu-row" @click="activate(r.action)" style="width:{{contentW}};height:{{r.height-1}};border-color:{{mode==='clipboard'?'#282e2b':'#292e2d'}};">
+     <image if="{{mode!=='clipboard'}}" src="{{'/common/icons/'+r.icon+(r.action==='delete-confirm'?'_gold.png':'_warm.png')}}" style="width:{{rowIcon}};height:{{rowIcon}};"></image>
+     <text class="label" style="width:{{mode==='clipboard'?contentW:contentW-rowIcon-rowGap}};height:{{r.textH}};margin-left:{{mode==='clipboard'?0:rowGap}};font-size:{{rowFont}};color:{{r.action==='delete-confirm'?'#eca18b':'#f1f0e8'}};">{{r.title}}</text>
     </div>
-   <div class="row-divider" style="left:0px;top:{{r.height-1}}px;width:{{contentW}}px;height:1px;background-color:{{mode==='clipboard'?'#282e2b':'#292e2d'}};"></div></stack></list-item>
-   <list-item if="{{hint}}" style="width:{{contentW}}px;height:{{hintH}}px;">
-    <div class="hint-box" style="width:{{contentW}}px;height:{{hintH}}px;">
-     <text class="hint" style="width:{{contentW}}px;height:{{hintH-(quiet?16:7)}}px;font-size:{{hintFont}}px;margin-top:{{quiet?16:7}}px;">{{hint}}</text>
+   <div class="row-divider" style="left:0px;top:{{r.height-1}};width:{{contentW}};height:1px;background-color:{{mode==='clipboard'?'#282e2b':'#292e2d'}};"></div></stack></list-item>
+   <list-item if="{{hint}}" style="width:{{contentW}};height:{{hintH}};">
+    <div class="hint-box" style="width:{{contentW}};height:{{hintH}};">
+     <text class="hint" style="width:{{contentW}};height:{{hintH-(quiet?16:7)}};font-size:{{hintFont}};margin-top:{{quiet?16:7}};">{{hint}}</text>
     </div>
    </list-item>
   </list>
-  <div class="quiet-empty" if="{{empty}}" style="left:{{emptyX}}px;top:{{emptyY}}px;width:{{emptyW}}px;height:{{emptyH}}px;">
-   <image src="{{'/common/icons/empty_'+emptyIcon+'_gold.png'}}" style="width:{{emptyIconSize}}px;height:{{emptyIconSize}}px;margin-bottom:{{emptyIconGap}}px;"></image>
-   <text class="empty-title" style="width:{{emptyW}}px;height:{{emptyTitleH}}px;font-size:{{emptyTitleFont}}px;margin-bottom:{{emptyTitleGap}}px;">{{emptyTitle}}</text>
-   <text class="empty-prompt" style="width:{{emptyW}}px;height:{{emptyPromptH}}px;font-size:{{emptyPromptFont}}px;">{{emptyPrompt}}</text>
+  <div class="quiet-empty" if="{{empty}}" style="left:{{emptyX}};top:{{emptyY}};width:{{emptyW}};height:{{emptyH}};">
+   <image src="{{'/common/icons/empty_'+emptyIcon+'_gold.png'}}" style="width:{{emptyIconSize}};height:{{emptyIconSize}};margin-bottom:{{emptyIconGap}};"></image>
+   <text class="empty-title" style="width:{{emptyW}};height:{{emptyTitleH}};font-size:{{emptyTitleFont}};margin-bottom:{{emptyTitleGap}};">{{emptyTitle}}</text>
+   <text class="empty-prompt" style="width:{{emptyW}};height:{{emptyPromptH}};font-size:{{emptyPromptFont}};">{{emptyPrompt}}</text>
   </div>
-  <div class="dock" style="left:{{dockX}}px;top:{{dockY}}px;width:{{dockW}}px;height:{{hit}}px;">
-   <div class="dock-control" for="{{(i,c) in dock}}" @click="activate(c.action)" style="width:{{dockCellW}}px;height:{{hit}}px;background-color:{{c.emphasis?'#e6c78c':'#171b1b'}};border-left-width:{{i?1:0}}px;">
-    <image if="{{c.icon}}" src="{{'/common/icons/'+c.icon+'_muted.png'}}" style="width:20px;height:20px;margin-right:{{w/412*7}}px;"></image>
-    <text class="dock-label" style="height:28px;font-size:{{dockFont}}px;color:{{c.emphasis?'#252b25':'#adb1a9'}};">{{c.label}}</text>
+  <div class="dock" style="left:{{dockX}};top:{{dockY}};width:{{dockW}};height:{{hit}};">
+   <div class="dock-control" for="{{(i,c) in dock}}" @click="activate(c.action)" style="width:{{dockCellW}};height:{{hit}};background-color:{{c.emphasis?'#e6c78c':'#171b1b'}};border-left-width:{{i?1:0}};">
+    <image if="{{c.icon}}" src="{{'/common/icons/'+c.icon+'_muted.png'}}" style="width:20px;height:20px;margin-right:{{w/412*7}};"></image>
+    <text class="dock-label" style="height:28px;font-size:{{dockFont}};color:{{c.emphasis?'#252b25':'#adb1a9'}};">{{c.label}}</text>
    </div>
   </div>
-  <text class="notice" if="{{message}}" @click="retry" style="left:{{contentX}}px;top:{{noticeY}}px;width:{{contentW}}px;height:24px;">{{message}}</text>
+  <text class="notice" if="{{message}}" @click="retry" style="left:{{contentX}};top:{{noticeY}};width:{{contentW}};height:24px;">{{message}}</text>
  </stack>
 </stack>
