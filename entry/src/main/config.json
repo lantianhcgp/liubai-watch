@@ -31,6 +31,7 @@
     "js": [
       {
         "pages": [
+          "pages/boot/boot",
           "pages/index/index",
           "pages/read/read",
           "pages/edit/edit",

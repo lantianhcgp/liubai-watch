@@ -8,7 +8,7 @@ from pathlib import Path
 import tempfile
 import zipfile
 
-EXPECTED = ['pages/' + p + '/' + p for p in ['index', 'read', 'edit', 'menu', 'history', 'day', 'trash']]
+EXPECTED = ['pages/' + p + '/' + p for p in ['boot', 'index', 'read', 'edit', 'menu', 'history', 'day', 'trash']]
 
 def rewrite(data, transform):
     out = io.BytesIO()
@@ -63,8 +63,15 @@ def verify(data):
                         size = len(hap.read(m))
                         assert 0 < size <= 49152, 'Empty/over-budget compiled page: ' + m
                         pages.append({'path': m, 'bytes': size})
-                assert any(n.endswith('/app.js') or n == 'app.js' for n in names), 'Missing application lifecycle'
-                reports.append({'hap': name, 'pages': pages, 'bundle': cfg['app']['bundleName']})
+                app_matches = [n for n in names if n.endswith('/app.js') or n == 'app.js']
+                assert app_matches, 'Missing application lifecycle'
+                # FIT3 install gate: the device budgets app.js together with each
+                # page js against 48 KB (error 34 otherwise).
+                app_bytes = max(len(hap.read(m)) for m in app_matches)
+                for entry in pages:
+                    assert app_bytes + entry['bytes'] <= 49152, \
+                        'app.js + page over FIT3 48KB budget: ' + entry['path']
+                reports.append({'hap': name, 'pages': pages, 'appJs': app_bytes, 'bundle': cfg['app']['bundleName']})
     return reports
 
 def main():

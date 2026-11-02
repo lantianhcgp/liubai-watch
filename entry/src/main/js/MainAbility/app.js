@@ -1,7 +1,10 @@
-import Store from './common/store';
 import Session from './common/session';
 
 var routeParams = {};
+// The FIT3 installer checks app.js together with each page's js against a
+// 48 KB budget, so the storage engine must not be bundled into the
+// application file. The boot page loads it and publishes it via attachStore.
+var Store = null;
 // Store operations stay callback-based. Pages remain free to render while init runs.
 var state = 'idle', initError = null, listeners = [];
 function notify(err) {
@@ -12,7 +15,11 @@ function notify(err) {
 }
 export default {
   onCreate: function () {
-    routeParams = {}; state = 'loading'; initError = null;
+    routeParams = {};
+  },
+  attachStore: function (engine) {
+    if (!engine || Store) return;
+    Store = engine; state = 'loading'; initError = null;
     Store.init(function (err) { notify(err); });
   },
   getLiubaiParams: function () { return routeParams; },
@@ -28,6 +35,6 @@ export default {
   },
   onDestroy: function () {
     state = 'destroyed'; listeners = []; routeParams = {};
-    Store.dispose();
+    if (Store) Store.dispose();
   }
 };
