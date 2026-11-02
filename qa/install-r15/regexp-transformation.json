@@ -1,0 +1,183 @@
+{
+  "scope": "Isolated r14 regex-call translation only; not an installation fix",
+  "files": [
+    {
+      "file": "liubai-boot.js",
+      "originalBytes": 39551,
+      "outputBytes": 40871,
+      "replacements": [
+        {
+          "start": 2890,
+          "end": 2921,
+          "pattern": "^[A-Za-z0-9_-]{1,40}$",
+          "flags": "",
+          "before": "/^[A-Za-z0-9_-]{1,40}$/.test(s)",
+          "after": "__r15_key(s)"
+        },
+        {
+          "start": 6965,
+          "end": 6990,
+          "pattern": "Corrupt",
+          "flags": "",
+          "before": "/Corrupt/.test(e.message)",
+          "after": "__r15_corrupt(e.message)"
+        },
+        {
+          "start": 18374,
+          "end": 18420,
+          "pattern": "^\\s+|\\s+$",
+          "flags": "g",
+          "before": "body.slice(pos, end).replace(/^\\s+|\\s+$/g, '')",
+          "after": "__r15_trim(body.slice(pos, end))"
+        },
+        {
+          "start": 18548,
+          "end": 18648,
+          "pattern": "^\\s+|\\s+$",
+          "flags": "g",
+          "before": "body.slice(end < body.length ? end + 1 : body.length).replace(/\\s+/g, ' ').replace(/^\\s+|\\s+$/g, '')",
+          "after": "__r15_trim(__r15_collapse(body.slice(end < body.length ? end + 1 : body.length)))"
+        },
+        {
+          "start": 18548,
+          "end": 18622,
+          "pattern": "\\s+",
+          "flags": "g",
+          "before": "body.slice(end < body.length ? end + 1 : body.length).replace(/\\s+/g, ' ')",
+          "after": "__r15_collapse(body.slice(end < body.length ? end + 1 : body.length))"
+        },
+        {
+          "start": 19617,
+          "end": 19638,
+          "pattern": "\\S",
+          "flags": "",
+          "before": "/\\S/.test(input.body)",
+          "after": "__r15_nonspace(input.body)"
+        },
+        {
+          "start": 25899,
+          "end": 25944,
+          "pattern": "^(all|pinned|trash|day|month)$",
+          "flags": "",
+          "before": "/^(all|pinned|trash|day|month)$/.test(filter)",
+          "after": "__r15_filter(filter)"
+        },
+        {
+          "start": 25969,
+          "end": 26008,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "flags": "",
+          "before": "/^\\d{4}-\\d{2}-\\d{2}$/.test(q.day || '')",
+          "after": "__r15_date(q.day || '',10)"
+        },
+        {
+          "start": 26035,
+          "end": 26070,
+          "pattern": "^\\d{4}-\\d{2}$",
+          "flags": "",
+          "before": "/^\\d{4}-\\d{2}$/.test(q.month || '')",
+          "after": "__r15_date(q.month || '',7)"
+        }
+      ],
+      "edits": [
+        {
+          "start": 22,
+          "end": 22,
+          "text": "\nfunction __r15_key(v){var s=String(v),i,c;if(s.length<1||s.length>40)return false;for(i=0;i<s.length;i++){c=s.charCodeAt(i);if(!(c>=65&&c<=90||c>=97&&c<=122||c>=48&&c<=57||c===95||c===45))return false;}return true;}\nfunction __r15_corrupt(v){return String(v).indexOf('Corrupt')>=0;}\nfunction __r15_space(c){return c>=9&&c<=13||c===32||c===160||c===5760||c>=8192&&c<=8202||c===8232||c===8233||c===8239||c===8287||c===12288||c===65279;}\nfunction __r15_string(s){if(typeof s==='string')return s;if(Object.prototype.toString.call(s)==='[object String]')return String(s);throw new TypeError('String receiver required');}\nfunction __r15_trim(s){s=__r15_string(s);var a=0,b=s.length;while(a<b&&__r15_space(s.charCodeAt(a)))a++;while(b>a&&__r15_space(s.charCodeAt(b-1)))b--;return s.slice(a,b);}\nfunction __r15_collapse(s){s=__r15_string(s);var r='',i,w=false,c;for(i=0;i<s.length;i++){c=s.charAt(i);if(__r15_space(s.charCodeAt(i))){if(!w)r+=' ';w=true;}else{r+=c;w=false;}}return r;}\nfunction __r15_nonspace(v){var s=String(v),i;for(i=0;i<s.length;i++)if(!__r15_space(s.charCodeAt(i)))return true;return false;}\nfunction __r15_filter(v){var s=String(v);return s==='all'||s==='pinned'||s==='trash'||s==='day'||s==='month';}\nfunction __r15_date(v,n){var s=String(v),i,c;if(s.length!==n)return false;for(i=0;i<n;i++){c=s.charCodeAt(i);if(i===4||i===7){if(c!==45)return false;}else if(c<48||c>57)return false;}return true;}\n",
+          "kind": "scoped-helpers"
+        },
+        {
+          "start": 2890,
+          "end": 2921,
+          "text": "__r15_key(s)",
+          "kind": "regexp-call"
+        },
+        {
+          "start": 6965,
+          "end": 6990,
+          "text": "__r15_corrupt(e.message)",
+          "kind": "regexp-call"
+        },
+        {
+          "start": 18374,
+          "end": 18420,
+          "text": "__r15_trim(body.slice(pos, end))",
+          "kind": "regexp-call"
+        },
+        {
+          "start": 18548,
+          "end": 18648,
+          "text": "__r15_trim(__r15_collapse(body.slice(end < body.length ? end + 1 : body.length)))",
+          "kind": "regexp-call"
+        },
+        {
+          "start": 19617,
+          "end": 19638,
+          "text": "__r15_nonspace(input.body)",
+          "kind": "regexp-call"
+        },
+        {
+          "start": 25899,
+          "end": 25944,
+          "text": "__r15_filter(filter)",
+          "kind": "regexp-call"
+        },
+        {
+          "start": 25969,
+          "end": 26008,
+          "text": "__r15_date(q.day || '',10)",
+          "kind": "regexp-call"
+        },
+        {
+          "start": 26035,
+          "end": 26070,
+          "text": "__r15_date(q.month || '',7)",
+          "kind": "regexp-call"
+        }
+      ]
+    },
+    {
+      "file": "liubai-index.js",
+      "originalBytes": 46266,
+      "outputBytes": 46443,
+      "replacements": [
+        {
+          "start": 21682,
+          "end": 21705,
+          "pattern": "^\\d{4}-\\d{2}$",
+          "flags": "",
+          "before": "/^\\d{4}-\\d{2}$/.test(s)",
+          "after": "__r15_date(s,7)"
+        },
+        {
+          "start": 21871,
+          "end": 21900,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "flags": "",
+          "before": "/^\\d{4}-\\d{2}-\\d{2}$/.test(s)",
+          "after": "__r15_date(s,10)"
+        }
+      ],
+      "edits": [
+        {
+          "start": 22,
+          "end": 22,
+          "text": "\nfunction __r15_date(v,n){var s=String(v),i,c;if(s.length!==n)return false;for(i=0;i<n;i++){c=s.charCodeAt(i);if(i===4||i===7){if(c!==45)return false;}else if(c<48||c>57)return false;}return true;}\n",
+          "kind": "scoped-helpers"
+        },
+        {
+          "start": 21682,
+          "end": 21705,
+          "text": "__r15_date(s,7)",
+          "kind": "regexp-call"
+        },
+        {
+          "start": 21871,
+          "end": 21900,
+          "text": "__r15_date(s,10)",
+          "kind": "regexp-call"
+        }
+      ]
+    }
+  ]
+}

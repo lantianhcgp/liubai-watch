@@ -26,6 +26,9 @@ def main():
     assert len(chosen) == 1, f'Expected one ace-loader engine, found {len(chosen)}'
     jerry = chosen[0]
     args.output.mkdir(parents=True, exist_ok=True)
+    inventory = [{'path': str(p), 'bytes': p.stat().st_size, 'sha256': sha(p.read_bytes())}
+                 for p in sorted(jerry.parent.iterdir()) if p.is_file()]
+    (args.output / 'sdk-native-bin-inventory.json').write_text(json.dumps(inventory, indent=2) + '\n')
     help_result = subprocess.run([str(jerry), '--help'], capture_output=True, text=True, timeout=20)
     help_text = help_result.stdout + help_result.stderr
     (args.output / 'jerry-help.txt').write_text(help_text)

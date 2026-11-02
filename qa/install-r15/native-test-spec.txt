@@ -1,0 +1,11 @@
+R15 real payload control specification
+
+The exact SDK's ordinary ES5 probe and original app.js parse successfully. The minimal regexp and dead-branch regexp probes, and original Liubai boot/index, return SyntaxError (native-run-41410485165). Known installable periodic detail returned code 10 without stderr; SDK parser resource behavior therefore cannot be treated as a complete installation oracle.
+
+The second CI retains unchanged original fixtures and adds boot/index variants. Only the 11 known regex calls and local IIFE-scoped helper declarations are changed. The variants must parse successfully with the same exact native binary, otherwise no claim of parser remediation is permitted.
+
+Expression parity test uses Node original RegExp as the independent string-domain oracle across Unicode whitespace, empty/malformed strings, dates, key bounds and generated inputs (2880 comparisons so far). Passing in Node is behavior evidence only, not Lite memory/runtime/installation proof.
+
+The subsequent signed device target must use the same failed r14 source APP, Liubai profile, version code 0, bundle, chain, signingTime, file list, resources and all other bytes. Only assets/js/MainAbility/pages/boot/boot.js and pages/index/index.js may differ from r14. Maps are unchanged and no longer line-accurate; diagnostic maps are not runtime proof.
+
+The two-page diagnostic does not contain edit/read/menu/history/day/trash routes and is not the full Liubai product. It replaces r13 under Liubai identity, not the existing original periodic app. Success and failure both remain confounded by current device update/data state. No installation log collection or destructive device operations.
