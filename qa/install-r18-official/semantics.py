@@ -38,10 +38,12 @@ def user_plan(geom):
  dock_y=h['dockY']+hit/2;left=[h['dockX']+h['dockW']*.25,dock_y];right=[h['dockX']+h['dockW']*.75,dock_y]
  menu_y=h['hy']+hit+8;menu_x=206;menu_w=h.get('contentW',364)
  def key(row,col):return[e['keyX']+(col*57+row*29+28.5)*scale,e['keysY']+(row*60+30)*scale]
- mode=[e['footX']+22,e['footY']+22];delete=[e['footX']+44+54+22,e['footY']+22];enter=[e['footX']+44+54+44+22,e['footY']+22]
- candidate=[max(e['keyX']+12,36)+22,e['keysY']-15+6]
+ mode=[e['footX']+22,e['footY']+22];delete=[e['footX']+e.get('footW',364)-71,e['footY']+22];enter=[e['footX']+e.get('footW',364)-22,e['footY']+22]
+ candidate=[e['footX']+22,e['footY']+22]
  opened=[206,h['dockY']+hit-22]
- toggle=[e['footX']+44+54+44+44+max(20,(e.get('footW',364)-186)/2),e['footY']+22]
+ header_gap=(e['hw']-4*46)/3
+ toggle=[e['hx']+23+46+header_gap,e['hy']+23]
+ tools=[e['hx']+23+2*(46+header_gap),e['hy']+23]
  row=[206,h['listY']+h['rowH']/2]
  history_row=[206,h['newY']+hit+9+65/2];day_row=[206,h['hy']+hit+8+3+30]
  opts=menu_y+48+8
@@ -76,7 +78,7 @@ def user_plan(geom):
  for i in range(12):
   add('multiline-break-'+str(i+1),enter,edit(5+i*2,1))
   add('multiline-letter-'+str(i+1),key(1,0),edit(6+i*2,1))
- add('tools',[e['hx']+e['hw']-69,e['hy']+23],r'LBQA MENU tool rows=\d+ id= y=')
+ add('tools',tools,r'LBQA MENU tool rows=\d+ id= y=')
  add('tools-back',head,edit(chars,1))
  add('save',er,r'LBQA SAVED (?P<id>[A-Za-z0-9_-]+) chars='+str(chars)+r' bytes='+str(byte_count)+r' rev='+rev,timeout=60)
  add('saved-read',expect=read,timeout=40,check='multipage')

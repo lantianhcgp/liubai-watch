@@ -29,6 +29,14 @@ class SemanticTests(unittest.TestCase):
   for p in plan:
    if 'point' in p:
     x,y=p['point'];self.assertTrue(0<=x<412 and 0<=y<=410,p)
+ def test_keyboard_targets_respect_actual_margin_and_full_space_width(self):
+  g={'h':{'hx':45.8,'hy':23.2,'hw':320.3,'hit':46,'newY':73.2,'newH':54.4,'dockX':41.2,'dockY':359.6,'dockW':329.6,'listY':173.6,'rowH':59.7,'contentX':29.1,'contentW':353.8},'e':{'hx':48.3,'hy':21.3,'hw':315.4,'hit':46,'keyX':24,'keysY':220.9,'footX':28.2,'footY':365.9,'footW':355.7},'r':{'hx':48.3,'hy':21.3,'hw':315.4,'hit':46}}
+  p={x['name']:x for x in self.m.user_plan(g)}
+  self.assertEqual(p['backspace']['point'],[313,388])
+  self.assertEqual(p['newline']['point'],[362,388])
+  self.assertEqual(p['candidate']['point'],[50,388])
+  self.assertEqual(p['keyboard-close']['point'],[161,44])
+  self.assertEqual(p['tools']['point'],[251,44])
  def test_unmatched_state_is_a_failure_not_green(self):
   self.assertFalse(self.m.approved({'ok':True,'orderedSemanticsOk':False,'signedProvenanceOk':True,'visualReviewed':True}))
 if __name__=='__main__':unittest.main()
