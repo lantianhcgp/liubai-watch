@@ -51,6 +51,8 @@ jobs:
         run: bash scripts/build.sh
       - name: Install pinned build-side formatter
         run: npm ci --ignore-scripts --no-audit --no-fund --prefix qa/install-r17/minifier
+      - name: Assert evaluated compiler ViewModel completion is preserved
+        run: node --test qa/install-r18/test_compact.mjs
       - name: Derive complete compact compiler artifact and parse exact bytes
         run: |
           set -o pipefail

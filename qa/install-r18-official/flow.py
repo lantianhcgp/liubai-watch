@@ -108,9 +108,30 @@ def run(sim,out,root,sequence=21):
  assert all(cleanup.values())
  return report
 
+def recompact(app,out):
+ # Diagnostic counterfactual from an actual compiler APP, never a fabricated payload.
+ records=records_from_app(app);prefix='assets/js/MainAbility/';compiler=out/'compiler'
+ for n,b in records.items():
+  if n.startswith(prefix) and (n.endswith('.js') or n.endswith('.js.map')):
+   p=compiler/n[len(prefix):];p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(b)
+ compact=out/'compact'
+ subprocess.run(['node',str(HERE.parent/'install-r18/compact.mjs'),str(compiler),str(compact)],check=True)
+ spec=importlib.util.spec_from_file_location('prepare_r18',HERE.parent/'install-r18/prepare.py');assert spec and spec.loader
+ m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+ changes={n:(compact/n[len(prefix):]).read_bytes() for n in records if n.startswith(prefix) and (n.endswith('.js') or n.endswith('.js.map'))}
+ with zipfile.ZipFile(app) as outer:
+  haps=[n for n in outer.namelist() if n.endswith('.hap')];assert len(haps)==1;hn=haps[0];source=outer.read(hn)
+ result=m.rewrite(app.read_bytes(),{hn:m.rewrite(source,changes)});target=out/'diagnostic-completion-control.app';target.write_bytes(result)
+ current=records_from_app(target);assert set(records)==set(current)
+ for n,b in current.items():assert b==changes.get(n,records[n]),n
+ budget=m.budgets(current)
+ (out/'completion-control.json').write_text(json.dumps({'sourceSha256':native.sha(app.read_bytes()),'controlSha256':native.sha(result),'changedEntries':sorted(changes),'budget':budget,'allResourcesByteExact':True,'scope':'diagnostic build-side completion-preservation control'},indent=2)+'\n')
+ return target
+
 def main():
- p=argparse.ArgumentParser();p.add_argument('--sim',type=Path,required=True);p.add_argument('--app',type=Path,required=True);p.add_argument('--out',type=Path,required=True);a=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument('--sim',type=Path,required=True);p.add_argument('--app',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--recompact',action='store_true');a=p.parse_args()
  a.out=a.out.resolve();a.sim=a.sim.resolve();a.out.mkdir(parents=True,exist_ok=True)
+ if a.recompact:a.app=recompact(a.app,a.out)
  records=records_from_app(a.app);root=a.sim/'apps/liubai-r18-complete';assert not root.exists()
  for n,b in records.items():
   q=root/n;assert '..' not in q.relative_to(root).parts;q.parent.mkdir(parents=True,exist_ok=True);q.write_bytes(b)

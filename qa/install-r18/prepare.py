@@ -65,7 +65,7 @@ def main():
     for name,data in changes.items():
         if not name.endswith('.js'):continue
         file=compact/name[len(PREFIX):]
-        run=subprocess.run([str(engine),'--parse-only',str(file)],capture_output=True,text=True,timeout=25)
+        run=subprocess.run([str(engine),'--mem-stats','--parse-only',str(file)],capture_output=True,text=True,timeout=25)
         parse.append({'entry':name,'sha256':sha(data),'bytes':len(data),'returncode':run.returncode,'output':run.stdout+run.stderr})
     report={'ok':all(r['returncode']==0 for r in parse),'scope':'complete real compiler application + build-side compaction; parser-only does not prove runtime','sourceAppSha256':sha(source),'candidateAppSha256':sha(result),'sourceHead':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'pages':EXPECTED,'pageSelectionPerformed':False,'changedEntries':sorted(changes),'resourcesByteExact':True,'records':{n:{'bytes':len(b),'sha256':sha(b)} for n,b in current.items()},'budget':rows,'engineSha256':sha(engine.read_bytes()),'nativeParser':parse,'minifier':json.loads((compact/'report.json').read_text())}
     (args.out/'provenance.json').write_text(json.dumps(report,indent=2)+'\n')

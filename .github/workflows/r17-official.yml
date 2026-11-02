@@ -40,11 +40,14 @@ jobs:
           run-id: 41477695443
           github-token: ${{ github.token }}
           path: _compiler
-      - name: Diagnostic only - exact complete compiler bytes at 512KB
+      - name: Pin diagnostic build-side formatter
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix qa/install-r17/minifier
+      - name: Diagnostic only - preserve completion of actual compiler output at 512KB
         run: |
           set -o pipefail
+          node --test qa/install-r18/test_compact.mjs
           python3 qa/install-r18-official/test_flow.py
-          python3 qa/install-r18-official/flow.py --sim _sim --app _compiler/r18-runtime/liubai-r18-complete.app --out build/r18-official
+          python3 qa/install-r18-official/flow.py --sim _sim --app _compiler/outputs/default/liubai-watch-default-unsigned.app --recompact --out build/r18-official
       - name: Save raw experiment evidence - not release approval
         if: always()
         uses: actions/upload-artifact@v4
