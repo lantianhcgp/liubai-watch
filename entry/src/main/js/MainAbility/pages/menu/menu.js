@@ -100,7 +100,7 @@ export default {
    }
   }else for(var k=0;k<display.length;k++){display[k].height=this.rowH;display[k].textH=this.rowTextH;}
   this.displayRows=display;this.visibleRows=display;
-  shell.focus(this);
+  shell.focus(this);console.log('LBQA MENU '+this.mode+' rows='+display.length+' id='+(this.id||'')+' y='+this.listY+' rowH='+this.rowH);
  },
  activate:function(a){
   if(!this.allowed||this.busy)return;

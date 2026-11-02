@@ -40,7 +40,7 @@ function metaRows(items,limit) {
   return out;
 }
 function error(p,e) {p.loading=false;p.busy=false;p.message='\u6ca1\u8bfb\u5230\uff0c\u70b9\u6309\u91cd\u8bd5';p.errorDetail=String(e&&e.message||e);}
-function paint(p,rows,more,offset) {p.rows=rows;p.hasMore=more;p.hasPrev=offset>0;p.offset=offset;p.loading=false;p.message='';p.empty=rows.length===0;p.pageText=(Math.floor(offset/p.slots)+1)+(more?' +':'');shell.focus(p);}
+function paint(p,rows,more,offset) {p.rows=rows;p.hasMore=more;p.hasPrev=offset>0;p.offset=offset;p.loading=false;p.message='';p.empty=rows.length===0;p.pageText=(Math.floor(offset/p.slots)+1)+(more?' +':'');shell.focus(p);console.log('LBQA LIST '+p.kind+' rows='+rows.length+' offset='+offset+' more='+more+' month='+(p.month||'')+' day='+(p.day||''));}
 function fetch(p,offset) {
   var gen=++p.listGen,limit=p.slots;p.loading=true;p.message='';
   store.list({offset:offset,limit:limit,filter:p.filter,day:p.day||'',month:p.month||''},function(e,r){if(!p.alive||gen!==p.listGen)return;if(e){error(p,e);return;}try{if(!r||typeof r.hasMore!=='boolean')throw new Error('Invalid list result');var rows=metaRows(r.items,limit);if(r.hasMore&&rows.length!==limit)throw new Error('Incomplete index page');paint(p,rows,r.hasMore,offset);}catch(x){error(p,x);}});
