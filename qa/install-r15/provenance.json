@@ -1,0 +1,53 @@
+{
+  "scope": "Exact real compiler JS fixtures; no profile/key/map copied",
+  "fixtures": [
+    {
+      "fixture": "original/liubai-boot.js",
+      "source": "/data/data/com.termux/files/home/liubai-watch-ui-restoration/build/r11-debug/liubai-debug-startup.app",
+      "sourceSha256": "94485304b5bca97a07f1d3c04b0c31ce486ef7787427044c265d0ed906d52189",
+      "entry": "assets/js/MainAbility/pages/boot/boot.js",
+      "sha256": "15b1cfc42b40b5fa3d6a570f572c4ba1b325fe1a36c9e0eb4e639a9cd5c8f09a",
+      "bytes": 39551
+    },
+    {
+      "fixture": "original/liubai-index.js",
+      "source": "/data/data/com.termux/files/home/liubai-watch-ui-restoration/build/r11-debug/liubai-debug-startup.app",
+      "sourceSha256": "94485304b5bca97a07f1d3c04b0c31ce486ef7787427044c265d0ed906d52189",
+      "entry": "assets/js/MainAbility/pages/index/index.js",
+      "sha256": "c072a485c7e6d1aee20b521fb474abd19d1717749776fdbd2b02dd734b29914b",
+      "bytes": 46266
+    },
+    {
+      "fixture": "original/liubai-app.js",
+      "source": "/data/data/com.termux/files/home/liubai-watch-ui-restoration/build/r11-debug/liubai-debug-startup.app",
+      "sourceSha256": "94485304b5bca97a07f1d3c04b0c31ce486ef7787427044c265d0ed906d52189",
+      "entry": "assets/js/MainAbility/app.js",
+      "sha256": "288c7117810b30209e1fceb4fe9972c98c2b46c8f2a46213dc86d9b694c5dfa4",
+      "bytes": 8682
+    },
+    {
+      "fixture": "original/periodic-app.js",
+      "source": "/storage/emulated/0/haps/liubai-2026-11-02-r13-周期表正对照.hap",
+      "sourceSha256": "f30d57141b709f4808a6cc9f2a359a7ed22eb90ab79cdcc29b0a33aed19fad4f",
+      "entry": "assets/js/MainAbility/app.js",
+      "sha256": "c42a496f830138bfc6a72a23ec091e13e8a7eae3e461d7fbb2815c9d7b9b2e58",
+      "bytes": 2417
+    },
+    {
+      "fixture": "original/periodic-detail.js",
+      "source": "/storage/emulated/0/haps/liubai-2026-11-02-r13-周期表正对照.hap",
+      "sourceSha256": "f30d57141b709f4808a6cc9f2a359a7ed22eb90ab79cdcc29b0a33aed19fad4f",
+      "entry": "assets/js/MainAbility/pages/detail/detail.js",
+      "sha256": "d26c53d98e89a276399f5dc6643e4ffa14750228134d8a7b7f581693651bc7a2",
+      "bytes": 33897
+    },
+    {
+      "fixture": "original/periodic-index.js",
+      "source": "/storage/emulated/0/haps/liubai-2026-11-02-r13-周期表正对照.hap",
+      "sourceSha256": "f30d57141b709f4808a6cc9f2a359a7ed22eb90ab79cdcc29b0a33aed19fad4f",
+      "entry": "assets/js/MainAbility/pages/index/index.js",
+      "sha256": "916709e415f5a9732b785fee809936072adb34a54af9bc4ecad834c5cf90dd86",
+      "bytes": 19516
+    }
+  ]
+}

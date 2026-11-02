@@ -1,0 +1,28 @@
+name: r15-native-parser
+on:
+  push:
+    branches:
+      - diag/r15-jerry
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-parser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore exact SDK
+        uses: ErBWs/setup-ohos@v2
+        with:
+          version: 6.1.1.280
+          cache: true
+      - name: Reproduce with native SDK engine
+        run: python3 qa/install-r15/diagnose-jerry.py --sdk "$HOME/ohos-sdk/command-line-tools/sdk" --output build/r15-native-parser
+      - name: Preserve evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r15-native-parser-${{ github.run_number }}
+          path: build/r15-native-parser
+          if-no-files-found: error

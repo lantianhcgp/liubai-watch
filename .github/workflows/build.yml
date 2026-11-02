@@ -1,6 +1,8 @@
 name: build
 on:
   push:
+    branches-ignore:
+      - diag/r15-jerry
   workflow_dispatch:
 permissions:
   contents: read
