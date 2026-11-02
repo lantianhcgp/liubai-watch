@@ -1,0 +1,48 @@
+# Isolated diagnostic workflow: no default-branch/main-source edits.
+# Huawei Simulator is checked out privately; it is never uploaded in public artifacts.
+name: r17-official-native
+on:
+  push:
+    branches: [diag/r17-official]
+    paths:
+      - '.github/workflows/r17-official.yml'
+      - 'qa/install-r17-official/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: macos-14
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: lantianhcgp/deveco-sim-ci
+          ref: aa3a315a766f6dd4983ad8dad9eed2c948c6faba
+          ssh-key: ${{ secrets.LIUBAI_OFFICIAL_SIM_SSH_KEY }}
+          persist-credentials: false
+          path: _sim
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install frame decoder (cloud only)
+        run: python3 -m pip install --disable-pip-version-check pillow==11.3.0
+      - name: Cold-start exact signed payload and known-native-engine control
+        run: |
+          set -o pipefail
+          mkdir -p build/r17-official
+          sw_vers > build/r17-official/host.txt
+          file _sim/sdk/openharmony/previewer/liteWearable/bin/Simulator >> build/r17-official/host.txt
+          python3 qa/install-r17-official/test_capture.py
+          python3 qa/install-r17-official/official_capture.py --sim _sim --out build/r17-official
+      - name: Upload raw evidence (no SDK binaries)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r17-official-${{ github.run_number }}
+          path: build/r17-official
+          if-no-files-found: error

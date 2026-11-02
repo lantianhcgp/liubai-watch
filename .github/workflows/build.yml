@@ -5,6 +5,7 @@ on:
       - diag/r15-jerry
       - fix/r16-startup
       - diag/r17-native
+      - diag/r17-official
   workflow_dispatch:
 permissions:
   contents: read
