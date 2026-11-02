@@ -1,10 +1,5 @@
 name: r18-official-compiler-experiment
 on:
-  push:
-    branches: [fix/r18-native-runtime]
-    paths:
-      - 'qa/install-r18-official/**'
-      - '.github/workflows/r18-official.yml'
   workflow_dispatch:
 permissions:
   contents: read

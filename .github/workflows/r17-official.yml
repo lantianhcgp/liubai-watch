@@ -1,15 +1,18 @@
-# Isolated diagnostic workflow: no default-branch/main-source edits.
-# Huawei Simulator is checked out privately; it is never uploaded in public artifacts.
-name: r17-official-native
+# Isolated r18 diagnostic lane on a workflow already registered by GitHub.
+name: r18-official-compiler-experiment
 on:
   push:
-    branches: [diag/r17-official]
+    branches: [fix/r18-native-runtime]
     paths:
+      - 'qa/install-r18-official/**'
       - '.github/workflows/r17-official.yml'
-      - 'qa/install-r17-official/**'
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
+concurrency:
+  group: liubai-r18-native-experiment
+  cancel-in-progress: false
 jobs:
   native:
     runs-on: macos-14
@@ -29,27 +32,23 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install frame decoder (cloud only)
+      - name: Decode native frames
         run: python3 -m pip install --disable-pip-version-check pillow==11.3.0
-      - name: Cold-start exact signed payload and known-native-engine control
+      - uses: actions/download-artifact@v4
+        with:
+          name: r18-runtime-2
+          run-id: 41477695443
+          github-token: ${{ github.token }}
+          path: _compiler
+      - name: Diagnostic only - exact complete compiler bytes at 512KB
         run: |
           set -o pipefail
-          mkdir -p build/r17-official
-          sw_vers > build/r17-official/host.txt
-          file _sim/sdk/openharmony/previewer/liteWearable/bin/Simulator >> build/r17-official/host.txt
-          python3 qa/install-r17-official/test_capture.py
-          python3 qa/install-r17-official/official_capture.py --sim _sim --out build/r17-official
-      - name: Log and rethrow index initialization/render exceptions (diagnostic only)
-        if: always()
-        run: |
-          set -o pipefail
-          python3 qa/install-r17-official/test_diagnostic.py
-          python3 qa/install-r17-official/test_date_control.py
-          python3 qa/install-r17-official/diagnostic_capture.py --sim _sim --out build/r17-official
-      - name: Upload raw evidence (no SDK binaries)
+          python3 qa/install-r18-official/test_flow.py
+          python3 qa/install-r18-official/flow.py --sim _sim --app _compiler/r18-runtime/liubai-r18-complete.app --out build/r18-official
+      - name: Save raw experiment evidence - not release approval
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: r17-official-${{ github.run_number }}
-          path: build/r17-official
+          name: r18-official-${{ github.run_number }}
+          path: build/r18-official
           if-no-files-found: error
