@@ -24,7 +24,10 @@ def once(text, old, new):
 def instrument_index(data):
     text = data.decode('utf-8')
     text = once(text, '/******/ (function() {',
-                '/******/ (function() {\nconsole.info("LBQA index.bundle.enter");')
+                '/******/ (function() {\nconsole.info("LBQA index.bundle.enter");\n' +
+                'console.info("LBQA native.types string.slice="+typeof String.prototype.slice+" string.substring="+typeof String.prototype.substring+" array.slice="+typeof Array.prototype.slice);\n' +
+                'try{console.info("LBQA native.slice.result "+"2026-11-02".slice(0,7));}catch(e){console.info("LBQA native.slice.error "+String(e));}\n' +
+                'try{console.info("LBQA native.substring.result "+"2026-11-02".substring(0,7));}catch(e){console.info("LBQA native.substring.error "+String(e));}')
     text = once(text, 'module.exports=new ViewModel(options);', '''
 console.info("LBQA index.vm.enter");
 var __qa_render=options.render;
@@ -49,6 +52,10 @@ catch(e){console.info("LBQA index.vm.error "+String(e)+" name="+e.name+" message
                 '  console.info("LBQA list.params.before");\n  var q = _shell["default"].params(p);\n  console.info("LBQA list.params.after");')
     text = once(text, '  p.today = today();',
                 '  console.info("LBQA list.today.before");\n  p.today = today();\n  console.info("LBQA list.today.after "+p.today);')
+    text = once(text, '  p.day = q.day || \'\';',
+                '  console.info("LBQA list.day.before q="+typeof q+" today="+typeof p.today+" slice="+typeof p.today.slice);\n  p.day = q.day || \'\';\n  console.info("LBQA list.day.after");')
+    text = once(text, '  p.month = q.month || p.today.slice(0, 7);',
+                '  console.info("LBQA list.month.before");\n  p.month = q.month || p.today.slice(0, 7);\n  console.info("LBQA list.month.after "+p.month);')
     text = once(text, '  _shell["default"].init(p, function (info) {',
                 '  console.info("LBQA list.device.before");\n  _shell["default"].init(p, function (info) {\n    console.info("LBQA list.device.callback "+info.windowWidth+"x"+info.windowHeight+" shape="+info.screenShape);')
     text = once(text, '    geometry(p, info, kind);',
