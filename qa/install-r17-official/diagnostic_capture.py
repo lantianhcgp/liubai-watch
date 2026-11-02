@@ -27,7 +27,9 @@ def instrument_index(data):
                 '/******/ (function() {\nconsole.info("LBQA index.bundle.enter");\n' +
                 'console.info("LBQA native.types string.slice="+typeof String.prototype.slice+" string.substring="+typeof String.prototype.substring+" array.slice="+typeof Array.prototype.slice);\n' +
                 'try{console.info("LBQA native.slice.result "+"2026-11-02".slice(0,7));}catch(e){console.info("LBQA native.slice.error "+String(e));}\n' +
-                'try{console.info("LBQA native.substring.result "+"2026-11-02".substring(0,7));}catch(e){console.info("LBQA native.substring.error "+String(e));}')
+                'try{console.info("LBQA native.substring.result "+"2026-11-02".substring(0,7));}catch(e){console.info("LBQA native.substring.error "+String(e));}\n' +
+                'try{console.info("LBQA native.replace.result "+"2026-11-02".replace("-"," / "));}catch(e){console.info("LBQA native.replace.error "+String(e));}\n' +
+                'try{console.info("LBQA native.regex.result "+(/a/.test("a")));}catch(e){console.info("LBQA native.regex.error "+String(e));}')
     text = once(text, 'module.exports=new ViewModel(options);', '''
 console.info("LBQA index.vm.enter");
 var __qa_render=options.render;
@@ -56,6 +58,22 @@ catch(e){console.info("LBQA index.vm.error "+String(e)+" name="+e.name+" message
                 '  console.info("LBQA list.day.before q="+typeof q+" today="+typeof p.today+" slice="+typeof p.today.slice);\n  p.day = q.day || \'\';\n  console.info("LBQA list.day.after");')
     text = once(text, '  p.month = q.month || p.today.slice(0, 7);',
                 '  console.info("LBQA list.month.before");\n  p.month = q.month || p.today.slice(0, 7);\n  console.info("LBQA list.month.after "+p.month);')
+    for label, statement in [
+        ('filter', "  p.filter = kind === 'trash' ? 'trash' : kind === 'day' ? 'day' : kind === 'history' ? 'month' : 'all';"),
+        ('validateMonth', '    validMonth(p.month);'),
+        ('emptyIcon', "  p.emptyIcon = kind === 'trash' ? 'restore' : 'book';"),
+        ('dateLabel', "  p.dateLabel = p.today.slice(5).replace('-', ' / ');")
+    ]:
+        text = once(text, statement, '  console.info("LBQA list.' + label + '.before");\n' + statement + '\n  console.info("LBQA list.' + label + '.after");')
+    # Restrict anchors to init; toggle and pagination also assign these fields.
+    lo, hi = text.index('function init(p, kind) {'), text.index('function next(p) {')
+    init_block = text[lo:hi]
+    for label in ['emptyPrompt', 'headerTitle', 'sectionTitle', 'emptyText', 'monthLabel']:
+        lines = [line for line in init_block.splitlines() if line.startswith('  p.' + label + ' =')]
+        assert len(lines) == 1, label
+        statement = lines[0]
+        init_block = once(init_block, statement, '  console.info("LBQA list.' + label + '.before");\n' + statement + '\n  console.info("LBQA list.' + label + '.after");')
+    text = text[:lo] + init_block + text[hi:]
     text = once(text, '  _shell["default"].init(p, function (info) {',
                 '  console.info("LBQA list.device.before");\n  _shell["default"].init(p, function (info) {\n    console.info("LBQA list.device.callback "+info.windowWidth+"x"+info.windowHeight+" shape="+info.screenShape);')
     text = once(text, '    geometry(p, info, kind);',
