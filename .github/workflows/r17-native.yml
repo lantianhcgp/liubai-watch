@@ -1,6 +1,12 @@
 name: r17-native-diagnostic
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - diag/r17-native
+    paths:
+      - '.github/workflows/r17-native.yml'
+      - 'qa/install-r17/**'
 permissions:
   contents: read
 jobs:
