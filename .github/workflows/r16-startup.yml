@@ -4,7 +4,14 @@ on:
     branches:
       - fix/r16-startup
   workflow_dispatch:
+    inputs:
+      source_run:
+        description: Optional fixed run to recheck exact existing candidate without recompiling
+        required: false
+        type: string
+        default: ''
 permissions:
+  actions: read
   contents: read
 jobs:
   startup:
@@ -26,17 +33,28 @@ jobs:
           done
           printf '%s\n' "HOS_SDK_HOME=$HOME/ohos-sdk/command-line-tools/sdk" >> "$GITHUB_ENV"
       - name: Compile unchanged V3 design with isolated startup and icon fixes
+        if: ${{ !inputs.source_run }}
         env:
           BUILD_MODE: debug
           DIAGNOSTIC: '1'
         run: bash scripts/build.sh
+      - uses: actions/download-artifact@v4
+        if: ${{ inputs.source_run != '' }}
+        with:
+          run-id: ${{ inputs.source_run }}
+          github-token: ${{ github.token }}
+          pattern: r16-startup-*
+          path: build
+          merge-multiple: true
       - name: Prepare precise startup candidate
         shell: bash
         run: |
           set -euo pipefail
           npm install --prefix build/r16-tools acorn@8.15.0
           export R15_ACORN_MODULE="$PWD/build/r16-tools/node_modules/acorn"
-          python3 qa/install-r16/prepare-candidate.py --app build/outputs/default/*.app --output build/r16-startup
+          if [ ! -f build/r16-startup/liubai-r16-startup.app ]; then
+            python3 qa/install-r16/prepare-candidate.py --app build/outputs/default/*.app --output build/r16-startup
+          fi
           python3 qa/install-r16/native-parser.py --sdk "$HOS_SDK_HOME" --bundle build/r16-startup
           python3 qa/install-r16/native-runtime.py --sdk "$HOS_SDK_HOME" --bundle build/r16-startup
           R16_BUNDLES="$PWD/build/r16-startup/variants" node --test qa/install-r16/test-startup.mjs qa/install-r16/test-source-launch.mjs
