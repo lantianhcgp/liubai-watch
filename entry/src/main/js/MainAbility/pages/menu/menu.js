@@ -138,7 +138,7 @@ export default {
  },
  setFont:function(k){
   if(!this.allowed||this.busy||['compact','normal','large'].indexOf(k)<0)return;var p=this,gen=this.gen;this.busy=true;
-  store.settingPut('read-'+this.id,{font:k,anchor:this.params.anchor||0,revision:this.params.revision},function(e){if(!p.alive||p.gen!==gen)return;p.busy=false;if(e){p.message=String(e);return;}p.font=k;});
+  store.settingPut('read-'+this.id,{font:k,anchor:this.params.anchor||0,revision:this.params.revision},function(e){if(!p.alive||p.gen!==gen)return;p.busy=false;if(e){p.message=String(e);return;}p.font=k;console.log('LBQA FONT '+k+' id='+p.id+' anchor='+(p.params.anchor||0));});
  },
  back:function(){if(!this.allowed||this.busy)return;if(this.mode==='read')shell.nav(this,'read',{id:this.id,anchor:this.params.anchor||0,font:this.font});else if(this.mode==='record'||this.mode==='confirm')shell.nav(this,'read',{id:this.id,anchor:this.params.anchor||0,font:this.font});else if(this.mode==='tool'||this.mode==='exit'||this.mode==='clipboard'||this.mode==='error')shell.nav(this,'edit',{id:this.id});else shell.nav(this,'index',{});},
  retry:function(){this.onInit();},
