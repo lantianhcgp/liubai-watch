@@ -1,0 +1,23 @@
+name: r17-native-diagnostic
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ErBWs/setup-ohos@v2
+        with:
+          version: 6.1.1.280
+          cache: true
+      - name: Execute unchanged app and page bytes sequentially
+        run: python3 qa/install-r17/probe-native.py --sdk "$HOME/ohos-sdk/command-line-tools/sdk" --out build/r17-native
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r17-native-${{ github.run_number }}
+          path: build/r17-native
+          if-no-files-found: error

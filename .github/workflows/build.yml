@@ -4,6 +4,7 @@ on:
     branches-ignore:
       - diag/r15-jerry
       - fix/r16-startup
+      - diag/r17-native
   workflow_dispatch:
 permissions:
   contents: read
