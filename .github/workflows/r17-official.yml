@@ -36,19 +36,20 @@ jobs:
         run: python3 -m pip install --disable-pip-version-check pillow==11.3.0
       - uses: actions/download-artifact@v4
         with:
-          name: r18-runtime-4
-          run-id: 41518493082
+          name: r18-runtime-6
+          run-id: 41539640591
           github-token: ${{ github.token }}
           path: _compiler
       - name: Verify pinned complete compiled artifact
         run: |
           set -o pipefail
-          python3 -c 'from pathlib import Path;import json,hashlib;d=Path("_compiler/r18-runtime");r=json.loads((d/"provenance.json").read_text());p=d/"liubai-r18-complete.app";assert r["sourceHead"]=="73c9ec0feeb2ce4f2b6dab544493ebd406d25ecf";assert r["candidateAppSha256"]==hashlib.sha256(p.read_bytes()).hexdigest()=="2f183bf1f1c688c30e950d01f94033fd4c248b3bbec79d479026e40f0add5163";assert len(r["pages"])==8 and r["pageSelectionPerformed"] is False;assert r["parserVerdict"]["allParsePassed"] is True;print("PINNED_COMPLETE_COMPILER_ARTIFACT_VERIFIED")'
+          python3 -c 'from pathlib import Path;import json,hashlib;d=Path("_compiler/r18-runtime");r=json.loads((d/"provenance.json").read_text());p=d/"liubai-r18-complete.app";assert r["sourceHead"]=="f0bf0de09bdf5cc3216066b85ff1c825c79938aa";assert r["candidateAppSha256"]==hashlib.sha256(p.read_bytes()).hexdigest()=="6b4415bbe6a671f54a68919d0a617aedb4acc62db56d6a4a0d4c7d84e3a93096";assert len(r["pages"])==8 and r["pageSelectionPerformed"] is False;assert r["parserVerdict"]["allParsePassed"] is True;print("PINNED_COMPLETE_COMPILER_ARTIFACT_VERIFIED")'
       - name: Run unchanged complete compiled application on official 512KB engine
         run: |
           set -o pipefail
           python3 qa/install-r18-official/test_flow.py
-          python3 qa/install-r18-official/flow.py --sim _sim --app _compiler/r18-runtime/liubai-r18-complete.app --out build/r18-official
+          python3 qa/install-r18-official/test_semantics.py
+          python3 qa/install-r18-official/acceptance.py --sim _sim --app _compiler/r18-runtime/liubai-r18-complete.app --restart --out build/r18-official
       - name: Save raw experiment evidence - not release approval
         if: always()
         uses: actions/upload-artifact@v4
