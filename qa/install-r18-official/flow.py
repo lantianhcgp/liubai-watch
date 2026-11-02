@@ -108,12 +108,16 @@ def run(sim,out,root,sequence=21):
  assert all(cleanup.values())
  return report
 
-def recompact(app,out):
+def recompact(app,out,logging=False):
  # Diagnostic counterfactual from an actual compiler APP, never a fabricated payload.
  records=records_from_app(app);prefix='assets/js/MainAbility/';compiler=out/'compiler'
  for n,b in records.items():
   if n.startswith(prefix) and (n.endswith('.js') or n.endswith('.js.map')):
-   p=compiler/n[len(prefix):];p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(b)
+   p=compiler/n[len(prefix):];p.parent.mkdir(parents=True,exist_ok=True)
+   if logging and n in ['assets/js/MainAbility/pages/edit/edit.js','assets/js/MainAbility/pages/menu/menu.js']:
+    spec=importlib.util.spec_from_file_location('native_logging',HERE/'logging.py');assert spec and spec.loader
+    mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod);b=mod.instrument(b,n.split('/')[-2])
+   p.write_bytes(b)
  compact=out/'compact'
  subprocess.run(['node',str(HERE.parent/'install-r18/compact.mjs'),str(compiler),str(compact)],check=True)
  spec=importlib.util.spec_from_file_location('prepare_r18',HERE.parent/'install-r18/prepare.py');assert spec and spec.loader
@@ -129,9 +133,9 @@ def recompact(app,out):
  return target
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--sim',type=Path,required=True);p.add_argument('--app',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--recompact',action='store_true');a=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument('--sim',type=Path,required=True);p.add_argument('--app',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--recompact',action='store_true');p.add_argument('--logging',action='store_true');a=p.parse_args()
  a.out=a.out.resolve();a.sim=a.sim.resolve();a.out.mkdir(parents=True,exist_ok=True)
- if a.recompact:a.app=recompact(a.app,a.out)
+ if a.recompact:a.app=recompact(a.app,a.out,a.logging)
  records=records_from_app(a.app);root=a.sim/'apps/liubai-r18-complete';assert not root.exists()
  for n,b in records.items():
   q=root/n;assert '..' not in q.relative_to(root).parts;q.parent.mkdir(parents=True,exist_ok=True);q.write_bytes(b)

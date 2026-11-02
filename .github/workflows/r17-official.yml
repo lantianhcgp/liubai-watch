@@ -47,7 +47,7 @@ jobs:
           set -o pipefail
           node --test qa/install-r18/test_compact.mjs
           python3 qa/install-r18-official/test_flow.py
-          python3 qa/install-r18-official/flow.py --sim _sim --app _compiler/outputs/default/liubai-watch-default-unsigned.app --recompact --out build/r18-official
+          python3 qa/install-r18-official/flow.py --sim _sim --app _compiler/outputs/default/liubai-watch-default-unsigned.app --recompact --logging --out build/r18-official
       - name: Save raw experiment evidence - not release approval
         if: always()
         uses: actions/upload-artifact@v4
