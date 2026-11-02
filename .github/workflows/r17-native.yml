@@ -21,6 +21,12 @@ jobs:
           cache: true
       - name: Execute unchanged app and page bytes sequentially
         run: python3 qa/install-r17/probe-native.py --sdk "$HOME/ohos-sdk/command-line-tools/sdk" --out build/r17-native
+      - name: Install pinned build-side minifier (not in watch payload)
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix qa/install-r17/minifier
+      - name: Compare exact sources, format-only, local-name and safe-compression
+        run: |
+          node qa/install-r17/compact.mjs qa/install-r17/fixtures build/r17-native/compact
+          python3 qa/install-r17/probe-compact.py --sdk "$HOME/ohos-sdk/command-line-tools/sdk" --compact build/r17-native/compact --out build/r17-native/compact-native
       - uses: actions/upload-artifact@v4
         if: always()
         with:
