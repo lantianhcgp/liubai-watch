@@ -31,6 +31,9 @@ def pattern_for(pattern,values):
 def checksum_records(records):
  return {n:{'bytes':len(b),'sha256':native.sha(b)} for n,b in records.items()}
 
+def resource_args(root):
+ return ['-arp',str(root/'assets/entry')]
+
 def run(sim,out,root,events,sequence,values=None):
  out.mkdir(parents=True,exist_ok=True);values=dict(values or {})
  manifest=json.loads((root/'assets/js/MainAbility/manifest.json').read_text());cfg=json.loads((root/'config.json').read_text())
@@ -42,7 +45,7 @@ def run(sim,out,root,events,sequence,values=None):
   if 'Language' in v:v['Language']['args']['Language']='zh-CN'
  sf=out/'setting.json';sf.write_text(json.dumps(settings))
  pipe=native.CommandPipe(prefix);log=out/'native.engine.log';raw=out/'native.wsbin';wlog=out/'native.websocket.log'
- args=native.launch_args(root/'assets/js/MainAbility',cfg['app']['bundleName'],manifest['pages'][0],prefix,port,sf)
+ args=native.launch_args(root/'assets/js/MainAbility',cfg['app']['bundleName'],manifest['pages'][0],prefix,port,sf)+resource_args(root)
  engine_proc=ws=None;steps=[];failure=None;cursor=0;raw_cursor=0;last_frame=None
  eh=log.open('wb');wh=wlog.open('wb')
  try:

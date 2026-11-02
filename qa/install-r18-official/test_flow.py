@@ -19,6 +19,11 @@ class FlowTests(unittest.TestCase):
   self.assertFalse((HERE/'logging.py').exists())
   self.assertFalse((HERE/'socket.py').exists())
   self.assertFalse((HERE/'threading.py').exists())
+ def test_native_resource_argument_points_to_exact_packaged_assets(self):
+  s=importlib.util.spec_from_file_location('acceptance',HERE/'acceptance.py');assert s and s.loader
+  a=importlib.util.module_from_spec(s);s.loader.exec_module(a)
+  root=Path('/fixture/exact-payload')
+  self.assertEqual(a.resource_args(root),['-arp',str(root/'assets/entry')])
  def test_failures_are_never_release_success(self):
   self.assertFalse(self.f.release_success({'ok':False}))
   self.assertFalse(self.f.release_success({'ok':True,'scope':'diagnostic'}))
