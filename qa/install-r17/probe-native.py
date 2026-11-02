@@ -120,6 +120,11 @@ def main():
     for name, files in cases:
         rows.append(run_case(engine, files, name, a.out))
     sdk_info = subprocess.run([str(engine), '--version'], capture_output=True, text=True, timeout=10)
+    memstats = []
+    for label, files in [('basic', [basic]), ('boot', [host, a.out/'r16-app.js', create, a.out/'r16-boot.js', boot, route]), ('full', [host, a.out/'r16-app.js', create, a.out/'r16-boot.js', boot, route, drop, a.out/'r16-index.js', export, finish])]:
+        mr = subprocess.run(['stdbuf', '-oL', '-eL', str(engine), '--mem-stats'] + list(map(str, files)), capture_output=True, text=True, timeout=25)
+        memstats.append({'case': label, 'returncode': mr.returncode, 'output': mr.stdout + mr.stderr})
+    (a.out / 'engine-mem-stats.json').write_text(json.dumps(memstats, indent=2) + '\n')
     report = {'scope': 'Same CLT6.1.1.280 SDK CLI engine. Exact compiler JS files evaluated sequentially without JS eval, JSON source literals or joined page scripts. API, ViewModel and render primitives are test doubles; not a FIT3 runtime verification.',
               'engineSha256': hashlib.sha256(engine.read_bytes()).hexdigest(), 'engineVersion': sdk_info.stdout + sdk_info.stderr,
               'fixtureProvenance': {'r16': '41418736638/variants; exact signed candidate compiler JS hashes', 'control': 'r13 installed payload (installation verified ONLY; foreground launch not reported)'},
