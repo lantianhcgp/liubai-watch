@@ -120,6 +120,11 @@ def run(sim,out,root,events,sequence,values=None):
     except subprocess.TimeoutExpired:p.kill();p.wait(timeout=3)
   eh.close();wh.close();pipe.close()
  text=log.read_text(errors='replace');err=sem.errors(text)
+ fsroot=engine.parent/'file_system'
+ inventory=[{'path':str(p.relative_to(fsroot)),'bytes':p.stat().st_size if p.is_file() else None} for p in sorted(fsroot.rglob('*'))] if fsroot.exists() else []
+ (out/'native-filesystem.json').write_text(json.dumps({'root':str(fsroot),'entries':inventory},indent=2)+'\n')
+ # Keep the failure's last real pixels, too; a state timeout must not erase evidence.
+ if failure and raw.exists():flow.split_snapshot(sim,out,'failure-final',raw.read_bytes())
  cleanup={'engineStopped':engine_proc is not None and engine_proc.poll() is not None,'websocketStopped':ws is None or ws.poll() is not None,'commandThreadStopped':not pipe.thread.is_alive(),'commandPipeRemoved':not pipe.path.exists(),'imagePortClosed':not native.tcp_ready(port)}
  ok=failure is None and alive and not err['fatal'] and len(steps)==len(events) and all(s.get('stateMatched') for s in steps) and all(cleanup.values())
  report={'ok':ok,'orderedSemanticsOk':ok,'noInjectedAppStateOrApi':True,'heap':524288,'bundle':cfg['app']['bundleName'],'firstPage':manifest['pages'][0],'engineSha256':native.sha(engine.read_bytes()),'args':args,'steps':steps,'values':values,'failure':failure,'errors':err,'aliveAtEnd':alive,'cleanup':cleanup,'visualReviewed':False,'signedProvenanceOk':False,'messages':pipe.messages}
