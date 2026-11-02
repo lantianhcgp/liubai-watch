@@ -6,6 +6,7 @@ on:
       - fix/r16-startup
       - diag/r17-native
       - diag/r17-official
+      - fix/r18-native-runtime
   workflow_dispatch:
 permissions:
   contents: read

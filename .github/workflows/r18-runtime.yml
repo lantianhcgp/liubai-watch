@@ -1,0 +1,59 @@
+name: r18-native-runtime-build
+on:
+  push:
+    branches: [fix/r18-native-runtime]
+    paths:
+      - 'entry/src/main/**'
+      - 'tests/**'
+      - 'qa/install-r18/**'
+      - '.github/workflows/r18-runtime.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Source and behavior regression
+        run: |
+          set -o pipefail
+          node --experimental-vm-modules --test --test-concurrency=1 tests/*.test.mjs
+          python3 scripts/verify-source.py
+      - name: Real HarmonyOS compiler
+        uses: ErBWs/setup-ohos@v2
+        with:
+          version: 6.1.1.280
+          cache: true
+      - name: Expose compiler
+        shell: bash
+        run: |
+          for p in "$HOME/ohos-sdk/command-line-tools/bin" "$HOME/ohos-sdk/command-line-tools/tool/node/bin"; do
+            if [ -d "$p" ]; then printf '%s\n' "$p" >> "$GITHUB_PATH"; fi
+          done
+          printf '%s\n' "HOS_SDK_HOME=$HOME/ohos-sdk/command-line-tools/sdk" >> "$GITHUB_ENV"
+      - name: Compile complete application (no page selection)
+        env:
+          BUILD_MODE: debug
+          DIAGNOSTIC: '1'
+        run: bash scripts/build.sh
+      - name: Install pinned build-side formatter
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix qa/install-r17/minifier
+      - name: Derive complete compact compiler artifact and parse exact bytes
+        run: |
+          set -o pipefail
+          python3 qa/install-r18/test_prepare.py
+          python3 qa/install-r18/prepare.py --app build/outputs/default/liubai-watch-default-unsigned.app --out build/r18-runtime --sdk "$HOME/ohos-sdk/command-line-tools/sdk"
+      - name: Upload actual compiler and candidate, never SDK or keys
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r18-runtime-${{ github.run_number }}
+          path: |
+            build/outputs/default/*.app
+            build/r18-runtime
+          if-no-files-found: error

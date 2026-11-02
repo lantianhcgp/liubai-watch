@@ -27,7 +27,13 @@ function recordRoots(state) {
 function draftRoots(state) { return gcBlobs({blobs: state.data.value ? [state.data.value.blob] : []}); }
 function error(text) { return new Error(text); }
 function deliver(cb, e, v) { if (typeof cb === 'function') cb(e || null, v); }
-function validKey(s) { return typeof s === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(s); }
+function validKey(s) { if(typeof s!=='string'||s.length<1||s.length>40)return false;for(var i=0;i<s.length;i++){var c=s.charCodeAt(i);if(!((c>=48&&c<=57)||(c>=65&&c<=90)||(c>=97&&c<=122)||c===45||c===95))return false;}return true; }
+function dateShape(s,n) { if(typeof s!=='string'||s.length!==n)return false;for(var i=0;i<n;i++){if(i===4||i===7){if(s.charAt(i)!=='-')return false;}else{var c=s.charCodeAt(i);if(c<48||c>57)return false;}}return true; }
+// Exact ECMAScript whitespace set, implemented without native string replacement.
+function space(c) { return (c>=9&&c<=13)||c===32||c===160||c===5760||(c>=8192&&c<=8202)||c===8232||c===8233||c===8239||c===8287||c===12288||c===65279; }
+function trim(s) { var a=0,b=s.length;while(a<b&&space(s.charCodeAt(a)))a++;while(b>a&&space(s.charCodeAt(b-1)))b--;return s.slice(a,b); }
+function hasText(s) { for(var i=0;i<s.length;i++)if(!space(s.charCodeAt(i)))return true;return false; }
+function compactSpace(s) { var out='',pending=false;for(var i=0;i<s.length;i++){if(space(s.charCodeAt(i)))pending=true;else{if(pending&&out)out+=' ';out+=s.charAt(i);pending=false;}}return out; }
 function hash(s) {
   var h = 2166136261, i;
   for (i = 0; i < s.length; i++) h = ((h ^ s.charCodeAt(i)) * 16777619) >>> 0;
@@ -109,7 +115,7 @@ function pair(base, empty, cb, rootsOf) {
   var best = null, bestSlot = -1, found = false, roots = [], left = 2, failure = null;
   function part(slot) {
     read(base + slot + '.json', function (e, text) {
-      if (e && e.code !== 301 && !/Corrupt/.test(e.message) && !failure) failure = e;
+      if (e && e.code !== 301 && String(e.message).indexOf('Corrupt') < 0 && !failure) failure = e;
       if (!e || (e && e.code !== 301)) found = true;
       if (!e) {
         var x = unpack(text), descriptors;
@@ -366,12 +372,12 @@ function metadata(id, body, created, revision, pinned, deleted) {
   var date = new Date(created), title = '', pos = 0, end, line;
   while (pos < body.length) {
     end = body.indexOf('\n', pos); if (end < 0) end = body.length;
-    line = body.slice(pos, end).replace(/^\s+|\s+$/g, '');
+    line = trim(body.slice(pos, end));
     if (line) { title = U.sliceBytes(line, 72); break; }
     pos = end + 1;
   }
   // Frozen V3 shows the body after the first title paragraph, not the title twice.
-  var preview = body.slice(end < body.length ? end + 1 : body.length).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+  var preview = compactSpace(body.slice(end < body.length ? end + 1 : body.length));
   if (!preview) preview = '\u70b9\u5f00\u9605\u8bfb';
   return {id: id, created: created, date: date.getFullYear() + '-' + two(date.getMonth() + 1) + '-' + two(date.getDate()),
     time: two(date.getHours()) + ':' + two(date.getMinutes()), title: title,
@@ -387,7 +393,7 @@ function checkFlags(x) {
 function save(input, cb) {
   try{input=clone(input);}catch(e){return deliver(cb,error('Invalid record serialization'));}
   task(cb, function (done) {
-    if (!input || typeof input.body !== 'string' || !U.valid(input.body) || !/\S/.test(input.body) || (input.id !== undefined && input.id !== '' && !validKey(input.id)) || !checkFlags(input)) return done(error('Invalid or empty record'));
+    if (!input || typeof input.body !== 'string' || !U.valid(input.body) || !hasText(input.body) || (input.id !== undefined && input.id !== '' && !validKey(input.id)) || !checkFlags(input)) return done(error('Invalid or empty record'));
     var size = U.bytes(input.body), id = input.id || ('n' + token());
     if (size > MAX_BODY) return done(error('Body safe-load budget exceeded; no truncation'));
     catalog(function (e, c) {
@@ -478,7 +484,7 @@ function list(q, cb) {
   try{q=clone(q||{});}catch(e){return deliver(cb,error('Invalid query'));}
   task(cb, function (done) {
     q = q || {}; var filter = q.filter || 'all', offset = q.offset === undefined ? 0 : q.offset, limit = q.limit === undefined ? 6 : q.limit;
-    if (typeof offset !== 'number' || offset < 0 || offset % 1 || typeof limit !== 'number' || limit < 1 || limit > 12 || limit % 1 || !/^(all|pinned|trash|day|month)$/.test(filter) || (filter === 'day' && !/^\d{4}-\d{2}-\d{2}$/.test(q.day || '')) || (filter === 'month' && !/^\d{4}-\d{2}$/.test(q.month || ''))) return done(error('Invalid list query (limit 1..12)'));
+    if (typeof offset !== 'number' || offset < 0 || offset % 1 || typeof limit !== 'number' || limit < 1 || limit > 12 || limit % 1 || ['all','pinned','trash','day','month'].indexOf(filter) < 0 || (filter === 'day' && !dateShape(q.day || '',10)) || (filter === 'month' && !dateShape(q.month || '',7))) return done(error('Invalid list query (limit 1..12)'));
     catalog(function (e, c) {
       if (e) return done(e);
       var queryKey = filter + '|' + (q.day || '') + '|' + (q.month || '') + '|' + c.seq;
