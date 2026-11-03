@@ -10,7 +10,7 @@
       <div class="date-box" style="width:{{hw-2*hit}};height:{{hit}};"><text class="date">{{date}}</text><text class="time">{{time}}</text></div>
       <div class="hit" @click="more" style="width:{{hit}};height:{{hit}};"><image class="more-icon" src="/common/ui/dots-gold.png"></image></div>
     </div>
-    <text class="counter" style="left:{{trackX}};top:{{footerY}};width:{{trackW}};">{{counter}}</text>
+    <text class="counter" style="left:{{counterX}};top:{{footerY}};width:{{counterW}};">{{counter}}</text>
     <div class="track" style="left:{{trackX}};top:{{footerY+20}};width:{{trackW}};"><div class="progress" style="width:{{progressW}};"></div></div>
   </stack>
 </stack>

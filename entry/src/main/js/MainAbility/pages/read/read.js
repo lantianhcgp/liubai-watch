@@ -6,7 +6,7 @@ import nav from '../../common/nav.js';
 import Storage from '@system.storage';
 function positionKey(id) { return 'lb2p_'+id; }
 export default {
-  data:{ready:false,active:false,generation:0,w:0,h:0,round:false,hx:0,hy:0,hw:0,hit:46,top:0,bottom:0,footerY:0,trackX:0,trackW:0,progressW:0,lines:[],id:'',date:'',time:'',counter:'',anchor:0,fontKey:'normal',message:'',swipeY:0,crownValue:50},
+  data:{ready:false,active:false,generation:0,w:0,h:0,round:false,hx:0,hy:0,hw:0,hit:46,top:0,bottom:0,footerY:0,trackX:0,trackW:0,counterX:0,counterW:0,progressW:0,lines:[],id:'',date:'',time:'',counter:'',anchor:0,fontKey:'normal',message:'',swipeY:0,crownValue:50},
   onInit:function(){this.activate();},
   onShow:function(){this.activate();},
   onHide:function(){this.remember();life.stop(this);},
@@ -23,7 +23,7 @@ export default {
     });
   });},
   retry:function(){life.stop(this);this.activate();},
-  reflow:function(){var g=geometry.reader(this.info,this.fontKey);life.apply(this,g);var m=text.paginate(this.record.text,g,this.anchor,false,0);this.model=m;this.lines=m.lines;this.anchor=m.anchor;this.trackW=this.w*.27;this.trackX=(this.w-this.trackW)/2;this.progressW=this.trackW*(m.page+1)/m.count;this.counter=(m.page===m.count-1?'\u5df2\u8bfb\u5b8c \u00b7 ':'')+((m.page+1<10?'0':'')+(m.page+1))+' / '+((m.count<10?'0':'')+m.count);this.ready=true;this.message='';life.focus(this,'crown');console.info('LB2 READ id='+this.id+' version='+this.record.version+' anchor='+this.anchor+' page='+m.page+' count='+m.count+' font='+this.fontKey);},
+  reflow:function(){var g=geometry.reader(this.info,this.fontKey);life.apply(this,g);var m=text.paginate(this.record.text,g,this.anchor,false,0);this.model=m;this.lines=m.lines;this.anchor=m.anchor;var counterBand=geometry.band(this.w,this.h,this.round,this.footerY,this.footerY+16,8);this.counterX=counterBand.x;this.counterW=counterBand.width;this.trackW=this.w*.27;this.trackX=(this.w-this.trackW)/2;this.progressW=this.trackW*(m.page+1)/m.count;this.counter=(m.page===m.count-1?'\u5df2\u8bfb\u5b8c \u00b7 ':'')+((m.page+1<10?'0':'')+(m.page+1))+' / '+((m.count<10?'0':'')+m.count);this.ready=true;this.message='';life.focus(this,'crown');console.info('LB2 READ id='+this.id+' version='+this.record.version+' anchor='+this.anchor+' page='+m.page+' count='+m.count+' font='+this.fontKey);},
   remember:function(){if(!this.record)return;try{Storage.set({key:positionKey(this.id),value:JSON.stringify({version:this.record.version,anchor:this.anchor}),fail:function(){console.error('LB2 POSITION fail');}});}catch(e){}},
   turn:function(delta){if(!this.ready||!this.model)return;var at=delta>0?this.model.next:this.model.prev;if(at<0)return;this.anchor=at;this.reflow();this.remember();},
   startTouch:function(e){this.swipeY=e.globalY;this.touchX=e.globalX;this.touching=true;},
