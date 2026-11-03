@@ -5,7 +5,7 @@
    <div class="hit" @click="back" style="width:{{hit}};height:{{hit}};"><image class="icon" src="/common/ui/back-warm.png"></image></div>
    <text class="title" style="width:{{titleW}};height:{{hit}};font-size:{{titleFont}};">{{title}}</text>
   </div>
-  <list class="menu-list" ref="crown" style="left:{{contentX}};top:{{top}};width:{{contentW}};height:{{listH}};">
+  <list class="menu-list" ref="crown" @swipe="menuSwipe" style="left:{{contentX}};top:{{top}};width:{{contentW}};height:{{listH}};">
    <list-item if="{{isReadOptions}}" class="font-block" style="width:{{contentW}};height:{{fontBlockH}};"><text class="font-heading" style="width:{{contentW}};">&#x5B57;&#x53F7; &#x00B7; &#x4E0D;&#x6539;&#x53D8;&#x6B63;&#x6587;&#x5185;&#x5BB9;</text><div class="font-segments" style="width:{{contentW}};"><div class="font" @click="selectFont('compact')" style="width:{{segmentW}};background-color:{{font0Bg}};"><text class="font-label" style="width:{{segmentW}};color:{{font0Color}};">&#x7D27;&#x51D1;</text></div><div class="font" @click="selectFont('normal')" style="width:{{segmentW}};background-color:{{font1Bg}};"><text class="font-label" style="width:{{segmentW}};color:{{font1Color}};">&#x6807;&#x51C6;</text></div><div class="font" @click="selectFont('large')" style="width:{{segmentW}};background-color:{{font2Bg}};"><text class="font-label" style="width:{{segmentW}};color:{{font2Color}};">&#x5927;&#x5B57;</text></div></div></list-item>
    <list-item if="{{isTools}}" class="tool-block" style="width:{{contentW}};height:{{toolBarH+toolCaptionH}};">
     <stack class="source-toolbar" style="width:{{contentW}};height:{{toolBarH}};">

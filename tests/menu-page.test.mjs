@@ -351,7 +351,7 @@ test('app loadDraft error is visible and does not install or advertise an invali
 test('exit explicitly distinguishes a draft from deleting or overwriting the saved record', () => {
   const h = open({ params: { mode: 'exit' }, editor: snapshot });
   assert.equal(h.page.title, '退出编辑');
-  assert.equal(h.page.dialogIcon, '/common/ui/book-gold.png'); assert.equal(h.page.dialogIconSize, 43);
+  assert.equal(h.page.dialogIcon, '/common/ui/empty-book-gold.png'); assert.equal(h.page.dialogIconSize, 43);
   assert.equal(h.page.dialogText, '文字先留成草稿');
   assert.ok(h.page.dialogHint1.includes('退出不等于删除记录'));
   assert.ok(h.page.dialogHint2.includes('不') && h.page.dialogHint2.includes('覆盖'));
@@ -401,7 +401,7 @@ test('discarding a new draft returns index and saving a new draft actually persi
 for (const action of ['continue-edit', 'retry-save']) test('error ' + action + ' restores full snapshot and leaves saved record untouched', () => {
   const s = { ...snapshot, sheetOffset: -26, mode: 3 };
   const h = open({ params: { mode: 'error' }, editor: s });
-  assert.equal(h.page.title, '保存失败'); assert.equal(h.page.dialogIcon, '/common/ui/alert-warm.png');
+  assert.equal(h.page.title, '保存失败'); assert.equal(h.page.dialogIcon, '/common/ui/empty-alert-gold.png');
   assert.equal(h.page.dialogIconSize, 43); assert.equal(h.page.dialogText, '没存上，不丢文字');
   assert.ok(h.page.dialogHint1.includes('当前文字仍留在编辑区'));
   assert.equal(h.page.dockLeftLabel, '继续编辑'); assert.equal(h.page.dockRightLabel, '重试保存');

@@ -1,0 +1,2 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import test from 'node:test';
+test('approved dialog glyphs use full 43px originals rather than enlarged nav symbols',()=>{const src=fs.readFileSync(new URL('../entry/src/main/js/MainAbility/pages/menu/menu.js',import.meta.url),'utf8');assert.ok(src.includes('/common/ui/empty-book-gold.png'));assert.ok(src.includes('/common/ui/empty-trash-gold.png'));assert.ok(src.includes('/common/ui/empty-alert-gold.png'));});

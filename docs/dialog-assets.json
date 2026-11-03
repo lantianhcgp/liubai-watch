@@ -1,0 +1,20 @@
+[
+  {
+    "name": "empty-book-gold.png",
+    "sha256": "2ae1833cbbc8e6a108457f77538bd1cc7b7979a6b83e5ea7c4bd717327c1dd36",
+    "source": "/data/data/com.termux/files/home/liubai-watch-ui-restoration/entry/src/main/js/MainAbility/common/icons/empty_book_gold.png",
+    "scope": "unchanged approved-V3 raster symbol"
+  },
+  {
+    "name": "empty-trash-gold.png",
+    "sha256": "4e8f6a6554854656c57e4c4cfc20c50f0a96f170a60385d5e8360b1d0186c135",
+    "source": "/data/data/com.termux/files/home/liubai-watch-ui-restoration/entry/src/main/js/MainAbility/common/icons/empty_trash_gold.png",
+    "scope": "unchanged approved-V3 raster symbol"
+  },
+  {
+    "name": "empty-alert-gold.png",
+    "sha256": "5823ee6822b5edaf3d6ae90215603835fbf23edc9e25058ce03f7b697f963478",
+    "source": "/data/data/com.termux/files/home/liubai-watch-ui-restoration/entry/src/main/js/MainAbility/common/icons/empty_alert_gold.png",
+    "scope": "unchanged approved-V3 raster symbol"
+  }
+]
