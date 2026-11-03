@@ -536,7 +536,7 @@ test('all four complete native list pages wire gestures, image sizes, safe text 
         assert.ok(Object.hasOwn(page.data,field[1]),mode+' declared '+field[1]);
       }
       for(const value of match[1].matchAll(/(?:left|top|width|height|font-size|margin-left|border-radius):\s*\{\{[^}]+\}\}([^;]*)/g)) {
-        assert.equal(value[1],'px',mode+' numeric bindings must carry px');
+        assert.equal(value[1],'',mode+' SDK binding must remain a number; decimal px strings are rejected natively');
       }
     }
     if(mode!=='index') assert.ok(!source.includes('@system.file')&&!source.includes('/store.js'),mode+' no bundled store');
@@ -544,8 +544,8 @@ test('all four complete native list pages wire gestures, image sizes, safe text 
       assert.ok(source.includes('@system.file'));
       assert.ok(hml.includes('/common/ui/app-name.png'));
       assert.ok(hml.includes('/common/ui/write-note.png'));
-      assert.ok(hml.includes('width:{{brandW}}px;height:{{brandH}}px'));
-      assert.ok(hml.includes('width:{{writeW}}px;height:{{writeH}}px'));
+      assert.ok(hml.includes('width:{{brandW}};height:{{brandH}}'));
+      assert.ok(hml.includes('width:{{writeW}};height:{{writeH}}'));
     }
   }
 });

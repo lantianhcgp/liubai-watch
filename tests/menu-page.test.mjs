@@ -547,7 +547,7 @@ test('native menu HML/CSS exist, use boolean conditions, original toolbar, pure-
   const hml = fs.readFileSync(hp, 'utf8'), css = fs.readFileSync(cp, 'utf8'), js = fs.readFileSync(pagePath, 'utf8');
   assert.ok(hml.includes('ref="crown"')); assert.ok(hml.includes('action(item.action)'));
   assert.ok(hml.includes('selectFont(item.key)')); assert.ok(hml.includes('toolBarImage')); assert.ok(hml.includes('typeIcon'));
-  assert.ok(hml.includes('height:{{listH}}px')); assert.ok(hml.includes('height:{{dialogH}}px'));
+  assert.ok(hml.includes('height:{{listH}}')); assert.ok(hml.includes('height:{{dialogH}}'));
   assert.ok(!/<(?:button|section|span|p)\b/.test(hml));
   assert.ok(!/<text\b[^>]*@(?:click|touch|swipe)/.test(hml), 'text never owns action hit areas');
   assert.ok(!/<[^>]*\bif=[^>]*\bfor=|<[^>]*\bfor=[^>]*\bif=/.test(hml));
@@ -556,7 +556,7 @@ test('native menu HML/CSS exist, use boolean conditions, original toolbar, pure-
     const p = open({ params: { mode: 'read-options' } }).page;
     assert.equal(typeof p[match[2]], 'boolean', match[2]); p.onDestroy();
   }
-  for (const match of hml.matchAll(/{{[^}]+}}\s*(?=[;"'])/g)) assert.ok(!/(width|height|left|top|margin|font-size):\s*$/.test(hml.slice(Math.max(0, match.index - 20), match.index)), 'dimension interpolation must carry px');
+  assert.ok(!/}}px/.test(hml), 'native numeric bindings cannot stringify overlong fractional px values');
   for (const match of hml.matchAll(/src="(\/common\/[^"{]+)"/g)) assert.ok(fs.existsSync(new URL(match[1].slice(1), base)), match[1]);
   for (const match of js.matchAll(/['"](\/common\/[^'"]+\.png)['"]/g)) assert.ok(fs.existsSync(new URL(match[1].slice(1), base)), match[1]);
   assert.ok(!/\b(?:Promise|async|await|let|const)\b|=>|\?\./.test(js));

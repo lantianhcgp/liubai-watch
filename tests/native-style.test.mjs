@@ -1,0 +1,2 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import test from 'node:test';
+for(const p of ['index','read','edit','menu','history','day','trash'])test('native decimal styles stay numeric and never become overlong px strings '+p,()=>{const h=fs.readFileSync(new URL('../entry/src/main/js/MainAbility/pages/'+p+'/'+p+'.hml',import.meta.url),'utf8');assert.equal(/\}\}px/.test(h),false,'native percent parser rejects overlong decimal+px strings; compiled binding must return Number');});
