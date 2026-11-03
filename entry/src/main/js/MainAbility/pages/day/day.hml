@@ -15,7 +15,7 @@
 <div class="hit" if="{{hasPrev}}" style="width:{{contentW/2}};height:{{hit}};" @click="prev"><text class="pager-text">&#x4E0A;&#x4E00;&#x5C4F;</text></div>
 <div class="hit" if="{{hasMore}}" style="width:{{contentW/2}};height:{{hit}};" @click="next"><text class="pager-text">&#x4E0B;&#x4E00;&#x5C4F;</text></div></list-item>
 </list>
-<div class="notice" if="{{message || loading}}" style="left:{{contentX}};top:{{listY}};width:{{contentW}};height:{{listH}};" @click="retry"><text class="quiet" style="width:{{contentW}};height:{{quietH}};font-size:{{quietFont}};">{{message || '&#x6B63;&#x5728;&#x8BFB;&#x53D6;'}}</text></div>
+<div class="notice" if="{{!!message || loading}}" style="left:{{contentX}};top:{{listY}};width:{{contentW}};height:{{listH}};" @click="retry"><text class="quiet" style="width:{{contentW}};height:{{quietH}};font-size:{{quietFont}};">{{message || '&#x6B63;&#x5728;&#x8BFB;&#x53D6;'}}</text></div>
 <div class="dock" style="left:{{dockX}};top:{{dockY}};width:{{dockW}};height:{{hit}};border-radius:{{dockRadius}};">
 <div class="nav" style="width:{{dockHalfW}};height:{{dockInnerH}};" @click="home"><image src="/common/icons/book_nav_muted.png" style="width:20px;height:20px;margin-right:{{navGap}};"></image><text class="nav-label" style="width:{{navFont*2}};height:{{28*w/412}};font-size:{{navFont}};">&#x968F;&#x8BB0;</text></div>
 <div class="dock-divider" style="width:1px;height:{{dockInnerH}};"></div>

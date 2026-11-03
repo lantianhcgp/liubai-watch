@@ -21,7 +21,7 @@
      <stack class="source-toolbar" style="width:{{contentW}};height:44px;">
       <div class="tool-hit" for="{{(i,c) in toolControls}}" @click="activate(c.action)" style="left:{{i*toolW}};top:0px;width:{{toolW}};height:44px;">
        <image if="{{c.action==='type'}}" src="{{typeImage}}" style="width:25px;height:25px;"></image>
-       <image class="tool-icon" if="{{c.icon}}" src="{{c.icon}}"></image>
+       <image class="tool-icon" if="{{!!c.icon}}" src="{{c.icon}}"></image>
       </div>
      </stack>
      <div class="tool-labels" style="width:{{contentW}};height:27px;">
@@ -36,7 +36,7 @@
      <text class="label" style="width:{{mode==='clipboard'?contentW:contentW-rowIcon-rowGap}};height:{{r.textH}};margin-left:{{mode==='clipboard'?0:rowGap}};font-size:{{rowFont}};color:{{r.action==='delete-confirm'?'#eca18b':'#f1f0e8'}};">{{r.title}}</text>
     </div>
    <div class="row-divider" style="left:0px;top:{{r.height-1}};width:{{contentW}};height:1px;background-color:{{mode==='clipboard'?'#282e2b':'#292e2d'}};"></div></stack></list-item>
-   <list-item if="{{hint}}" style="width:{{contentW}};height:{{hintH}};">
+   <list-item if="{{!!hint}}" style="width:{{contentW}};height:{{hintH}};">
     <div class="hint-box" style="width:{{contentW}};height:{{hintH}};">
      <text class="hint" style="width:{{contentW}};height:{{hintH-(quiet?16:7)}};font-size:{{hintFont}};margin-top:{{quiet?16:7}};">{{hint}}</text>
     </div>
@@ -49,10 +49,10 @@
   </div>
   <div class="dock" style="left:{{dockX}};top:{{dockY}};width:{{dockW}};height:{{hit}};">
    <div class="dock-control" for="{{(i,c) in dock}}" @click="activate(c.action)" style="width:{{dockCellW}};height:{{hit}};background-color:{{c.emphasis?'#e6c78c':'#171b1b'}};border-left-width:{{i?1:0}};">
-    <image if="{{c.icon}}" src="{{'/common/icons/'+c.icon+'_muted.png'}}" style="width:20px;height:20px;margin-right:{{w/412*7}};"></image>
+    <image if="{{!!c.icon}}" src="{{'/common/icons/'+c.icon+'_muted.png'}}" style="width:20px;height:20px;margin-right:{{w/412*7}};"></image>
     <text class="dock-label" style="height:28px;font-size:{{dockFont}};color:{{c.emphasis?'#252b25':'#adb1a9'}};">{{c.label}}</text>
    </div>
   </div>
-  <text class="notice" if="{{message}}" @click="retry" style="left:{{contentX}};top:{{noticeY}};width:{{contentW}};height:24px;">{{message}}</text>
+  <text class="notice" if="{{!!message}}" @click="retry" style="left:{{contentX}};top:{{noticeY}};width:{{contentW}};height:24px;">{{message}}</text>
  </stack>
 </stack>

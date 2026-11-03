@@ -46,6 +46,15 @@ class SemanticTests(unittest.TestCase):
   g={'h':{'hx':45.8,'hy':23.2,'hw':320.3,'hit':46,'newY':73.2,'newH':54.4,'dockX':41.2,'dockY':359.6,'dockW':329.6,'listY':173.6,'rowH':59.7,'contentX':29.1,'contentW':353.8},'e':{'hx':48.3,'hy':21.3,'hw':315.4,'hit':46,'keyX':24,'keysY':220.9,'footX':28.2,'footY':365.9,'footW':355.7},'r':{'hx':48.3,'hy':21.3,'hw':315.4,'hit':46}}
   p={x['name']:x for x in self.m.user_plan(g)}
   self.assertEqual(p['font-large']['point'],[324,128])
+ def test_tool_actions_use_real_cells_and_assert_cursor_without_changing_body(self):
+  g={'h':{'hx':45.8,'hy':23.2,'hw':320.3,'hit':46,'newY':73.2,'newH':54.4,'dockX':41.2,'dockY':359.6,'dockW':329.6,'listY':173.6,'rowH':59.7,'contentX':29.1,'contentW':353.8},'e':{'hx':48.3,'hy':21.3,'hw':315.4,'hit':46,'keyX':24,'keysY':220.9,'footX':28.2,'footY':365.9,'footW':355.7},'r':{'hx':48.3,'hy':21.3,'hw':315.4,'hit':46}}
+  p={x['name']:x for x in self.m.user_plan(g)}
+  for n,x in [('tool-left',73),('tool-type',162),('tool-clipboard',250),('tool-right',339)]:
+   self.assertEqual(p[n]['point'],[x,99])
+  self.assertIn('cursor=27',p['tool-left']['expect']);self.assertIn('cursor=28',p['tool-right']['expect'])
+  self.assertIn('cursor=0',p['tool-home']['expect']);self.assertIn('cursor=28',p['tool-end']['expect'])
+  self.assertIn('type=2',p['tool-type']['expect'])
+  self.assertIn('MENU clipboard rows=0',p['tool-clipboard']['expect'])
  def test_unmatched_state_is_a_failure_not_green(self):
   self.assertFalse(self.m.approved({'ok':True,'orderedSemanticsOk':False,'signedProvenanceOk':True,'visualReviewed':True}))
 if __name__=='__main__':unittest.main()
