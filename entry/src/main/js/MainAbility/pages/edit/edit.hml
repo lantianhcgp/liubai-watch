@@ -25,7 +25,7 @@
    <div class="small-key" @click="enter"><image class="icon" src="/common/ui/enter-warm.png"></image></div>
   </div>
   <div class="candidate-keybar" if="{{open && hasPinyin}}" style="left:{{footX}};top:{{footY}};width:{{footW}};height:44px;">
-   <list class="candidate-list" style="width:{{footW-49}};height:44px;"><list-item class="candidate" for="{{(i,c) in candidates}}" @click="choose(i)" style="width:{{c.width}};height:44px;"><text class="candidate-text" style="width:{{c.width}};color:{{i===0?'#70b5ff':'#f1f0e8'}};">{{c.text}}</text></list-item></list>
+   <list class="candidate-list" ref="candidateList" style="width:{{footW-49}};height:44px;"><list-item class="candidate" for="{{(i,c) in candidates}}" @click="choose(i)" style="width:{{c.width}};height:44px;"><text class="candidate-text" style="width:{{c.width}};color:{{i===0?'#70b5ff':'#f1f0e8'}};">{{c.text}}</text></list-item></list>
    <div class="small-key" @click="del"><image class="icon" src="/common/ui/delete-warm.png"></image></div>
   </div>
   <div class="folded-bar" if="{{!open}}" style="left:{{footX}};top:{{footY}};width:{{footW}};height:44px;">
