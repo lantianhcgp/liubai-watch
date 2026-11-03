@@ -1,0 +1,2 @@
+import fs from 'node:fs';import test from 'node:test';import assert from 'node:assert/strict';
+for(const p of ['edit','read'])test('current official lite runtime excludes JS_EXTRA_EVENT_SUPPORT touchcancel '+p,()=>{const s=fs.readFileSync(new URL('../entry/src/main/js/MainAbility/pages/'+p+'/'+p+'.hml',import.meta.url),'utf8');assert.ok(!s.includes('@touchcancel='),'target runtime does not register K_TOUCHCANCEL; move/end/start state resets still protect cancelled gestures');});

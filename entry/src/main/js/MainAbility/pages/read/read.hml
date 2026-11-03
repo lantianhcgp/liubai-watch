@@ -3,7 +3,7 @@
   <stack class="surface" if="{{ready}}" style="width:{{w}};height:{{h}};">
     <slider class="crown-sensor" ref="crown" min="0" max="100" value="{{crownValue}}" @change="crownChange"></slider>
     <text class="reading-line" for="{{(i,line) in lines}}" style="left:{{line.x}};top:{{line.y}};width:{{line.width}};height:{{line.height}};font-size:{{line.font}};">{{line.text}}</text>
-    <div class="body-hit" @touchstart="startTouch" @touchend="endTouch" @touchcancel="cancelTouch" @swipe="onSwipe" style="left:0px;top:{{top}};width:{{w}};height:{{bottom-top}};"></div>
+    <div class="body-hit" @touchstart="startTouch" @touchend="endTouch" @swipe="onSwipe" style="left:0px;top:{{top}};width:{{w}};height:{{bottom-top}};"></div>
     <div class="header" style="left:{{hx}};top:{{hy}};width:{{hw}};height:{{hit}};">
       <div class="hit" @click="back" style="width:{{hit}};height:{{hit}};"><image class="icon" src="/common/ui/back-warm.png"></image></div>
       <div class="date-box" style="width:{{hw-2*hit}};height:{{hit}};"><text class="date">{{date}}</text><text class="time">{{time}}</text></div>

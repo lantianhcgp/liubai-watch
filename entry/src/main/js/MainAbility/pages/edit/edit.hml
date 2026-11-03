@@ -5,7 +5,7 @@
   <text class="line" for="{{(i,line) in lines}}" style="left:{{line.x}};top:{{line.y}};width:{{line.width}};height:{{line.height}};font-size:{{line.font}};">{{line.text}}</text>
   <text class="placeholder" if="{{empty}}" style="left:{{placeholderX}};top:{{placeholderY}};width:{{placeholderW}};height:{{lineHeight}};font-size:{{font}};">&#x5199;&#x4E0B;&#x73B0;&#x5728;&#x7684;&#x5FF5;&#x5934;</text>
   <div class="caret" if="{{caretShow}}" style="left:{{caretX}};top:{{caretY}};height:{{caretH}};"></div>
-  <div class="body-hit" @click="pickLine" @touchstart="bodyStart" @touchend="bodyEnd" @touchcancel="bodyCancel" @swipe="bodySwipe" style="left:0px;top:{{top}};width:{{w}};height:{{bottom-top}};"></div>
+  <div class="body-hit" @click="pickLine" @touchstart="bodyStart" @touchend="bodyEnd" @swipe="bodySwipe" style="left:0px;top:{{top}};width:{{w}};height:{{bottom-top}};"></div>
   <div class="header" style="left:{{hx}};top:{{hy}};width:{{hw}};height:46px;">
    <div class="command" @click="cancel"><text class="cancel">&#x53D6;&#x6D88;</text></div>
    <div class="middle" if="{{!open}}" style="width:{{middleW}};"><text class="title" style="width:{{middleW}};">{{title}}</text></div>
@@ -16,7 +16,7 @@
   <text class="status" style="left:{{statusX}};top:{{statusY}};width:{{statusW}};">{{status}}</text>
   <text class="composing" if="{{open && hasPinyin}}" style="left:{{statusX}};top:{{statusY}};width:{{statusW}};">{{composition}}</text>
   <stack class="key-viewport" if="{{open}}" style="left:{{keyX}};top:{{keysY}};width:{{keyW}};height:141px;">
-   <image class="key-sheet" src="{{image}}" @click="tapKey" @touchstart="startKey" @touchmove="moveKey" @touchend="endKey" @touchcancel="cancelKey" @longpress="longKey" style="left:{{sheetOffset}};top:0px;width:{{sheetW}};height:141px;"></image>
+   <image class="key-sheet" src="{{image}}" @click="tapKey" @touchstart="startKey" @touchmove="moveKey" @touchend="endKey" @longpress="longKey" style="left:{{sheetOffset}};top:0px;width:{{sheetW}};height:141px;"></image>
   </stack>
   <div class="keybar" if="{{open && !hasPinyin}}" style="left:{{footX}};top:{{footY}};width:{{footW}};height:44px;">
    <div class="mode-key" @click="mode"><image class="mode-image" src="{{typeImage}}"></image></div>
