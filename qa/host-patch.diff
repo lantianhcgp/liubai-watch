@@ -1,0 +1,268 @@
+--- a/js/runtime/sandbox.js
++++ b/js/runtime/sandbox.js
+@@ -10,6 +10,7 @@
+   let _lastViewModel = null;
+   let _lastError = null;
+   let _imageSrcResolver = null;
++  let _localeTables = [];
+   const _activeTimers = new Set();
+   const _globalKeys = [];
+   let _destroyed = false;
+@@ -343,9 +344,17 @@
+       if (!obj) return;
+       for (const [event, handler] of Object.entries(obj)) {
+         if (typeof handler === 'function') {
+-          el.addEventListener(event, (e) => {
++          const inputEvent = {touchstart:'pointerdown',touchmove:'pointermove',touchend:'pointerup'}[event] || event;
++          el.addEventListener(inputEvent, (e) => {
+             if (phase === 'stop' || phase === 'captureStop') e.stopPropagation();
+-            handler.call(_lastViewModel ? _lastViewModel._data : {}, e);
++            let payload = e;
++            if (typeof e.clientX === 'number') {
++              const r = document.getElementById('watch-content').getBoundingClientRect();
++              const info = DeviceFeatureDisplay.getDeviceInfo();
++              const point = {globalX:(e.clientX-r.left)*info.windowWidth/r.width,globalY:(e.clientY-r.top)*info.windowHeight/r.height};
++              payload = {globalX:point.globalX,globalY:point.globalY,touches:[point],changedTouches:[point],direction:e.direction};
++            }
++            handler.call(_lastViewModel ? _lastViewModel._data : {}, payload);
+           }, phase === 'capture' || phase === 'captureStop');
+         }
+       }
+@@ -361,7 +370,7 @@
+       let lastSibling = null;
+       children.forEach(child => {
+         if (child === null || child === undefined) return;
+-        if (child && child._l) { child.mount(childContainer, lastSibling); if (child.state.nodes.length > 0) lastSibling = child.state.nodes[child.state.nodes.length - 1]; }
++        if (child && child._l) { child.mount(childContainer, lastSibling); lastSibling = child.state.anchor; }
+         else if (typeof child === 'string' || typeof child === 'number') { const t = document.createTextNode(String(child)); childContainer.appendChild(t); lastSibling = t; }
+         else if (child instanceof Node) { childContainer.appendChild(child); lastSibling = child; }
+       });
+@@ -373,28 +382,39 @@
+   function _i(condition, renderFn) {
+     const getCondition = typeof condition === 'function' ? condition : () => condition;
+     const { value: initialVal, deps } = _reactive.track(getCondition);
+-    const state = { nodes: [], parent: null, ref: null };
++    const state = { nodes: [], parent: null, ref: null, anchor: document.createComment("native-if") };
+ 
+     function clearNodes() { for (const n of state.nodes) { if (n.parentNode) n.parentNode.removeChild(n); } state.nodes.length = 0; }
+     function insertNodes() {
+       if (!state.parent || state.nodes.length === 0) return;
+       const frag = document.createDocumentFragment();
+       state.nodes.forEach(n => frag.appendChild(n));
+-      if (state.ref && state.ref.parentNode === state.parent) state.parent.insertBefore(frag, state.ref.nextSibling);
+-      else state.parent.insertBefore(frag, state.parent.firstChild);
+-      if (state.nodes.length > 0) state.ref = state.nodes[state.nodes.length - 1];
++      state.parent.insertBefore(frag, state.anchor);
+     }
+     function renderContent() {
+       clearNodes();
+       try { const node = renderFn(); if (node !== null && node !== undefined) { if (node instanceof Node) state.nodes.push(node); else if (typeof node === 'string' || typeof node === 'number') state.nodes.push(document.createTextNode(String(node))); } } catch (e) { console.error('[Sandbox] _i render error:', e); }
+       insertNodes();
+     }
+-    function mount(parent, ref) { state.parent = parent; state.ref = ref; if (state.nodes.length > 0) insertNodes(); }
++    function mount(parent, ref) { state.parent = parent; state.ref = ref; parent.insertBefore(state.anchor,ref?ref.nextSibling:parent.firstChild); if (state.nodes.length > 0) insertNodes(); }
+ 
+     if (initialVal) renderContent();
+     if (deps.size > 0) {
+       let wasVisible = !!initialVal;
+-      _reactive.addCleanup(_reactive.subscribe(deps, () => { const v = !!getCondition(); if (v === wasVisible) return; wasVisible = v; if (v) renderContent(); else clearNodes(); }));
++      const observed = new Set(deps);
++      function updateCondition() {
++        // A short-circuit such as open && hasPinyin can discover new
++        // dependencies only after open flips. Keep the union subscribed.
++        const tracked = _reactive.track(getCondition);
++        const added = new Set();
++        for (const key of tracked.deps) if (!observed.has(key)) { observed.add(key); added.add(key); }
++        if (added.size) _reactive.addCleanup(_reactive.subscribe(added, updateCondition));
++        const v = !!tracked.value;
++        if (v === wasVisible) return;
++        wasVisible = v;
++        if (v) renderContent(); else clearNodes();
++      }
++      _reactive.addCleanup(_reactive.subscribe(deps, updateCondition));
+     }
+     return { _l: true, state, mount };
+   }
+@@ -420,14 +440,13 @@
+   function _l(array, renderFn) {
+     const getArray = typeof array === 'function' ? array : () => array;
+     const { value: arr, deps } = _reactive.track(getArray);
+-    const state = { nodes: [], parent: null, ref: null, itemKeys: new Set() };
++    const state = { nodes: [], parent: null, ref: null, anchor: document.createComment("native-list"), itemKeys: new Set() };
+ 
+     function insertAfterRef(frag) {
+       if (!state.parent) return;
+-      if (state.ref && state.ref.parentNode === state.parent) state.parent.insertBefore(frag, state.ref.nextSibling);
+-      else state.parent.insertBefore(frag, state.parent.firstChild);
+-    }
+-    function mount(parent, ref) { state.parent = parent; state.ref = ref; if (state.nodes.length > 0) { const frag = document.createDocumentFragment(); state.nodes.forEach(n => frag.appendChild(n)); insertAfterRef(frag); } }
++      state.parent.insertBefore(frag, state.anchor);
++    }
++    function mount(parent, ref) { state.parent = parent; state.ref = ref; parent.insertBefore(state.anchor,ref?ref.nextSibling:parent.firstChild); if (state.nodes.length > 0) { const frag = document.createDocumentFragment(); state.nodes.forEach(n => frag.appendChild(n)); insertAfterRef(frag); } }
+     function clearNodes() { for (const n of state.nodes) { if (n.parentNode) n.parentNode.removeChild(n); } state.nodes.length = 0; }
+     function renderItems(items) {
+       for (const k of state.itemKeys) _reactive.removeKey(k);
+@@ -481,6 +500,7 @@
+   function ViewModel(definition) {
+     definition = definition || {};
+     const data = definition.data || {};
++    if (typeof data.$t !== 'function') data.$t = translate;
+     const renderFn = definition.render || null;
+     const styleSheet = definition.styleSheet || null;
+ 
+@@ -625,6 +645,34 @@
+ 
+   function arrayBufferToText(ab) { return new TextDecoder().decode(ab); }
+ 
++  function loadLocaleTables(appData) {
++    const found = new Map();
++    const stores = [(appData && appData.modules) || {}, (appData && appData.hapFiles) || {}];
++    for (const store of stores) for (const key of Object.keys(store)) {
++      const match = key.match(/(?:^|\/)i18n\/([^/]+)\.json$/);
++      if (!match || found.has(match[1])) continue;
++      try {
++        const value = store[key];
++        const text = typeof value === 'string' ? value : arrayBufferToText(value);
++        found.set(match[1], JSON.parse(text));
++      } catch (e) { console.warn('[Sandbox] Invalid packaged i18n:', key, e.message); }
++    }
++    const locale = typeof navigator !== 'undefined' && navigator.language ? navigator.language : 'zh-CN';
++    const exact = found.has(locale) ? locale : Array.from(found.keys()).find(k => k.split('-')[0] === locale.split('-')[0]);
++    const order = [exact, 'zh-CN', 'en-US', ...found.keys()].filter((k, i, a) => k && a.indexOf(k) === i);
++    _localeTables = order.map(k => found.get(k)).filter(Boolean);
++  }
++
++  function translate(key) {
++    const parts = String(key).split('.');
++    for (const table of _localeTables) {
++      let value = table;
++      for (const part of parts) value = value && Object.prototype.hasOwnProperty.call(value, part) ? value[part] : undefined;
++      if (typeof value === 'string' || typeof value === 'number') return String(value);
++    }
++    return String(key);
++  }
++
+   function executeModule(code, moduleKey, appData) {
+     if (_moduleCache.has(moduleKey)) return _moduleCache.get(moduleKey);
+     if (!code && appData.hapFiles) {
+@@ -668,6 +716,7 @@
+ 
+   function initApp(appJsCode, appData) {
+     _moduleCache.clear();
++    loadLocaleTables(appData);
+     DeviceFeatureAppLifecycle.setAppData(appData);
+     DeviceFeaturePageNav.setAppData(appData);
+     _imports = {
+--- a/js/runtime/deviceFeature_pageNav.js
++++ b/js/runtime/deviceFeature_pageNav.js
+@@ -215,7 +215,14 @@
+           changeEvent.progress = val;
+           el.dispatchEvent(changeEvent);
+         } else if (el.tagName === 'LIST') {
+-          el.scrollTop -= delta * 30;
++          const requested = el.scrollTop - delta * 30;
++          const max = Math.max(0, el.scrollHeight - el.clientHeight);
++          el.scrollTop = requested;
++          if ((delta < 0 && requested >= max) || (delta > 0 && requested <= 0)) {
++            const end = new CustomEvent('scrollend', { bubbles: true, cancelable: true });
++            end.direction = delta < 0 ? 'bottom' : 'top';
++            el.dispatchEvent(end);
++          }
+         }
+       });
+     });
+--- a/js/runtime/deviceFeature_display.js
++++ b/js/runtime/deviceFeature_display.js
+@@ -39,6 +39,8 @@
+     _watchFrame.style.width = width + 'px';
+     _watchFrame.style.height = height + 'px';
+     _watchFrame.className = isCircle ? 'circle' : 'rect';
++    _watchFrame.style.borderRadius=isCircle?'50%':Math.min(width,height)*.25+'px';
++    _watchContent.style.borderRadius=isCircle?'50%':Math.min(width,height)*.25+'px';
+   }
+ 
+   /**
+--- a/js/css-adapter.js
++++ b/js/css-adapter.js
+@@ -6,9 +6,19 @@
+ 
+   function getWatchBaseStyles() {
+     return `
++/* Host-only native font alias: same installed sans used by approved HTML.
++   Does not ship in .app or claim the real device typeface is identical. */
++@font-face {
++  font-family: 'HYQiHei-65S';
++  src: local('Noto Sans CJK SC');
++  font-style: normal;
++  font-weight: 400;
++}
+ * {
+   margin: 0;
+   padding: 0;
++  border-style: solid;
++  border-width: 0;
+   box-sizing: border-box;
+   -webkit-tap-highlight-color: transparent;
+   flex-shrink: 0;
+--- a/js/app.js
++++ b/js/app.js
+@@ -226,14 +226,14 @@
+         DeviceFeatureAppLifecycle.callOnCreate();
+ 
+         if (!_navigatedFromOnCreate) {
+-          DeviceFeaturePageNav.navigateTo('pages/index/index', {});
++          DeviceFeaturePageNav.navigateTo((appData.pages && appData.pages[0]) || 'pages/index/index', {});
+         }
+       } else {
+         DeviceFeaturePageNav.onNavigate(async function(pageInfo) {
+           if (!pageInfo) { DeviceFeatureDisplay.clear(); return; }
+           await DeviceFeaturePageNav.navigateTo(pageInfo.uri, pageInfo.params);
+         });
+-        DeviceFeaturePageNav.navigateTo('pages/index/index', {});
++        DeviceFeaturePageNav.navigateTo((appData.pages && appData.pages[0]) || 'pages/index/index', {});
+       }
+ 
+       log('App restarted.', 'info');
+@@ -285,14 +285,14 @@
+       DeviceFeatureAppLifecycle.callOnCreate();
+ 
+       if (!_navigatedFromOnCreate) {
+-        DeviceFeaturePageNav.navigateTo('pages/index/index', {});
++        DeviceFeaturePageNav.navigateTo((appData.pages && appData.pages[0]) || 'pages/index/index', {});
+       }
+     } else {
+       DeviceFeaturePageNav.onNavigate(async (pageInfo) => {
+         if (!pageInfo) { DeviceFeatureDisplay.clear(); return; }
+         await DeviceFeaturePageNav.navigateTo(pageInfo.uri, pageInfo.params);
+       });
+-      DeviceFeaturePageNav.navigateTo('pages/index/index', {});
++      DeviceFeaturePageNav.navigateTo((appData.pages && appData.pages[0]) || 'pages/index/index', {});
+     }
+ 
+     log('App refreshed.', 'info');
+@@ -384,6 +384,8 @@
+         // Try exact match with various prefixes
+         const possiblePaths = [
+           normalized,
++          'assets/js/MainAbility/' + normalized,
++          'assets/js/MainAbility/' + normalized + '.bin',
+           'assets/entry/resources/' + normalized,
+           'assets/entry/resources/base/media/' + normalized,
+           'assets/js/default/' + normalized,
+@@ -502,14 +504,14 @@
+ 
+         // If onCreate already navigated away, skip the default index page
+         if (!_navigatedFromOnCreate) {
+-          await DeviceFeaturePageNav.navigateTo('pages/index/index', {});
++          await DeviceFeaturePageNav.navigateTo((appData.pages && appData.pages[0]) || 'pages/index/index', {});
+         }
+       } else {
+         DeviceFeaturePageNav.onNavigate(async (pageInfo) => {
+           if (!pageInfo) { DeviceFeatureDisplay.clear(); return; }
+           await DeviceFeaturePageNav.navigateTo(pageInfo.uri, pageInfo.params);
+         });
+-        await DeviceFeaturePageNav.navigateTo('pages/index/index', {});
++        await DeviceFeaturePageNav.navigateTo((appData.pages && appData.pages[0]) || 'pages/index/index', {});
+       }
+     } catch (e) {
+       log('Error loading app: ' + e.message, 'error');

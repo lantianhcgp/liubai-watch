@@ -1,0 +1,90 @@
+name: liubai-elcton-dual-sim
+on:
+  push:
+    branches: [rebuild/elcton-v3]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: liubai-elcton-rebuild-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Source behavior and artifact negative gates
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund --prefix tools/sign
+          node --test --test-concurrency=1 tests/*.test.mjs
+          python3 tests/test_artifact.py
+      - name: Real course-app toolchain
+        uses: ErBWs/setup-ohos@v2
+        with:
+          version: 6.1.1.280
+          cache: true
+      - name: Expose actual CLT
+        shell: bash
+        run: |
+          for p in "$HOME/ohos-sdk/command-line-tools/bin" "$HOME/ohos-sdk/command-line-tools/tool/node/bin"; do
+            if [ -d "$p" ]; then printf '%s\n' "$p" >> "$GITHUB_PATH"; fi
+          done
+          printf 'HOS_SDK_HOME=%s\n' "$HOME/ohos-sdk/command-line-tools/sdk" >> "$GITHUB_ENV"
+      - name: Compile actual complete native V3
+        shell: bash
+        run: |
+          ohpm install --all
+          hvigorw assembleApp --mode project -p product=default -p buildMode=debug --no-daemon --accept-license
+          mkdir -p dist
+          cp build/outputs/default/*.app dist/compiler-original.app
+          python3 scripts/clean_config_in_app.py build/outputs/default/*.app
+          npm ci --ignore-scripts --no-audit --no-fund --prefix tools/sign
+          node scripts/compact_app.mjs build/outputs/default/*.app dist/liubai-elcton-v3.app
+          python3 scripts/verify_app.py dist/liubai-elcton-v3.app --output dist/compiler-proof.json
+          printf '%s\n' "$GITHUB_SHA" > dist/source-sha.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: liubai-elcton-${{ github.run_id }}
+          path: dist/
+          if-no-files-found: error
+  official:
+    needs: build
+    runs-on: macos-14
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: lantianhcgp/deveco-sim-ci
+          ref: aa3a315a766f6dd4983ad8dad9eed2c948c6faba
+          ssh-key: ${{ secrets.LIUBAI_OFFICIAL_SIM_SSH_KEY }}
+          persist-credentials: false
+          path: _sim
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install --disable-pip-version-check pillow==11.3.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: liubai-elcton-${{ github.run_id }}
+          path: _built
+      - name: Strict input and source association
+        run: |
+          python3 -c 'from pathlib import Path;import os,json,hashlib;p=Path("_built/liubai-elcton-v3.app");r=json.loads(Path("_built/compiler-proof.json").read_text());assert Path("_built/source-sha.txt").read_text().strip()==os.environ["GITHUB_SHA"];assert hashlib.sha256(p.read_bytes()).hexdigest()==r["appSha256"];assert r["ok"] and not r["pageSelectionPerformed"]'
+      - name: Genuine official user paths on all four test windows
+        run: python3 qa/official.py --sim _sim --app _built/liubai-elcton-v3.app --out official-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: liubai-official-${{ github.run_id }}
+          path: official-evidence/
+          if-no-files-found: error

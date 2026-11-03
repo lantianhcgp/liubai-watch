@@ -1,0 +1,15 @@
+<stack class="page">
+  <div class="loading" if="{{!ready}}" @click="retry"><text class="notice">{{message}}</text></div>
+  <stack class="surface" if="{{ready}}" style="width:{{w}}px;height:{{h}}px;">
+    <slider class="crown-sensor" ref="crown" min="0" max="100" value="{{crownValue}}" @change="crownChange"></slider>
+    <text class="reading-line" for="{{(i,line) in lines}}" style="left:{{line.x}}px;top:{{line.y}}px;width:{{line.width}}px;height:{{line.height}}px;font-size:{{line.font}}px;">{{line.text}}</text>
+    <div class="body-hit" @touchstart="startTouch" @touchend="endTouch" @touchcancel="cancelTouch" @swipe="onSwipe" style="left:0px;top:{{top}}px;width:{{w}}px;height:{{bottom-top}}px;"></div>
+    <div class="header" style="left:{{hx}}px;top:{{hy}}px;width:{{hw}}px;height:{{hit}}px;">
+      <div class="hit" @click="back" style="width:{{hit}}px;height:{{hit}}px;"><image class="icon" src="/common/ui/back-warm.png"></image></div>
+      <div class="date-box" style="width:{{hw-2*hit}}px;height:{{hit}}px;"><text class="date">{{date}}</text><text class="time">{{time}}</text></div>
+      <div class="hit" @click="more" style="width:{{hit}}px;height:{{hit}}px;"><image class="more-icon" src="/common/ui/dots-gold.png"></image></div>
+    </div>
+    <text class="counter" style="left:{{trackX}}px;top:{{footerY}}px;width:{{trackW}}px;">{{counter}}</text>
+    <div class="track" style="left:{{trackX}}px;top:{{footerY+20}}px;width:{{trackW}}px;"><div class="progress" style="width:{{progressW}}px;"></div></div>
+  </stack>
+</stack>

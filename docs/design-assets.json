@@ -1,0 +1,280 @@
+{
+  "scope": "verified original V3-derived assets only, no old runtime code copied",
+  "baselineHtmlSha256": "afc5fcb14d47a83be90dc71f9f2682a5d9eb95d19f55643328a05cf9f2fd5d6a",
+  "manifestSha256": "819139bd34fe0ec8c3a6f0afa950a33a2fee2ed3e509538e3e2cb25f13d21480",
+  "assets": [
+    {
+      "file": "book-gold.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/book_nav_gold.png",
+      "sourceSha256": "dd6022242fd227d6ca3c5bbd7f319c20879500dc6110ea23de54660ca97197c9",
+      "size": [
+        20,
+        20
+      ],
+      "pixelSha256": "9cece3a725d689efa8bf81094085c5f5225b4a34f296b4fe715589f3b3a7a7a4",
+      "sha256": "dd6022242fd227d6ca3c5bbd7f319c20879500dc6110ea23de54660ca97197c9"
+    },
+    {
+      "file": "book-muted.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/book_nav_muted.png",
+      "sourceSha256": "568754e981eb23c76bb3435a9107926c27e04d631e0f2871a87bed2cf873a102",
+      "size": [
+        20,
+        20
+      ],
+      "pixelSha256": "b11a9b912c2215774f333b3750c5fbb9dca0f2bb4c6eb7aa7e28827b802eaf80",
+      "sha256": "568754e981eb23c76bb3435a9107926c27e04d631e0f2871a87bed2cf873a102"
+    },
+    {
+      "file": "calendar-gold.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/calendar_nav_gold.png",
+      "sourceSha256": "66004b0c84584b2926706460b2182172b9f11ef9cb52e6040c4379909fa29abc",
+      "size": [
+        20,
+        20
+      ],
+      "pixelSha256": "da8b57a2f7899f1fe0f7bd42a3e2a01930d7b0763b51becfd90ec38582a05d83",
+      "sha256": "66004b0c84584b2926706460b2182172b9f11ef9cb52e6040c4379909fa29abc"
+    },
+    {
+      "file": "calendar-muted.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/calendar_nav_muted.png",
+      "sourceSha256": "8f61db3c511bb9ac8031eae4ea00ab2b5d29707abcbbc5a029a6a5649a60a70c",
+      "size": [
+        20,
+        20
+      ],
+      "pixelSha256": "79b1c5f19835b4050162199e7e45474ab815de2f172c9d7558202af0ee43271e",
+      "sha256": "8f61db3c511bb9ac8031eae4ea00ab2b5d29707abcbbc5a029a6a5649a60a70c"
+    },
+    {
+      "file": "dots-warm.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/dots_header_warm.png",
+      "sourceSha256": "9c6aafc1f794bbd2e2dd00491cf8a2bbdddad0aaa517d58dc4bedf5810a888d0",
+      "size": [
+        23,
+        23
+      ],
+      "pixelSha256": "97c1289830e506e8d8e14c7da197b2f9542e3833e96e70c8253c4a7faa6fb84a",
+      "sha256": "9c6aafc1f794bbd2e2dd00491cf8a2bbdddad0aaa517d58dc4bedf5810a888d0"
+    },
+    {
+      "file": "dots-gold.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/dots_reader_gold.png",
+      "sourceSha256": "770308a9582b2fee156dde43dc5976b221e14a89afe44a2b40984863efe76c84",
+      "size": [
+        26,
+        26
+      ],
+      "pixelSha256": "634755b2987104b3fc03590e4bfa49b0f82cc27890f6035fc23763db5b05ec36",
+      "sha256": "770308a9582b2fee156dde43dc5976b221e14a89afe44a2b40984863efe76c84"
+    },
+    {
+      "file": "back-muted.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/back_nav_muted.png",
+      "sourceSha256": "68ca980a37e20195d22b5b29d0681458785ca2c1fc9a4f241a5544b658218425",
+      "size": [
+        23,
+        23
+      ],
+      "pixelSha256": "2422d6470b0c91575d6de62c0b2a0974237be859e82773a5efa07950cae88918",
+      "sha256": "68ca980a37e20195d22b5b29d0681458785ca2c1fc9a4f241a5544b658218425"
+    },
+    {
+      "file": "right-muted.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/right_nav_muted.png",
+      "sourceSha256": "1b2c794b625236fa1522baafdf3054f8f2b2f56bbda28a2bdea8975fb713ee88",
+      "size": [
+        23,
+        23
+      ],
+      "pixelSha256": "d0dde2337bcf0ba4d3b7d2e9923f01aab5de5f15918343c3598bcd92d8fbe3ae",
+      "sha256": "1b2c794b625236fa1522baafdf3054f8f2b2f56bbda28a2bdea8975fb713ee88"
+    },
+    {
+      "file": "pin-gold.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/pin_row_gold.png",
+      "sourceSha256": "59437c0088ec6d69793253e53e171a34a4ec3a2b6a9608b6b265d54df91c38ec",
+      "size": [
+        17,
+        17
+      ],
+      "pixelSha256": "23682065ff3f95c6603514be0e95919b25f4277e98d0b72ae9bb061100fc256d",
+      "sha256": "59437c0088ec6d69793253e53e171a34a4ec3a2b6a9608b6b265d54df91c38ec"
+    },
+    {
+      "file": "plus-ink.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/plus_cta_ink.png",
+      "sourceSha256": "376db5f56130a48d2dfb48494d9ff1f095c4518d499ea0af2421316f88fe650c",
+      "size": [
+        27,
+        27
+      ],
+      "pixelSha256": "72086686328a12c6324454313522837e4a8d85aed18e0bc2cfdc4e22e23b610b",
+      "sha256": "376db5f56130a48d2dfb48494d9ff1f095c4518d499ea0af2421316f88fe650c"
+    },
+    {
+      "file": "delete-warm.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/delete_key_warm.png",
+      "sourceSha256": "40ef393f85abb419451e4a120b849817e6d05efe14c7100874caf657fda57aea",
+      "size": [
+        23,
+        23
+      ],
+      "pixelSha256": "8f10a2051b0b0cff8672b3962424b3b5bdabcb67965bf374c21099c6bf202bfe",
+      "sha256": "40ef393f85abb419451e4a120b849817e6d05efe14c7100874caf657fda57aea"
+    },
+    {
+      "file": "enter-warm.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/enter_key_warm.png",
+      "sourceSha256": "83a21ad9ef4e26d119541441630aebb1366304c0bbe79894355780eb90f9c0b3",
+      "size": [
+        23,
+        23
+      ],
+      "pixelSha256": "108d4a8f148ee21736898fdc6b2a89a704cabfea45999950acf8859709027e3a",
+      "sha256": "83a21ad9ef4e26d119541441630aebb1366304c0bbe79894355780eb90f9c0b3"
+    },
+    {
+      "file": "collapse-muted.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/back_editor_muted.png",
+      "sourceSha256": "a85988bc5f128e53ac7a63780e1b3a33571c1369855ed6eca6f46021afae6ac1",
+      "size": [
+        23,
+        23
+      ],
+      "pixelSha256": "efcadce0dd7d4b328ea77d403cdec7ba0018a55a331f6a2a2ce0183b61719033",
+      "sha256": "a85988bc5f128e53ac7a63780e1b3a33571c1369855ed6eca6f46021afae6ac1"
+    },
+    {
+      "file": "app-name.png",
+      "source": "entry/src/main/js/MainAbility/common/type/app_name.png",
+      "sourceSha256": "9d8cbd0f44d5dcfb23aa462599a2ac84ebbf4c0fd6a9107f0242d9e9fd01e772",
+      "size": [
+        58,
+        37
+      ],
+      "pixelSha256": "3bbb44439345805aa47416333311adf7c658a1f035c7a06edf4ec3143f475147",
+      "sha256": "9d8cbd0f44d5dcfb23aa462599a2ac84ebbf4c0fd6a9107f0242d9e9fd01e772"
+    },
+    {
+      "file": "write-note.png",
+      "source": "entry/src/main/js/MainAbility/common/type/write_note.png",
+      "sourceSha256": "10d431551d8a573710f6bbf2e554638d821e62404eb4cdd5603c914bb700972a",
+      "size": [
+        69,
+        34
+      ],
+      "pixelSha256": "e81619445b8f316aaefacd1a2d8f43374f680998ce3e65995aa09c6f7096d091",
+      "sha256": "10d431551d8a573710f6bbf2e554638d821e62404eb4cdd5603c914bb700972a"
+    },
+    {
+      "file": "back-warm.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/back_warm.png",
+      "sourceSha256": "9a7d638496aa0dae5abf8ec4ad6c08cd79dc749f515f235ed653a4b7ba4a24ad",
+      "size": [
+        24,
+        24
+      ],
+      "pixelSha256": "0fde51d5c942ba2b0331ee0872c9c5d0f87dc3e625fe1dbb3a398167afe0ce9c",
+      "sha256": "9a7d638496aa0dae5abf8ec4ad6c08cd79dc749f515f235ed653a4b7ba4a24ad"
+    },
+    {
+      "file": "edit-warm.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/edit_warm.png",
+      "sourceSha256": "e634ab913fa2ef19c4196f1379093e973a2f420a8f716cb5e102f1c0d50d689a",
+      "size": [
+        24,
+        24
+      ],
+      "pixelSha256": "384b278ee9ed6d6b16806c4724367eaf647584ee3e3acab2686b0dfdef09355b",
+      "sha256": "e634ab913fa2ef19c4196f1379093e973a2f420a8f716cb5e102f1c0d50d689a"
+    },
+    {
+      "file": "copy-warm.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/copy_warm.png",
+      "sourceSha256": "f1a9471a740fc6b8b9ece90d6461629ca0691b8259015d7fc5945c352c34844c",
+      "size": [
+        24,
+        24
+      ],
+      "pixelSha256": "739b938369a0c0f917d0c72bcf917b7ce9024592669acccf76591207568425f8",
+      "sha256": "f1a9471a740fc6b8b9ece90d6461629ca0691b8259015d7fc5945c352c34844c"
+    },
+    {
+      "file": "restore-warm.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/restore_warm.png",
+      "sourceSha256": "e4adaae18496ae0903f89a35b97484de028ee3ac3c732fd1343536ab9e9dfd4a",
+      "size": [
+        24,
+        24
+      ],
+      "pixelSha256": "572d4aece0cf566635bbf6c711cf55dcf81de4643a233cc9eda3556c29498418",
+      "sha256": "e4adaae18496ae0903f89a35b97484de028ee3ac3c732fd1343536ab9e9dfd4a"
+    },
+    {
+      "file": "check-warm.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/check_warm.png",
+      "sourceSha256": "42f56d849592daf47ad9355498895ccd5b33ee4b2b5d6da4a11a467e1f458217",
+      "size": [
+        24,
+        24
+      ],
+      "pixelSha256": "f0a050c093d5d56e038325f95d1ba8a064521209d7a92634ac5fd516423dc6a9",
+      "sha256": "42f56d849592daf47ad9355498895ccd5b33ee4b2b5d6da4a11a467e1f458217"
+    },
+    {
+      "file": "alert-warm.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/alert_warm.png",
+      "sourceSha256": "478d0c43bc8415a2491e538e87750f2db1f907f12635f3f8fd8314e4b5c9240e",
+      "size": [
+        24,
+        24
+      ],
+      "pixelSha256": "cae246f24b319ac214f3e67ebe3f670ee8b5ca0df59c2c1ab92352b949de8140",
+      "sha256": "478d0c43bc8415a2491e538e87750f2db1f907f12635f3f8fd8314e4b5c9240e"
+    },
+    {
+      "file": "trash-danger.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/trash_warm.png",
+      "sourceSha256": "e41f54125684bd05bcbdae8b8f9f7096f51347adcf0442a8f89ca6367508142a",
+      "size": [
+        24,
+        24
+      ],
+      "pixelSha256": "7452b0669a65f63d4e17b38cd505576f9acee9978cee76ef7e2f48b3bbabd066",
+      "sha256": "70346d994d40437c663f847c248ddc35ecdac9b809f84a8c74f02ae532fff635"
+    },
+    {
+      "file": "tool-prev.png",
+      "source": "original CrabKeyboard toolBar.png icon region",
+      "size": [
+        23,
+        16
+      ],
+      "sha256": "fb42c6e3f96ecf58295e01a77598c23cd3aaad7d38db4dad1e6c011d42a13c0d"
+    },
+    {
+      "file": "tool-clipboard.png",
+      "source": "original CrabKeyboard toolBar.png icon region",
+      "size": [
+        23,
+        21
+      ],
+      "sha256": "f1b4bd57d17d4137ce10d9fe460ef2abf51cae4f2abb44f18b529fd4373ef22f"
+    },
+    {
+      "file": "tool-next.png",
+      "source": "original CrabKeyboard toolBar.png icon region",
+      "size": [
+        23,
+        16
+      ],
+      "sha256": "0df7b9209b15eb9e63e816facb81c308e44a14b2485cffd99cddfce9c4988c43"
+    }
+  ],
+  "appIconSizes": [
+    114,
+    32
+  ]
+}

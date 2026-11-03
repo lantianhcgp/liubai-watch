@@ -1,0 +1,30 @@
+{
+  "scope": "hmlwsim host-only compatibility; no fake page $vm seam; no product data changes",
+  "files": [
+    {
+      "file": "js/runtime/sandbox.js",
+      "upstreamSha256": "97ffc9dcb003773e220ad5f2f5d46b932ca76459dde9a3640ac2f9270bc8caa6",
+      "hostSha256": "d9728f42895f52189e328350c72f8822e77dbbaa8f2c7f53dfc37001493385fb"
+    },
+    {
+      "file": "js/runtime/deviceFeature_pageNav.js",
+      "upstreamSha256": "80b60ec17ef1a59cde2df1e479d5ca2ca6cfe2c583852a286180df6f2f1e3926",
+      "hostSha256": "c6dbbbee3a87a388e310dc6c4098f584ce04391b87c5f45f1b192a45134c7e46"
+    },
+    {
+      "file": "js/runtime/deviceFeature_display.js",
+      "upstreamSha256": "377a3ea395d3ea80843f3aec02c4b0624aceaef95a1f3cb459ddf5a5a9f39019",
+      "hostSha256": "5c236f2258cbe419c81261ca3e42398656741c38a1bf9bd219b8872a9cf97103"
+    },
+    {
+      "file": "js/css-adapter.js",
+      "upstreamSha256": "b8ea821025e5bfe9302a757920ca00370c4cfd92da54776e9f3aa3e22e234f0a",
+      "hostSha256": "9747f59882bcc7365f1e7f7e3d08bdbdfa8b14d39cd49f3590875ff2c3afbb7d"
+    },
+    {
+      "file": "js/app.js",
+      "upstreamSha256": "ddc08e420d2210fa33e00f79a82983a162d11f76ab5421cfd9f4cf8c042a568e",
+      "hostSha256": "5171e52071c757cb065129f1561354373f078076c9580ff9cfcb83fc363f7f7e"
+    }
+  ]
+}

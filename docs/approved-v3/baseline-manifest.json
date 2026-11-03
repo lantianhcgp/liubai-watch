@@ -1,0 +1,70 @@
+{
+  "approved_at": "2026-11-01T21:12:25.742717+08:00",
+  "version": "V3 before short-space/text-language-button tweak",
+  "authority": "User approved restored V3 and authorized a new session to implement the native watch app",
+  "files": [
+    {
+      "path": "留白-网页效果稿-v3.html",
+      "sha256": "afc5fcb14d47a83be90dc71f9f2682a5d9eb95d19f55643328a05cf9f2fd5d6a",
+      "bytes": 234803
+    },
+    {
+      "path": "留白-产品与设计方案-v3.md",
+      "sha256": "fc2a828fba4fc8cdedd12b09dc8b8aa6d635413884d69183a9db3e45078e475c",
+      "bytes": 25938
+    },
+    {
+      "path": "留白-编辑优化对比-v3.png",
+      "sha256": "cc2c4642c608f237cf9013a021efa59239f4a8c61f5da4225a03ca7e2e60f20a",
+      "bytes": 523167
+    },
+    {
+      "path": "qa-v3/editor-concept.js",
+      "sha256": "9c35d6dbf02b85b095b13b9a5057d186e1b065f3da52934f2e014315f33105db",
+      "bytes": 11568
+    },
+    {
+      "path": "qa-v3/revision.css",
+      "sha256": "fbb20d0df8e3e36b8cc542d53e55c2bf0ed7ba60136cd642be8116870660d474",
+      "bytes": 4046
+    },
+    {
+      "path": "qa-v3/layout-bridge.js",
+      "sha256": "e8e84f77896f548f77078c2cb776d2ba103845d875fee8ffa64c096a0fe92957",
+      "bytes": 869
+    },
+    {
+      "path": "qa-v3/keybar-rollback-qa.json",
+      "sha256": "89e2cb3bd618630c81b43538b87adef540ae6353a5857ba2067345f48b67bffa",
+      "bytes": 4596
+    },
+    {
+      "path": "qa-v3/键盘回退验收.png",
+      "sha256": "f15d371ff3f54c2abdd94395c8d3311a27d3ef9aab90cead4e2e0fbe45b01c84",
+      "bytes": 149674
+    }
+  ],
+  "read_only_references": {
+    "crabKeyboard": {
+      "path": "/data/data/com.termux/files/home/crabKeyboard",
+      "head": "656f8ad842a8692bc3b2b975d6b648880232c592",
+      "status": []
+    },
+    "memo-todo": {
+      "path": "/data/data/com.termux/files/home/memo-todo",
+      "head": "b4ba137d2b11ff0b8db348d8fdc71409e0698d28",
+      "status": [
+        " M entry/src/main/js/MainAbility/pages/keyboard/keyboard.hml"
+      ]
+    },
+    "hmlwsim": {
+      "path": "/data/data/com.termux/files/home/hmlwsim",
+      "head": "2b28919fc14ea25eaed46f895817d58e481a8657",
+      "status": [
+        " M index.html",
+        "?? elcton-rect-backup.app",
+        "?? elcton.app"
+      ]
+    }
+  }
+}

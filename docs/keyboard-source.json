@@ -1,0 +1,604 @@
+{
+  "schema": 1,
+  "project": "CrabKeyboard",
+  "sourceRepository": "https://github.com/crabPangXie/crabKeyboard",
+  "sourceCommit": "656f8ad842a8692bc3b2b975d6b648880232c592",
+  "license": "MIT",
+  "licenseFile": "licenses/CrabKeyboard-LICENSE",
+  "reuse": "Original key tables and longest-prefix base94 trie format; original PNG/rawfile bytes unchanged. Adapter rewritten independently, no R18 business logic.",
+  "geometry": {
+    "originalHeight": 180,
+    "height": 141,
+    "scale": "141/180",
+    "rowHeight": 47,
+    "originalKeyWidth": 57,
+    "originalRowXOffset": 29,
+    "offsetUnits": "scaled image pixels <= 0",
+    "coordinateOrigin": "keyboard-local"
+  },
+  "totals": {
+    "pngFiles": 30,
+    "rawfileFiles": 25,
+    "pngBytes": 132782,
+    "rawfileBytes": 1136195
+  },
+  "references": [
+    {
+      "path": "entry/src/main/js/default/pages/keyboard_rect/keyboard.js",
+      "bytes": 40828,
+      "sha256": "bab7ae508b7af26510db0bb26a1dccd4fa943c649aaa9957676cae7db3a22b1f"
+    },
+    {
+      "path": "entry/src/main/js/default/pages/keyboard_circle/keyboard.js",
+      "bytes": 40715,
+      "sha256": "edd65c5f3daaeddee60be1e04fd8e80f5b87e8e5bc224157e8bce5fab6eb4685"
+    },
+    {
+      "path": "entry/src/main/js/default/common/keyboard/lookupDictV5.js",
+      "bytes": 2694,
+      "sha256": "915605439ebc404d808ccce6cb18abfff3981f1cdf53a78e9a743c78c4a6ddc9"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1093,
+      "sha256": "b140337f94481310f35abfd2210fde308ba30411899095fd961a77b94e022775"
+    }
+  ],
+  "files": [
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/circle/confirm.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/circle/confirm.png",
+      "bytes": 959,
+      "sha256": "34bc6b345935ceef55fa9584ee2546445295036952d3deb0a066840edde202c4",
+      "rootPath": "common/keyboard/circle/confirm.png",
+      "runtimePath": "/common/keyboard/circle/confirm.png",
+      "width": 40,
+      "height": 40
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/circle/confirm0.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/circle/confirm0.png",
+      "bytes": 939,
+      "sha256": "e7b606848e75fbf29a80e727e76869537db84aa0be92726bbc526fc9026dae98",
+      "rootPath": "common/keyboard/circle/confirm0.png",
+      "runtimePath": "/common/keyboard/circle/confirm0.png",
+      "width": 40,
+      "height": 40
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/circle/delete.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/circle/delete.png",
+      "bytes": 2330,
+      "sha256": "f3f7b6df5cb4147f283ae0aa21ff077d1d3fb282d11bb32fe67610f360e1662f",
+      "rootPath": "common/keyboard/circle/delete.png",
+      "runtimePath": "/common/keyboard/circle/delete.png",
+      "width": 100,
+      "height": 60
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/circle/enter.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/circle/enter.png",
+      "bytes": 1826,
+      "sha256": "805f9528c6d2f57a3cf721990a9062ad7a9927d96f34bb83201da922c724fe26",
+      "rootPath": "common/keyboard/circle/enter.png",
+      "runtimePath": "/common/keyboard/circle/enter.png",
+      "width": 70,
+      "height": 45
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/circle/search.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/circle/search.png",
+      "bytes": 2274,
+      "sha256": "fcdd1a99682fb35ae0ed5abf1f1c6ecb95dede9d9e58d19b8ee791ef6dca5ccd",
+      "rootPath": "common/keyboard/circle/search.png",
+      "runtimePath": "/common/keyboard/circle/search.png",
+      "width": 70,
+      "height": 45
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/circle/space.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/circle/space.png",
+      "bytes": 1830,
+      "sha256": "f540c9de7f5f7811ff4ae4abbdad3fa5d49d97b334827d0f251f040e65323034",
+      "rootPath": "common/keyboard/circle/space.png",
+      "runtimePath": "/common/keyboard/circle/space.png",
+      "width": 130,
+      "height": 45
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/0.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/0.png",
+      "bytes": 20896,
+      "sha256": "f85412c70333cdaa565d4f615387c1b7aceb9afd891748554eb18b5b21dd23fc",
+      "rootPath": "common/keyboard/common/0.png",
+      "runtimePath": "/common/keyboard/common/0.png",
+      "width": 570,
+      "height": 180
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/1.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/1.png",
+      "bytes": 20799,
+      "sha256": "09ee04c1c5c33e79b3450e84e0fdad557f4c832cebfd5c184958523c8b8501fb",
+      "rootPath": "common/keyboard/common/1.png",
+      "runtimePath": "/common/keyboard/common/1.png",
+      "width": 570,
+      "height": 180
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/2.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/2.png",
+      "bytes": 21575,
+      "sha256": "8dca52bdf9de140e59935bf134a1a4b11dd0046e70124a0f0798935cb01af594",
+      "rootPath": "common/keyboard/common/2.png",
+      "runtimePath": "/common/keyboard/common/2.png",
+      "width": 570,
+      "height": 180
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/3.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/3.png",
+      "bytes": 24914,
+      "sha256": "5e6555c064a36c56dfc386810bed0dca258b2dcc188e71ab7a482c165c860178",
+      "rootPath": "common/keyboard/common/3.png",
+      "runtimePath": "/common/keyboard/common/3.png",
+      "width": 741,
+      "height": 180
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/close.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/close.png",
+      "bytes": 1475,
+      "sha256": "07e676e13037bf3d1bb4dd6363b6e0c299534384db91ae82288c632b709a5527",
+      "rootPath": "common/keyboard/common/close.png",
+      "runtimePath": "/common/keyboard/common/close.png",
+      "width": 60,
+      "height": 60
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/dot.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/dot.png",
+      "bytes": 1188,
+      "sha256": "d40b66a4d60b9f3c6e65aa195e71f79a2bdbc58a5ebf071d693949f01805711d",
+      "rootPath": "common/keyboard/common/dot.png",
+      "runtimePath": "/common/keyboard/common/dot.png",
+      "width": 36,
+      "height": 22
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/key0.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/key0.png",
+      "bytes": 758,
+      "sha256": "4265c09a253fc52c24af0a0e2c7d575d5f24d51070fd1d7b758ad730bfb32854",
+      "rootPath": "common/keyboard/common/key0.png",
+      "runtimePath": "/common/keyboard/common/key0.png",
+      "width": 31,
+      "height": 31
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/key1.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/key1.png",
+      "bytes": 723,
+      "sha256": "34cf5e220d2b8fa0b2a494a628c120ee605496c083273c4ca1175b87fd5f1557",
+      "rootPath": "common/keyboard/common/key1.png",
+      "runtimePath": "/common/keyboard/common/key1.png",
+      "width": 31,
+      "height": 31
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/key2.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/key2.png",
+      "bytes": 774,
+      "sha256": "b8cbb06e8942226a49f9b0b2eedd0bf5921f74f664378ce8483f568a5e312e21",
+      "rootPath": "common/keyboard/common/key2.png",
+      "runtimePath": "/common/keyboard/common/key2.png",
+      "width": 31,
+      "height": 31
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/key3.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/key3.png",
+      "bytes": 826,
+      "sha256": "a15466ad6c3d17dc6b01469a30672309ae815764f9c55620c73de4305650a838",
+      "rootPath": "common/keyboard/common/key3.png",
+      "runtimePath": "/common/keyboard/common/key3.png",
+      "width": 31,
+      "height": 31
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/pyShadow.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/pyShadow.png",
+      "bytes": 279,
+      "sha256": "bb13ebd395d7470a492fe17b62c4a834d6b7f01b954f710f797e46cbdb657574",
+      "rootPath": "common/keyboard/common/pyShadow.png",
+      "runtimePath": "/common/keyboard/common/pyShadow.png",
+      "width": 466,
+      "height": 35
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/selectBar.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/selectBar.png",
+      "bytes": 2220,
+      "sha256": "8da4e4b1f8e6a5536f21dea7455a964d542925ca947dffde0fd5a268988fa628",
+      "rootPath": "common/keyboard/common/selectBar.png",
+      "runtimePath": "/common/keyboard/common/selectBar.png",
+      "width": 310,
+      "height": 60
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/shadow.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/shadow.png",
+      "bytes": 1147,
+      "sha256": "23f186fea4cf0b8aa529f2b93ffb07f7c16e6a98aa986ba3747e42714feb8faa",
+      "rootPath": "common/keyboard/common/shadow.png",
+      "runtimePath": "/common/keyboard/common/shadow.png",
+      "width": 30,
+      "height": 60
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/switchL.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/switchL.png",
+      "bytes": 1972,
+      "sha256": "0c7f3b6c9f4a6efddb860db8447af5e2ba96fbbfe96d510007d5c6fdbd9a4c1f",
+      "rootPath": "common/keyboard/common/switchL.png",
+      "runtimePath": "/common/keyboard/common/switchL.png",
+      "width": 38,
+      "height": 85
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/switchR.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/switchR.png",
+      "bytes": 1967,
+      "sha256": "1e37c9b478d7d04290e6e43be6c043d915f99a5d8e767d89290c79fc66795b1c",
+      "rootPath": "common/keyboard/common/switchR.png",
+      "runtimePath": "/common/keyboard/common/switchR.png",
+      "width": 38,
+      "height": 85
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/toolBar.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/toolBar.png",
+      "bytes": 3868,
+      "sha256": "2417e6fda6c072c7837b3cea080f45be65b3c24b753a7fb2bac4c86694bcf676",
+      "rootPath": "common/keyboard/common/toolBar.png",
+      "runtimePath": "/common/keyboard/common/toolBar.png",
+      "width": 310,
+      "height": 60
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/common/toolCover.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/common/toolCover.png",
+      "bytes": 1401,
+      "sha256": "0aca85d66449ef4aa959e86cc9e3503469e819559b95e62ebb266d59951deb92",
+      "rootPath": "common/keyboard/common/toolCover.png",
+      "runtimePath": "/common/keyboard/common/toolCover.png",
+      "width": 65,
+      "height": 60
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/rect/cancel.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/rect/cancel.png",
+      "bytes": 2694,
+      "sha256": "12f646ce86da0889b0462d4bcab24aec89cd372af4865f6a00509f580b841a1f",
+      "rootPath": "common/keyboard/rect/cancel.png",
+      "runtimePath": "/common/keyboard/rect/cancel.png",
+      "width": 94,
+      "height": 40
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/rect/confirm.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/rect/confirm.png",
+      "bytes": 2460,
+      "sha256": "5c9392696c0f3738cf33563d4ad279aa5b85cc028ccb1b3cc616db4c1087fec5",
+      "rootPath": "common/keyboard/rect/confirm.png",
+      "runtimePath": "/common/keyboard/rect/confirm.png",
+      "width": 80,
+      "height": 40
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/rect/confirm0.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/rect/confirm0.png",
+      "bytes": 1917,
+      "sha256": "47f8981b5a101dec5e22794d33d63945bb345f563333b51330de7aa05c421916",
+      "rootPath": "common/keyboard/rect/confirm0.png",
+      "runtimePath": "/common/keyboard/rect/confirm0.png",
+      "width": 80,
+      "height": 40
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/rect/delete.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/rect/delete.png",
+      "bytes": 2480,
+      "sha256": "93fc24f8e9af2707c00778b77d42e5010886bfaed7f7d6fc5018ec830bb70e2d",
+      "rootPath": "common/keyboard/rect/delete.png",
+      "runtimePath": "/common/keyboard/rect/delete.png",
+      "width": 85,
+      "height": 60
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/rect/enter.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/rect/enter.png",
+      "bytes": 1888,
+      "sha256": "017a0671d3a531171ec607552c6be95fbd2e868e365825f069efbae41f9f07c0",
+      "rootPath": "common/keyboard/rect/enter.png",
+      "runtimePath": "/common/keyboard/rect/enter.png",
+      "width": 150,
+      "height": 45
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/rect/search.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/rect/search.png",
+      "bytes": 2553,
+      "sha256": "fa810fa74bbbb5643b23adaef90643e8a9644259fb63e019af5cb6c3700bb610",
+      "rootPath": "common/keyboard/rect/search.png",
+      "runtimePath": "/common/keyboard/rect/search.png",
+      "width": 150,
+      "height": 45
+    },
+    {
+      "kind": "png",
+      "sourcePath": "entry/src/main/js/default/common/keyboard/rect/space.png",
+      "path": "entry/src/main/js/MainAbility/common/keyboard/rect/space.png",
+      "bytes": 1850,
+      "sha256": "244a6da12bf2b3191d7dd8030b3129f8cf5a86bb86cd9a0fb955630d47fdf68d",
+      "rootPath": "common/keyboard/rect/space.png",
+      "runtimePath": "/common/keyboard/rect/space.png",
+      "width": 150,
+      "height": 45
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key0.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key0.dat",
+      "bytes": 160,
+      "sha256": "5e11bee947d910c30e0b8ff78f0f1f8ef13dae734eab1530b575bacf5e947438",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/key0.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/key0.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key1.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key1.dat",
+      "bytes": 3858,
+      "sha256": "108d1988191546478e900f3d3ee9b3936087568b38fbf4d5402773ef0ba84c7a",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/key1.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/key1.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key10.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key10.dat",
+      "bytes": 2240,
+      "sha256": "47adc073685456d78b395619943ce3a263586b1ad2c20a5c5bc92e9afac8bdeb",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/key10.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/key10.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key11.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key11.dat",
+      "bytes": 207,
+      "sha256": "0062f2fe4c0a3ed1688b661af0b97f56363252397b7db3338c268b28d8c9ebf8",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/key11.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/key11.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key12.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key12.dat",
+      "bytes": 10,
+      "sha256": "3256c8c6dbe5d442c1574054b707cad0770a36300749b35f63f3356a6be2c37d",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/key12.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/key12.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key2.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key2.dat",
+      "bytes": 15769,
+      "sha256": "d3374d6ba69693941140d605377e8605b2b58fab2f9f0f4de22ea65320af75b5",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/key2.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/key2.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key3.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key3.dat",
+      "bytes": 52737,
+      "sha256": "a9143c93d290936d5d80a63a96cdecb727e9164fbe93d79699db658ef55db4a8",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/key3.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/key3.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key4.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key4.dat",
+      "bytes": 121300,
+      "sha256": "3b43a05d75775da2540082901489d5f93dee67b9eb697abc240c09d420a92541",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/key4.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/key4.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key5.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key5.dat",
+      "bytes": 171852,
+      "sha256": "567faca008509253af620b81e6f462760bb763b47a34dd17af2ba95a84a248f0",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/key5.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/key5.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key6.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key6.dat",
+      "bytes": 163381,
+      "sha256": "51675714c69c9208824bbd4eb7161e6e1525deaa53e67fb2b7636707f7cbab43",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/key6.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/key6.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key7.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key7.dat",
+      "bytes": 105862,
+      "sha256": "3c6e5a6e19394457b3116b5686633368905ad1608a5969db20c78e845807f8be",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/key7.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/key7.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key8.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key8.dat",
+      "bytes": 46260,
+      "sha256": "983d35a6d923a774ec4f9d226c3f855ba09ad9c4bf7ef767863299a57e10872d",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/key8.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/key8.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key9.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/key9.dat",
+      "bytes": 12808,
+      "sha256": "38b92c029355ff7447ca438dad98193b8028df466bcc7451025851dc3cc57071",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/key9.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/key9.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value1.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value1.dat",
+      "bytes": 3541,
+      "sha256": "1e05f1516557cf57ff7028c0fd609f700067c91a624cfb85f2a3cd8d143442a7",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/value1.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/value1.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value10.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value10.dat",
+      "bytes": 3537,
+      "sha256": "07f0839a8698d1cad27850345a2270731e2f291e427e5790dca702c951be6f60",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/value10.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/value10.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value11.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value11.dat",
+      "bytes": 301,
+      "sha256": "78095340a5bc710bb7905c630fef67bc9552a2a4d54077bd201abc4955564fba",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/value11.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/value11.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value12.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value12.dat",
+      "bytes": 12,
+      "sha256": "2d2168ca32ae532972280e463c6a386eeb92f5abfdbda5a86f60c63df8e06e84",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/value12.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/value12.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value2.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value2.dat",
+      "bytes": 38505,
+      "sha256": "c669bf17fcec5ec13830ac1a4921fa907e765afa02225270702449cb3e36a1de",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/value2.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/value2.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value3.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value3.dat",
+      "bytes": 11103,
+      "sha256": "c9f1dbfbed9cd41f8aaa28f8e6776dd7bec0635336d020bd2911c159e0b64e39",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/value3.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/value3.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value4.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value4.dat",
+      "bytes": 39062,
+      "sha256": "bb0d8753f4d9698f94960b3a5a6c7aded68d8c24a1f135ce1d26f2f7f689dbfb",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/value4.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/value4.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value5.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value5.dat",
+      "bytes": 81640,
+      "sha256": "079a575c68a3e62be14ba7785b2779d2e13f43db61e3a26f75c34643f378073b",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/value5.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/value5.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value6.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value6.dat",
+      "bytes": 107909,
+      "sha256": "42d5975139f72d775dd04b89cfad4dc5cf4d18ae8f24df393b89713d871a6ae8",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/value6.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/value6.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value7.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value7.dat",
+      "bytes": 89008,
+      "sha256": "7af9e02b55df5e99fbbab0e1959e037fb7a7c660b43dc1301d184c01499e17fb",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/value7.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/value7.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value8.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value8.dat",
+      "bytes": 48615,
+      "sha256": "7f1266f177dee0349ea9e416b6c20a5145c2fddb696246b69e972df4a26b12b9",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/value8.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/value8.dat"
+    },
+    {
+      "kind": "rawfile",
+      "sourcePath": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value9.dat",
+      "path": "entry/src/main/resources/rawfile/pinyinDictV5_flash1001/value9.dat",
+      "bytes": 16518,
+      "sha256": "00da2449de0fda49833c0ae7d4a500d036ac98f14a531684c8a3c58dab2980e0",
+      "rootPath": "resources/rawfile/pinyinDictV5_flash1001/value9.dat",
+      "runtimePath": "internal://app/rawfile/pinyinDictV5_flash1001/value9.dat"
+    }
+  ]
+}

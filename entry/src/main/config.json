@@ -1,0 +1,10 @@
+{
+  "app":{"bundleName":"com.hcbiu.liubai","vendor":"hcbiu","version":{"code":2,"name":"0.2.0"}},
+  "deviceConfig":{},
+  "module":{
+    "deviceType":["liteWearable"],
+    "distro":{"deliveryWithInstall":true,"moduleName":"entry","moduleType":"entry"},
+    "abilities":[{"name":".MainAbility","srcLanguage":"js","srcPath":"MainAbility","icon":"$media:icon","description":"$string:MainAbility_desc","label":"$string:MainAbility_label","type":"page"}],
+    "js":[{"name":".MainAbility","pages":["pages/index/index","pages/read/read","pages/edit/edit","pages/menu/menu","pages/history/history","pages/day/day","pages/trash/trash"]}]
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "repository": "https://github.com/lantianhcgp/elcton",
+  "sourceCommit": "2a8183a537db333df1d3eeb350015dbd99ac71d2",
+  "files": {
+    "build-profile.json5": {
+      "sha256": "9cf06e532d3dfc4a35a1a0626ac4ec2a0b33e6a48ccf61b397b288e991987268",
+      "bytes": 802
+    },
+    "oh-package.json5": {
+      "sha256": "17bf204a0db38d3903398b044fa66888b00f926f2fc9e25c33d8c542f4ab7338",
+      "bytes": 180
+    },
+    "hvigor/hvigor-config.json5": {
+      "sha256": "3e722e194b9cb2427bf08b302c3eaae7e9c1bff5f13a620777dcc31442b700de",
+      "bytes": 1481
+    },
+    "hvigorfile.ts": {
+      "sha256": "fb4265f5a9cf25d8072115df196f8f916b4aab7373a6e837418251e29f8c2f24",
+      "bytes": 245
+    },
+    "code-linter.json5": {
+      "sha256": "f557c3bcdb40c64c986bffed9628310cc7a79fb7d2642c1c8b8d265fd92e25ad",
+      "bytes": 854
+    },
+    "entry/build-profile.json5": {
+      "sha256": "64625a538e8b405c62ee56b7456fe13470669f4400a33ce9e70e76afa33405a2",
+      "bytes": 114
+    },
+    "entry/oh-package.json5": {
+      "sha256": "5721fda56a382803c6c18c8f86208fd5a5548d2fa5e045c9e0b52c48d9220e7c",
+      "bytes": 183
+    },
+    "entry/hvigorfile.ts": {
+      "sha256": "c318abc7f9d2efa48d006ac037f861ca5a915d7873168fba5f0a6e6f91708feb",
+      "bytes": 245
+    },
+    "scripts/clean_config_in_app.py": {
+      "sha256": "860427d86fc2805bcc2ab53b6cfd6e4dab20f5a1ebffad215aac8947b887eb86",
+      "bytes": 4800
+    },
+    "tools/sign/package.json": {
+      "sha256": "45a4849d95c8b97fc2c1042e8f82019effdde7b09083df5e18d1e5d54535a959",
+      "bytes": 165
+    },
+    "tools/sign/package-lock.json": {
+      "sha256": "a05a96207db0cf075ddf995f032996feef9822b3c4c8931993162fb955a68377",
+      "bytes": 9426
+    },
+    "tools/sign/sign-app-to-hap.js": {
+      "sha256": "562b510c2feb483b837c16160742d443c052fbee6018babeca6a7f25ee8740be",
+      "bytes": 11613
+    },
+    "tools/sign/verify_sign.py": {
+      "sha256": "aaa1275b6512bfcf333d67a9eb5a9b5f7a27631039eb3dfa3e20d6b143697c29",
+      "bytes": 5329
+    }
+  },
+  "noClanderCarrier": true
+}
