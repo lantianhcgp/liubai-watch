@@ -8,6 +8,15 @@
    const _activeTimers = new Set();
    const _globalKeys = [];
    let _destroyed = false;
+@@ -37,7 +38,7 @@
+       }
+       return () => { for (const key of keys) { const s = this._subscriptions.get(key); if (s) s.delete(callback); } };
+     },
+-    notify(key) { const s = this._subscriptions.get(key); if (s) s.forEach(cb => cb()); },
++    notify(key) { const s = this._subscriptions.get(key); if (s) Array.from(s).forEach(cb => cb()); },
+     removeKey(key) { this._subscriptions.delete(key); },
+     addCleanup(fn) { this._cleanupFns.push(fn); },
+     cleanup() { this._cleanupFns.forEach(fn => fn()); this._cleanupFns.length = 0; this._subscriptions.clear(); }
 @@ -343,9 +344,17 @@
        if (!obj) return;
        for (const [event, handler] of Object.entries(obj)) {

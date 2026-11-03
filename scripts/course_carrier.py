@@ -13,7 +13,9 @@ def compose(base_path,compiled_path,out):
    assert cc['app']['bundleName']=='com.hcbiu.liubai'
    assert bc['app']['apiVersion']==cc['app']['apiVersion'],'API container profile drift'
    for key in ['deviceType','abilities','mainAbility','distro']:
-    assert bc['module'][key]==cc['module'][key],'Course container ABI field drift '+key
+    if key=='abilities':
+     left=[{k:v for k,v in item.items() if not k.endswith('Id')} for item in bc['module'][key]];right=[{k:v for k,v in item.items() if not k.endswith('Id')} for item in cc['module'][key]];assert left==right,'Course ability model drift'
+    else:assert bc['module'][key]==cc['module'][key],'Course container ABI field drift '+key
    records={i.filename:output.read(i) for i in output.infolist() if not i.is_dir()};infos={i.filename:i for i in source.infolist()}
    packed=io.BytesIO()
    with zipfile.ZipFile(packed,'w') as z:

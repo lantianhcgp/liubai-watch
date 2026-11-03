@@ -38,10 +38,17 @@ def close_owned(owners):
  for row in living:
   try:os.kill(row['pid'],signal.SIGKILL)
   except ProcessLookupError:pass
- return [row['pid'] for row in owners if (info(row['pid']) or {}).get('start')==row['start'] and (info(row['pid']) or {}).get('state')!='Z']
+ deadline=time.monotonic()+2
+ while time.monotonic()<deadline:
+  leftovers=[row['pid'] for row in owners if (info(row['pid']) or {}).get('start')==row['start'] and (info(row['pid']) or {}).get('state')!='Z']
+  if not leftovers:return []
+  threading.Event().wait(.1)
+ return leftovers
 def main():
  p=argparse.ArgumentParser();p.add_argument('--app',type=Path,required=True);p.add_argument('--command',default='node qa/friend_cdp.mjs load');p.add_argument('--out',type=Path,required=True);a=p.parse_args();a.out.mkdir(parents=True,exist_ok=True)
  env=os.environ.copy()
+ env.setdefault('LIUBAI_FRIEND_STATE','/data/data/com.termux/files/home/liubai-rebuild-private/friend-states/'+a.out.name)
+ living=[]
  for n in ['http_proxy','https_proxy','HTTP_PROXY','HTTPS_PROXY','ALL_PROXY','all_proxy']:env.pop(n,None)
  host=browser=None;logs=[];code=1
  try:

@@ -23,6 +23,9 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund --prefix tools/sign
           node --test --test-concurrency=1 tests/*.test.mjs
           python3 tests/test_artifact.py
+          python3 tests/test_course_carrier.py
+      - name: Verify pinned real course carrier
+        run: python3 -c 'from pathlib import Path;import hashlib;p=Path("qa/carriers/elcton-2a8183a.carrier");assert hashlib.sha256(p.read_bytes()).hexdigest()=="0e317fbb436837b093f5903004ab1edeb5c9ba3e42c0b9034cc3d362d09d8f30"'
       - name: Real course-app toolchain
         uses: ErBWs/setup-ohos@v2
         with:
@@ -44,7 +47,8 @@ jobs:
           cp build/outputs/default/*.app dist/compiler-original.app
           python3 scripts/clean_config_in_app.py build/outputs/default/*.app
           npm ci --ignore-scripts --no-audit --no-fund --prefix tools/sign
-          node scripts/compact_app.mjs build/outputs/default/*.app dist/liubai-elcton-v3.app
+          node scripts/compact_app.mjs build/outputs/default/*.app dist/compiler-minified.app
+          python3 scripts/course_carrier.py qa/carriers/elcton-2a8183a.carrier dist/compiler-minified.app dist/liubai-elcton-v3.app
           python3 scripts/verify_app.py dist/liubai-elcton-v3.app --output dist/compiler-proof.json
           printf '%s\n' "$GITHUB_SHA" > dist/source-sha.txt
       - uses: actions/upload-artifact@v4

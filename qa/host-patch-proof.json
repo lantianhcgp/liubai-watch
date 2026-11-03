@@ -1,10 +1,11 @@
 {
-  "scope": "hmlwsim host-only compatibility; no fake page $vm seam; no product data changes",
+  "scope": "host-only original upstream compatibility; no fake $vm seam or product data edits",
+  "upstreamCommit": "2b28919fc14ea25eaed46f895817d58e481a8657",
   "files": [
     {
       "file": "js/runtime/sandbox.js",
       "upstreamSha256": "97ffc9dcb003773e220ad5f2f5d46b932ca76459dde9a3640ac2f9270bc8caa6",
-      "hostSha256": "d9728f42895f52189e328350c72f8822e77dbbaa8f2c7f53dfc37001493385fb"
+      "hostSha256": "25ba1794ab372986ab9c94ad0f4991249c4f1fb10cd679513bc84be4e723ebbe"
     },
     {
       "file": "js/runtime/deviceFeature_pageNav.js",

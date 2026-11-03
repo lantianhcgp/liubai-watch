@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Offline loopback hmlwsim host with real isolated callback filesystem; never seeds app data."""
-import argparse,io,json,zipfile
+import argparse,io,json,zipfile,os
 from pathlib import Path
 from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
 from urllib.parse import urlsplit
 ROOT=Path(__file__).resolve().parents[1]
 SIM=Path('/data/data/com.termux/files/home/liubai-rebuild-private/hmlwsim')
-STATE=Path('/data/data/com.termux/files/home/liubai-rebuild-private/hmlwsim-state')
+STATE=Path(os.environ.get('LIUBAI_FRIEND_STATE','/data/data/com.termux/files/home/liubai-rebuild-private/hmlwsim-state'))
 APP=None
 RECORDS={}
 FAULT={'nextWrite':None}
@@ -53,7 +53,7 @@ class Handler(SimpleHTTPRequestHandler):
   if route=='/__baseline':return self.send(Path('/storage/emulated/0/Documents/watch-notes-concept-2026-11-01/approved-v3/留白-网页效果稿-v3.html').read_bytes(),'text/html; charset=utf-8')
   if route=='/friend_api.js':return self.send((ROOT/'qa/friend_api.js').read_bytes(),'text/javascript')
   if route.startswith('/vendor/'):
-   p=Path('/data/data/com.termux/files/home/liubai-watch-r18-native-runtime/qa/vendor')/Path(route).name
+   p=ROOT/'qa/vendor'/Path(route).name
    return self.send(p.read_bytes(),'text/javascript')
   if route in ['/','/index.html']:
    s=(SIM/'index.html').read_text();s=s.replace('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js','/vendor/jszip.min.js').replace('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js','/vendor/html2canvas.min.js');s=s.replace('<script src="js/runtime/api-registry.js"></script>','<script src="/friend_api.js"></script>\n<script src="js/runtime/api-registry.js"></script>');return self.send(s.encode(),'text/html; charset=utf-8')
