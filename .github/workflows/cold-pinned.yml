@@ -1,0 +1,46 @@
+name: liubai-official-cold-pinned
+on:
+  workflow_dispatch:
+  push:
+    branches: [rebuild/elcton-v3]
+    paths: ['qa/official_cold.py', 'tests/test_official_cold.py', '.github/workflows/cold-pinned.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  cold:
+    runs-on: macos-14
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: lantianhcgp/deveco-sim-ci
+          ref: aa3a315a766f6dd4983ad8dad9eed2c948c6faba
+          ssh-key: ${{ secrets.LIUBAI_OFFICIAL_SIM_SSH_KEY }}
+          path: _sim
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install --disable-pip-version-check pillow==11.3.0
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41625160288
+          github-token: ${{ github.token }}
+          name: liubai-elcton-41625160288
+          path: _built
+      - name: Exact original source and APP, do not compile or select pages
+        run: |
+          python3 -c 'from pathlib import Path;import hashlib;assert Path("_built/source-sha.txt").read_text().strip()=="36a46672faf3c670107e97f3ac8e12376671c7b2";assert hashlib.sha256(Path("_built/liubai-elcton-v3.app").read_bytes()).hexdigest()=="21989320913d136f148ab7adc9767ced884faa4fa9ac37e6ec9195333b38927c"'
+          python3 tests/test_official_cold.py
+      - name: Genuine input, terminate native process, preserve disk, restart and read exact id
+        run: python3 qa/official_cold.py --sim _sim --app _built/liubai-elcton-v3.app --out cold-evidence --expected-sha 21989320913d136f148ab7adc9767ced884faa4fa9ac37e6ec9195333b38927c
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: liubai-official-cold-${{ github.run_id }}
+          path: cold-evidence/
+          if-no-files-found: error
