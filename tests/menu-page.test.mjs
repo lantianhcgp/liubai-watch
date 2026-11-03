@@ -449,9 +449,19 @@ test('tools clipboard and clipboard bottom routes preserve snapshot without any 
   assert.equal(c.page.dialogText,'这里还没有内容');
   assert.equal(c.page.dialogHint1,'先从记录菜单复制。');
   assert.equal(c.page.dialogHint2,'它不是手机系统剪切板。');
+  assert.equal(c.page.dialogHintH,Math.ceil(c.page.dialogHintFont*1.6),'approved quiet-empty line-height 1.6');
+  assert.ok(c.page.dialogY+c.page.dialogIconSize+c.page.dialogIconGap+c.page.dialogTitleH+c.page.dialogTitleGap+2*c.page.dialogHintH<c.page.dockY);
   assert.equal(c.page.showDockRight,false);
   assert.equal(c.page.dockLeftLabel,'返回键盘');
   c.page.action(c.page.dockLeftAction); assertEditorRoute(c); c.page.onDestroy();
+});
+for (const [width,height,shape] of [[412,484,'rect'],[454,454,'circle'],[390,390,'circle'],[336,480,'rect']]) test('clipboard original 1.6 line boxes fit device '+width+' '+shape,()=>{
+  const h=open({params:{mode:'clipboard'},editor:snapshot,info:{windowWidth:width,windowHeight:height,screenShape:shape}}),p=h.page;
+  assert.equal(p.dialogHintH,Math.ceil(p.dialogHintFont*1.6));
+  const total=p.dialogIconSize+p.dialogIconGap+p.dialogTitleH+p.dialogTitleGap+2*p.dialogHintH;
+  assert.ok(p.dialogH>=total,'column height covers all real children');
+  assert.ok(p.dialogY+total<p.dockY-8,'full content above bottom bar');
+  h.page.onDestroy();
 });
 test('app-menu keeps V3 readable quiet-status typography separate from tools micro-hints',()=>{
   const h=open({params:{mode:'app'},editor:snapshot});

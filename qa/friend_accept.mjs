@@ -1,14 +1,15 @@
+import {configureDevice} from './friend_device.mjs';
 import {connect} from './friend_cdp.mjs';import fs from 'node:fs';import assert from 'node:assert/strict';import path from 'node:path';import geometry from '../entry/src/main/js/MainAbility/common/geometry.js';
 const out=path.resolve(process.argv[2]);fs.mkdirSync(out,{recursive:true});const c=await connect();const rows=[];
-async function configure(){await c.wait("!!document.getElementById('shape-select') && typeof JSZip!=='undefined'");await c.eval(`(()=>{document.getElementById('shape-select').value='rect';document.getElementById('width-input').value='412';document.getElementById('height-input').value='484';for(const n of ['shape-select','width-input','height-input'])document.getElementById(n).dispatchEvent(new Event('change',{bubbles:true}));})()`);}
+async function configure(){await configureDevice(c,412,484,'rect');}
 async function checkpoint(name){const state=await c.state();rows.push({name,state});await c.shot(path.join(out,name+'.png'));return state;}
 const expr="DeviceFeaturePageNav.getCurrentPage().data";
 async function ready(page){await c.wait(`DeviceFeaturePageNav.getCurrentPage()?.uri==='pages/${page}/${page}' && ${expr}.ready && !${expr}.busy`);}
 try{
  await c.send('Runtime.enable');
- await c.wait("typeof JSZip!=='undefined' && typeof html2canvas!=='undefined'");
+ await c.wait("typeof JSZip!=='undefined' && typeof html2canvas!=='undefined' && document.readyState==='complete'");
  await c.eval(`(()=>{window.__logs=[];for(const n of ['log','error','info','warn']){const prior=console[n];console[n]=(...a)=>{__logs.push({level:n,text:a.map(String).join(' ')});prior(...a);};}const t=document.createElement('style');t.textContent='';document.head.appendChild(t);document.getElementById('shape-select').value='rect';document.getElementById('shape-select').dispatchEvent(new Event('change',{bubbles:true}));document.getElementById('width-input').value='412';document.getElementById('height-input').value='484';for(const n of ['width-input','height-input'])document.getElementById(n).dispatchEvent(new Event('change',{bubbles:true}));})()`);
- await c.load();const h=await checkpoint('01-home-empty');assert.equal(h.w,412);assert.equal(h.h,484);assert.equal(h.rows.length,0);
+ await configure();await c.load();const h=await checkpoint('01-home-empty');assert.equal(h.w,412);assert.equal(h.h,484);assert.equal(h.rows.length,0);
  await c.tap('.new-note');await ready('edit');const e=await checkpoint('02-new-open');assert.equal(e.open,true);assert.equal(e.text,'');
  const g=geometry.editor({windowWidth:412,windowHeight:484,screenShape:'rect'},true),s=141/180;
  async function key(r,col){await c.watchPoint(g.keyX+(col*57+r*29+28.5)*s,g.keysY+r*47+23.5);}

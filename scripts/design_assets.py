@@ -8,9 +8,23 @@ ROOT=Path(__file__).resolve().parents[1]
 SOURCE=Path('/data/data/com.termux/files/home/liubai-watch-ui-restoration')
 MANIFEST=Path('/storage/emulated/0/Documents/liubai-watch-delivery/ui-restoration/approved-raster-assets.json')
 EXPECTED_MANIFEST='819139bd34fe0ec8c3a6f0afa950a33a2fee2ed3e509538e3e2cb25f13d21480'
+ADDITIONAL_ASSETS={
+ 'entry/src/main/js/MainAbility/common/icons/back_warm.png':'9a7d638496aa0dae5abf8ec4ad6c08cd79dc749f515f235ed653a4b7ba4a24ad',
+ 'entry/src/main/js/MainAbility/common/icons/edit_warm.png':'e634ab913fa2ef19c4196f1379093e973a2f420a8f716cb5e102f1c0d50d689a',
+ 'entry/src/main/js/MainAbility/common/icons/copy_warm.png':'f1a9471a740fc6b8b9ece90d6461629ca0691b8259015d7fc5945c352c34844c',
+ 'entry/src/main/js/MainAbility/common/icons/restore_warm.png':'e4adaae18496ae0903f89a35b97484de028ee3ac3c732fd1343536ab9e9dfd4a',
+ 'entry/src/main/js/MainAbility/common/icons/check_warm.png':'42f56d849592daf47ad9355498895ccd5b33ee4b2b5d6da4a11a467e1f458217',
+ 'entry/src/main/js/MainAbility/common/icons/alert_warm.png':'478d0c43bc8415a2491e538e87750f2db1f907f12635f3f8fd8314e4b5c9240e',
+ 'entry/src/main/js/MainAbility/common/icons/trash_warm.png':'e41f54125684bd05bcbdae8b8f9f7096f51347adcf0442a8f89ca6367508142a',
+ 'entry/src/main/js/MainAbility/common/icons/empty_copy_gold.png':'16f53aba9ec88cba41d835b50201df974bdbc7237a175de875abcaf23b0829b8',
+}
 MAP={'book-gold':'book_nav_gold','book-muted':'book_nav_muted','calendar-gold':'calendar_nav_gold','calendar-muted':'calendar_nav_muted','dots-warm':'dots_header_warm','dots-gold':'dots_reader_gold','back-muted':'back_nav_muted','right-muted':'right_nav_muted','pin-gold':'pin_row_gold','plus-ink':'plus_cta_ink','delete-warm':'delete_key_warm','enter-warm':'enter_key_warm','collapse-muted':'back_editor_muted'}
 DEST=ROOT/'entry/src/main/js/MainAbility/common/ui'
 def sha(b):return hashlib.sha256(b).hexdigest()
+def verify_asset(relative,raw,known):
+ expected=known.get(relative) or ADDITIONAL_ASSETS.get(relative)
+ assert expected and sha(raw)==expected, 'Unverified V3 asset: '+relative
+ return True
 def main():
  assert sha(MANIFEST.read_bytes())==EXPECTED_MANIFEST
  manifest=json.loads(MANIFEST.read_text());known={r['path']:r['sha256'] for r in manifest['assets']};rows=[];DEST.mkdir(parents=True,exist_ok=True)
@@ -21,7 +35,7 @@ def main():
  names['empty-copy-gold']='entry/src/main/js/MainAbility/common/icons/empty_copy_gold.png'
  for name,relative in names.items():
   raw=(SOURCE/relative).read_bytes()
-  if relative in known:assert sha(raw)==known[relative]
+  verify_asset(relative,raw,known)
   image=Image.open(SOURCE/relative).convert('RGBA');assert image.getbbox() is not None
   if name=='trash-danger':
    pixels=image.load()
