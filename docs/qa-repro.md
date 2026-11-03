@@ -40,6 +40,8 @@ TZ=Asia/Shanghai LIUBAI_FRIEND_STATE=/absolute/empty-state python3 qa/browser_ru
 
 最终视觉判断须逐组件放大原帧，不以截图数量、文件存在、非黑占比或构建成功代替。
 
+通用记录／笔记本菜单按批准原稿 `u=w/412` 使用 `74u` 行高、`24u` 字号和 `16u` 图字间距，行图标为 22px；阅读设置保留 50px／20px、键盘工具保留 50px／18px 的独立覆盖。原生点击中心同步来自对应行高，短窗口阅读设置的实际滚动步骤保留。原稿捕获输出计算几何用于同窗口尺寸／字号对账，不修改批准 HTML。
+
 最后原稿格式门禁：主页日期 MM / DD、回看日号 DD、阅读页码两位补零（不截断三位页数），对应行为测试先 RED 后 GREEN。hmlwsim 原 image 默认 contain 与 text 默认 pre-wrap 曾产生非原生差距；现隔离宿主依据官方 rect336/056-editor-tools.jpg 的铺满图和 fit3/085-reader-home.jpg 的单行省略号，改为显式宽高 fill，且对 compiled class/id 声明 textOverflow=ellipsis 的 text 设置单行溢出。全部更改均在 qa/host-patch.diff 披露，不修改 APP、业务 data 或正确的原生布局。
 
 rebuild.yml 先对同一 _built/liubai-elcton-v3.app 执行 qa/official_cold.py（真实点击中文/英文/换行、保存→进程结束→保留磁盘→重启回读同 ID 和逐字节正文），再跑四窗口完整路径；expected SHA 来自该 artifact 的 compiler-proof，不再单独复用旧载荷冷重启结论。

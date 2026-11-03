@@ -110,6 +110,145 @@ function assertReadRoute(h, anchor = 17) {
   assert.ok(!('text' in route.params));
 }
 
+const menuParityDevices = [
+  { windowWidth: 412, windowHeight: 484, screenShape: 'rect' },
+  { windowWidth: 454, windowHeight: 454, screenShape: 'circle' },
+  { windowWidth: 390, windowHeight: 390, screenShape: 'circle' },
+  { windowWidth: 336, windowHeight: 480, screenShape: 'rect' }
+];
+function menuParityNear(actual, expected, label) {
+  assert.ok(Number.isFinite(actual), label + ' must be a finite measured dimension');
+  assert.ok(Math.abs(actual - expected) < 1e-8, label + ': expected ' + expected + ', got ' + actual);
+}
+function assertMenuParityRows(p) {
+  menuParityNear(p.rowH, 74 * p.w / 412, 'record/app row height');
+  menuParityNear(p.rowFont, 24 * p.w / 412, 'record/app row font');
+  menuParityNear(p.rowGap, 16 * p.w / 412, 'record/app icon-label gap');
+  assert.equal(p.rowIconSize, 22, 'only row icons use the approved 22px size');
+  menuParityNear(p.rowTextW, p.contentW - p.rowIconSize - p.rowGap, 'row label width');
+  assert.ok(p.rowTextW > 0);
+  assert.ok(p.contentX >= 0 && p.contentX + p.contentW <= p.w + 1e-8);
+  assert.ok(p.rowIconSize + p.rowGap + p.rowTextW <= p.contentW + 1e-8, 'the full icon-gap-label row fits');
+}
+function assertMenuParityHint(p) {
+  menuParityNear(p.hintY, p.rowsY + p.rows.length * p.rowH + p.hintTopPad, 'app hint text follows actual rows and top padding');
+  menuParityNear(p.hintFont, 19 * p.w / 412, 'approved app hint font');
+  menuParityNear(p.hintTopPad, 16 * p.w / 412, 'approved app hint top padding');
+  assert.equal(p.hintLineH, Math.ceil(p.hintFont * 1.7));
+  assert.equal(p.hintH, 2 * p.hintLineH + p.hintTopPad);
+  assert.equal(p.hint1, '离线记录 · 内容只在本地');
+  assert.equal(p.hint2, '内容保存在本地，不是手机备份');
+}
+for (const info of menuParityDevices) {
+  const deviceName = info.windowWidth + 'x' + info.windowHeight + ' ' + info.screenShape;
+  for (const mode of ['record', 'app']) test('menu V3 row parity ' + mode + ' ' + deviceName, () => {
+    const h = open({ info, params: { mode } });
+    try {
+      assert.equal(h.page.ready, true);
+      assertMenuParityRows(h.page);
+      assert.equal(h.page.rows.length, mode === 'record' ? 3 : 1);
+      assert.equal(h.page.rowsY, h.page.top);
+      if (mode === 'app') assertMenuParityHint(h.page);
+    } finally { h.page.onDestroy(); }
+  });
+  test('app hint tracks delayed draft rows without a timer ' + deviceName, () => {
+    let finishDraft;
+    const h = open({ info, params: { mode: 'app' }, store: { loadDraft(cb) { finishDraft = cb; } } });
+    try {
+      const p = h.page;
+      assert.equal(p.rows.length, 1);
+      assertMenuParityHint(p);
+      const before = p.hintY;
+      finishDraft(null, copy(snapshot));
+      assert.equal(p.rows.length, 2);
+      assert.deepEqual(Array.from(p.rows, x => x.action), ['trash', 'resume-draft']);
+      assertMenuParityRows(p);
+      assertMenuParityHint(p);
+      menuParityNear(p.hintY - before, p.rowH, 'second row moves hint by exactly one row height');
+      assert.equal(h.routes.length, 0);
+      assert.equal(h.calls.filter(x => x.method === 'loadDraft').length, 1);
+    } finally { h.page.onDestroy(); }
+  });
+  test('non-target menu and toolbar dimensions remain unchanged ' + deviceName, () => {
+    for (const mode of ['read-options', 'tools', 'clipboard', 'confirm', 'exit', 'error']) {
+      const h = open({ info, params: { mode }, editor: snapshot, clipboard: ['正文'] });
+      try {
+        const p = h.page;
+        assert.equal(p.rowH, 50, mode + ' keeps its independent 50px row');
+        assert.equal(p.rowFont, mode === 'tools' ? 18 : 20);
+        assert.equal(p.rowGap, 12);
+        assert.equal(p.rowIconSize, 23);
+        menuParityNear(p.rowTextW, p.contentW - 40, mode + ' keeps its existing label width');
+        assert.equal(p.toolBarH, 44);
+        assert.equal(p.toolCaptionH, 27);
+        assert.equal(p.typeIconSize, 25);
+        menuParityNear(p.toolPartW, p.contentW / 4, 'toolbar hit width');
+        assert.equal(p.fontBlockH, 76);
+        assert.equal(p.hintFont, 12);
+        assert.equal(p.hintTopPad, 0);
+        if (mode === 'read-options') {
+          assert.equal(p.rowsY, p.top + 76);
+          assert.equal(p.hintY, p.rowsY + 150 + 7);
+        }
+        if (mode === 'tools') {
+          assert.equal(p.rowsY, p.top + 71);
+          assert.equal(p.hintY, p.rowsY + 100 + 7);
+          assert.equal(p.toolBarImage, '/common/keyboard/common/toolBar.png');
+        }
+      } finally { h.page.onDestroy(); }
+    }
+  });
+  test('menu hide-show recomputes by current mode and measured window ' + deviceName, () => {
+    let measured = info;
+    const h = open({ info, editor: snapshot, draft: snapshot, device(o) { o.success(copy(measured)); } });
+    try {
+      const p = h.page;
+      for (const mode of ['record', 'tools', 'app', 'read-options', 'app']) {
+        p.onHide();
+        measured = menuParityDevices[(menuParityDevices.indexOf(measured) + 1) % menuParityDevices.length];
+        h.state.params.mode = mode;
+        p.onShow();
+        assert.equal(p.ready, true);
+        assert.equal(p.w, measured.windowWidth);
+        assert.equal(p.h, measured.windowHeight);
+        assert.equal(p.mode, mode);
+        if (mode === 'record' || mode === 'app') assertMenuParityRows(p);
+        else {
+          assert.equal(p.rowH, 50);
+          assert.equal(p.rowFont, mode === 'tools' ? 18 : 20);
+          assert.equal(p.rowGap, 12);
+          assert.equal(p.rowIconSize, 23);
+          menuParityNear(p.rowTextW, p.contentW - 40, 'non-target width after mode switch');
+        }
+        if (mode === 'app') {
+          assert.equal(p.rows.length, 2, 'loaded draft still adds its second row after re-entry');
+          assertMenuParityHint(p);
+        }
+      }
+      assert.equal(h.calls.filter(x => x.method === 'getInfo').length, 6);
+    } finally { h.page.onDestroy(); }
+  });
+}
+test('menu HML binds row-only size and gap, keeps header and hints in list flow', () => {
+  const hml = fs.readFileSync(new URL('pages/menu/menu.hml', base), 'utf8');
+  const css = fs.readFileSync(new URL('pages/menu/menu.css', base), 'utf8');
+  const rowImage = hml.match(/<image class="icon" src="{{item.icon}}"[^>]*>/)[0];
+  const rowLabel = hml.match(/<text class="row-label"[^>]*>/)[0];
+  assert.match(rowImage, /width:{{rowIconSize}};/);
+  assert.match(rowImage, /height:{{rowIconSize}};/);
+  assert.match(rowLabel, /margin-left:{{rowGap}};/);
+  assert.match(rowLabel, /width:{{rowTextW}};/);
+  assert.match(css, /\.icon\{width:23px;height:23px;\}/);
+  assert.match(css, /\.row-label\{[^}]*margin-left:12px;/);
+  assert.match(hml, /<image class="icon" src="\/common\/ui\/back-warm\.png"><\/image>/);
+  assert.equal((hml.match(/{{rowIconSize}}/g) || []).length, 2, 'header and dock icons have no row-size binding');
+  const hintTag = hml.match(/<list-item class="hint-box"[^>]*>/)[0];
+  assert.doesNotMatch(hintTag, /(?:left|top):|hintY/);
+  assert.ok(hml.indexOf('class="row-item"') < hml.indexOf('class="hint-box"'));
+  assert.ok(hml.indexOf('class="hint-box"') < hml.indexOf('</list>'));
+  assert.match(hml, /<div style="width:{{contentW}};height:{{hintTopPad}};"><\/div>/);
+});
+
 test('read-options uses actual device geometry, exact V3 ordering, and boolean visibility', () => {
   const h = open(); const p = h.page;
   assert.equal(p.ready, true);
@@ -563,7 +702,7 @@ for (const info of [
   for (const mode of ['read-options', 'record', 'app', 'confirm', 'exit', 'error', 'tools', 'clipboard']) {
     const h = open({ params: { mode }, info, editor: snapshot }); const p = h.page;
     assert.equal(p.w, info.windowWidth); assert.equal(p.h, info.windowHeight);
-    assert.ok(p.titleFont >= 20); assert.equal(p.rowH, 50);
+    assert.ok(p.titleFont >= 20); assert.equal(p.rowH, mode === 'record' || mode === 'app' ? 74 * info.windowWidth / 412 : 50);
     for (const field of ['hw', 'hit', 'listH', 'contentW', 'dockW', 'dockPartW', 'dialogH', 'toolBarH', 'hintH', 'fontBlockH']) assert.ok(Number.isFinite(p[field]) && p[field] > 0, field);
     assert.equal(p.top + p.listH + 8, p.dockY);
     assert.ok(p.dockY + p.hit <= p.h); assert.ok(p.dockX >= 0 && p.dockX + p.dockW <= p.w);
