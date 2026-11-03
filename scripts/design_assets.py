@@ -2,8 +2,8 @@
 """Reuse only verified V3-derived icon pixels; never copies any old application code."""
 from pathlib import Path
 import hashlib,json,shutil
-from PIL import Image,ImageDraw,ImageFont
-# Pillow's PixelAccess typing does not expose RGBA tuple indexing correctly.
+# Hash-only provenance gates use the Python standard library.
+# Pillow is loaded only when regenerating raster assets below.
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE=Path('/data/data/com.termux/files/home/liubai-watch-ui-restoration')
 MANIFEST=Path('/storage/emulated/0/Documents/liubai-watch-delivery/ui-restoration/approved-raster-assets.json')
@@ -26,6 +26,7 @@ def verify_asset(relative,raw,known):
  assert expected and sha(raw)==expected, 'Unverified V3 asset: '+relative
  return True
 def main():
+ from PIL import Image,ImageDraw,ImageFont
  assert sha(MANIFEST.read_bytes())==EXPECTED_MANIFEST
  manifest=json.loads(MANIFEST.read_text());known={r['path']:r['sha256'] for r in manifest['assets']};rows=[];DEST.mkdir(parents=True,exist_ok=True)
  names={**{name:'entry/src/main/js/MainAbility/common/icons/'+src+'.png' for name,src in MAP.items()},'app-name':'entry/src/main/js/MainAbility/common/type/app_name.png','write-note':'entry/src/main/js/MainAbility/common/type/write_note.png'}

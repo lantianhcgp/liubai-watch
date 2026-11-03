@@ -2,6 +2,9 @@
 import importlib.util
 from pathlib import Path
 import unittest
+import subprocess
+import sys
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -15,6 +18,11 @@ class AssetProvenanceTests(unittest.TestCase):
         self.assertTrue(callable(verify), 'every asset, including additions absent from old manifest, needs a hash gate')
         assert callable(verify)
         return verify
+
+    def test_hash_only_import_does_not_load_graphics_dependencies(self):
+        code = "import runpy; m=runpy.run_path(%r); assert callable(m['verify_asset'])" % str(ROOT / 'scripts/design_assets.py')
+        result = subprocess.run([sys.executable, '-S', '-c', code], capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_additional_assets_match_pinned_original_pixels(self):
         verify = self.load()
