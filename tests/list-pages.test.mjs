@@ -121,6 +121,7 @@ function harness(options={}) {
       if (dep==='@system.device') deps[alias]=systemDevice;
       else if (dep==='@system.file') deps[alias]=systemFile;
       else if (dep==='@system.router') deps[alias]=systemRouter;
+      else if (dep==='@system.storage') deps[alias]={get(o){if(o.success)o.success(o.default)},set(o){if(o.success)o.success()}};
       else if (dep.endsWith('/store.js') || dep==='./store.js') deps[alias]=function(fileApi) {
         assert.equal(fileApi,systemFile,'only index creates the store from the real file API import');
         seam.calls.factories=(seam.calls.factories || 0)+1;

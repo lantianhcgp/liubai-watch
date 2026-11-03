@@ -19,6 +19,7 @@ function start(page, ready) {
     page.w = info.windowWidth;
     page.h = info.windowHeight;
     page.round = info.screenShape === 'circle';
+    console.info('LB2 DEVICE w='+page.w+' h='+page.h+' shape='+info.screenShape);
     page.message = '';
     ready(gen);
   },fail:function(d,code){fail(code);}}); } catch(e) { fail('EXCEPTION'); }

@@ -84,12 +84,12 @@ def fatal(text):
  allowed='current state(2) is invalid when changing ready state to show state.'
  result=[]
  for line in text.splitlines():
-  if re.search(r'ACELite\]\[ERROR|Console Error|out.of.memory|\bFATAL\b|Open font path failed|Launch.*abnormal',line,re.I) and allowed not in line:result.append(line)
+  if re.search(r'ACELite\]\[ERROR|Console Error|out.of.memory|\bFATAL\b|Open font path failed|Launch.*abnormal',line,re.I) and line.strip()!='[ACELite][ERROR]:'+allowed:result.append(line)
  return result
 def launch_args(bundle,name,page,prefix,port,setting,shape,w,h,resource):
  return ['-refresh','region','-projectID',prefix,'-ts','/tmp/'+prefix+'_trace','-j',str(bundle),'-s',prefix,'-cpm','false','-device','liteWearable','-shape',shape,'-sd','320','-pjId',prefix,'-bn',name,'-hs','524288','-f',str(setting),'-ilt','true','-or',str(w),str(h),'-cr',str(w),str(h),'-lws',str(port),'-url',page,'-arp',str(resource)]
 def plan(shape,w,h):
- script="import g from './entry/src/main/js/MainAbility/common/geometry.js';const i="+json.dumps({'windowWidth':w,'windowHeight':h,'screenShape':shape})+";console.log(JSON.stringify({h:g.home(i),e:g.editor(i,true),r:g.reader(i)}));"
+ script="import g from './entry/src/main/js/MainAbility/common/geometry.js';const i="+json.dumps({'windowWidth':w,'windowHeight':h,'screenShape':shape})+";console.log(JSON.stringify({h:g.home(i),e:g.editor(i,true),closed:g.editor(i,false),r:g.reader(i)}));"
  g=json.loads(subprocess.check_output(['node','--input-type=module','-e',script],text=True,cwd=Path(__file__).resolve().parents[1]));hm,ed,rd=g['h'],g['e'],g['r'];scale=141/180;offset=min(0,ed['keyW']-570*scale)
  def key(row,col):return [ed['keyX']+(col*57+row*29+28.5)*scale+offset,ed['keysY']+row*47+23.5]
  def ev(name,pattern,point=None,hold=.06,gesture=None):return {'name':name,'expect':pattern,'point':point,'hold':hold,'gesture':gesture}
@@ -101,12 +101,14 @@ def plan(shape,w,h):
   events.append(ev('newline-'+str(i),r'LB2 EDIT .*chars='+str(i*2+3)+r' pinyin= mode=1',[ed['footX']+ed['footW']-22,ed['footY']+22]))
  events.append(ev('save',r'LB2 READ id=(?P<id>[A-Za-z0-9_-]+) version=1 .*font=normal',[ed['hx']+ed['hw']-23,ed['hy']+23]))
  events.extend([ev('read-top',r'LB2 READ id={id} .*anchor=0 .*font=normal', [rd['w']/2,(rd['top']+rd['bottom'])/2],gesture='down'),ev('read-next',r'LB2 READ id={id} .*anchor=[1-9][0-9]* .*font=normal',[rd['w']/2,(rd['top']+rd['bottom'])/2],gesture='up'),ev('read-more',r'LB2 MENU mode=read-options rows=3',[rd['hx']+rd['hw']-rd['hit']/2,rd['hy']+rd['hit']/2])])
+ from official_extension import extend
+ events+=extend(g,ev)
  return g,events
 def run(sim,out,root,shape,w,h,events,sequence,values=None):
  out.mkdir(parents=True,exist_ok=True);values=dict(values or {});manifest=json.loads((root/'assets/js/MainAbility/manifest.json').read_text());config=json.loads((root/'config.json').read_text());engine=sim/'sdk/openharmony/previewer/liteWearable/bin/Simulator';engine.chmod(engine.stat().st_mode|0o111);prefix='lb2_'+str(int(time.time()))+'_'+str(sequence);port=39900+sequence;settings=json.loads((sim/'app/ci_setting.json').read_text())
  for v in settings.get('setting',{}).values():
   if 'Language' in v:v['Language']['args']['Language']='zh-CN'
- sf=out/'settings.json';sf.write_text(json.dumps(settings));args=launch_args(root/'assets/js/MainAbility',config['app']['bundleName'],manifest['pages'][0],prefix,port,sf,shape,w,h,root/'assets/entry');pipe=CommandPipe(prefix);log=out/'engine.log';raw=out/'frames.wsbin';steps=[];marks=OrderedMarkers();proc=ws=None;error=None;last=None;cursor=0
+ sf=out/'settings.json';settings.setdefault('frontend',{}).setdefault('1.0.0',{}).setdefault('Resolution',{'args':{}})['args']['Resolution']=str(w)+'*'+str(h);sf.write_text(json.dumps(settings));args=launch_args(root/'assets/js/MainAbility',config['app']['bundleName'],manifest['pages'][0],prefix,port,sf,shape,w,h,root/'assets/entry');pipe=CommandPipe(prefix);log=out/'engine.log';raw=out/'frames.wsbin';steps=[];marks=OrderedMarkers();proc=ws=None;error=None;last=None;cursor=0
  with log.open('wb') as eh,(out/'websocket.log').open('wb') as wh:
   try:
    proc=subprocess.Popen([str(engine)]+args,cwd=engine.parent,stdout=eh,stderr=subprocess.STDOUT);deadline=time.monotonic()+12
@@ -168,6 +170,7 @@ def main():
  p=argparse.ArgumentParser();p.add_argument('--sim',required=True,type=Path);p.add_argument('--app',required=True,type=Path);p.add_argument('--out',required=True,type=Path);p.add_argument('--profiles',default='fit3,circle454,circle390,rect336');a=p.parse_args();a.sim=a.sim.resolve();a.out=a.out.resolve();a.out.mkdir(parents=True,exist_ok=True);d=read_app(a.app);manifest=json.loads(d['assets/js/MainAbility/manifest.json']);assert manifest['pages']==PAGES;root=a.sim/'apps/liubai-elcton-rebuild';assert not root.exists();root.mkdir(parents=True)
  for n,b in d.items():
   assert not n.startswith('/') and '..' not in n.split('/');q=root/n;q.parent.mkdir(parents=True,exist_ok=True);q.write_bytes(b)
+ if not re.fullmatch(r'[A-Za-z0-9_-]+',manifest.get('bundleName','undefined')):raise GateError('Unsafe official sandbox namespace')
  sandbox=a.sim/'sdk/openharmony/previewer/liteWearable/bin/file_system/app/ace/data'/manifest.get('bundleName','undefined');results=[]
  profiles={'fit3':('rect',412,484),'circle454':('circle',454,454),'circle390':('circle',390,390),'rect336':('rect',336,480)}
  for i,key in enumerate(a.profiles.split(',')):
