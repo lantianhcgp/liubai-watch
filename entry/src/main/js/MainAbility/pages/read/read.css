@@ -9,8 +9,8 @@
 .icon{align-items:center;justify-content:center;}
 .date-box{flex-direction:column;align-items:center;justify-content:center;}
 .date{height:20px;font-size:18px;color:#f1f0e8;text-align:center;font-family:HYQiHei-65S;}
-.time{height:15px;font-size:12px;margin-top:1px;color:#adb1a9;text-align:center;font-family:HYQiHei-65S;}
-.counter{height:15px;font-size:12px;color:#adb1a9;text-align:center;font-family:HYQiHei-65S;}
+.time{height:15px;font-size:12px;margin-top:1px;color:#adb1a9;text-align:center;}
+.counter{height:15px;font-size:12px;color:#adb1a9;text-align:center;}
 .track{height:2px;background-color:#353b35;}
 .progress{height:2px;background-color:#e6c78c;}
 .error{height:24px;font-size:14px;color:#eca18b;text-align:center;font-family:HYQiHei-65S;}

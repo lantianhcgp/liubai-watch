@@ -16,6 +16,7 @@
 .editor-tools{flex-direction:column;}
 .source-toolbar{background-color:#222222;border-radius:14px;}
 .tool-hit{align-items:center;justify-content:center;}
+.tool-icon{width:23px;height:23px;}
 .tool-labels{flex-direction:row;}
 .tool-label{font-family:HYQiHei-65S;font-size:12px;color:#adb1a9;text-align:center;margin-top:3px;}
 .hint-box{flex-direction:column;}

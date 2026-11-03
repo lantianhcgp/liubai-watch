@@ -62,6 +62,12 @@ test('reader fonts and entire line rectangles stay in contour',()=>{
     for(let y=g.top;y+g.lineHeight<=g.bottom;y+=g.lineHeight){const b=layout.shapeBand(g.w,g.h,g.round,y,y+g.lineHeight,g.pad);safe(g,b.x,y,b.width,g.lineHeight);}
   }
 });
+test('native reader footer and short track retain their approved contour slots',()=>{
+ for(const info of windows){
+  const g=layout.reader(info,'normal');
+  safe(g,g.w*.365,g.footerY,g.w*.27,15);safe(g,g.w*.365,g.footerY+20,g.w*.27,2);
+ }
+});
 test('impossible geometry and reversed/outside bands throw instead of shrinking keys',()=>{
   assert.throws(()=>layout.editor({windowWidth:180,windowHeight:200,screenShape:'circle'},true));
   for(const args of [[0,484,false,1,3,10],[412,484,false,30,20,10],[412,484,false,-1,20,10],[412,484,false,20,500,10]]) assert.throws(()=>layout.shapeBand(...args));

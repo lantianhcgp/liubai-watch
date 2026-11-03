@@ -320,16 +320,17 @@ test('reader uses 23px warm back / 26px heavy gold dots and 18px/12px date hiera
   assert.equal(style(byClass(readTree,'date'),readCss)['font-size'],'18px');
   assert.equal(style(byClass(readTree,'time'),readCss)['font-size'],'12px');
   assert.equal(style(byClass(readTree,'date'),readCss).height,'20px');
-  assert.equal(style(byClass(readTree,'time'),readCss).height,'15px');
+  assert.equal(style(byClass(readTree,'time'),readCss).height,'15px','platform default family applies the approved small font');
   assert.equal(style(byClass(readTree,'time'),readCss)['margin-top'],'1px');
 });
-test('reader progress is only 27 percent of the window: 12px count, 15px row, 5px gap, 2px track',()=>{
+test('reader progress stays 27 percent with the approved small-text geometry',()=>{
   for(const info of windows) {
     const h=harness('read',info,{id:'same-id'});
     try {
       h.p.onInit(); near(h.p.trackW,info.windowWidth*.27,.51); near(h.p.trackX,(info.windowWidth-h.p.trackW)/2);
       const cs=style(byClass(readTree,'counter'),readCss,h.p), ts=style(byClass(readTree,'track'),readCss,h.p);
       assert.equal(cs['font-size'],'12px'); assert.equal(cs.height,'15px');
+      near(parseFloat(cs.width),h.p.trackW);
       assert.equal(ts.height,'2px'); near(parseFloat(ts.top)-parseFloat(cs.top)-parseFloat(cs.height),5);
       assert.equal(ts['background-color'],'#353b35');
       assert.equal(style(byClass(readTree,'progress'),readCss,h.p)['background-color'],'#e6c78c');

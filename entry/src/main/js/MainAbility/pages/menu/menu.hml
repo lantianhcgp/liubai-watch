@@ -19,9 +19,9 @@
    <list-item if="{{mode==='tool'}}" style="width:{{contentW}};height:71px;">
     <div class="editor-tools" style="width:{{contentW}};height:71px;">
      <stack class="source-toolbar" style="width:{{contentW}};height:44px;">
-      <image src="/common/keyboard/common/toolBar.png" style="left:{{(contentW-310*44/60)/2}};top:0px;width:{{310*44/60}};height:44px;transform:scaleX({{toolScale}});"></image>
       <div class="tool-hit" for="{{(i,c) in toolControls}}" @click="activate(c.action)" style="left:{{i*toolW}};top:0px;width:{{toolW}};height:44px;">
        <image if="{{c.action==='type'}}" src="{{typeImage}}" style="width:25px;height:25px;"></image>
+       <image class="tool-icon" if="{{c.icon}}" src="{{c.icon}}"></image>
       </div>
      </stack>
      <div class="tool-labels" style="width:{{contentW}};height:27px;">
