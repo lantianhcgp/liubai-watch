@@ -20,7 +20,7 @@
   </stack>
   <div class="keybar" if="{{open && !hasPinyin}}" style="left:{{footX}};top:{{footY}};width:{{footW}};height:44px;">
    <div class="mode-key" @click="mode"><image class="mode-image" src="{{typeImage}}"></image></div>
-   <div class="space-key" @click="space" style="width:{{spaceW}};"><image class="space-image" src="{{spaceImage}}" style="width:{{spaceW}};"></image></div>
+   <div class="space-key" @click="space" style="width:{{spaceW}};"><image class="space-image" src="{{spaceImage}}" style="width:{{spaceImageW}};"></image></div>
    <div class="small-key" @click="del"><image class="icon" src="/common/ui/delete-warm.png"></image></div>
    <div class="small-key" @click="enter"><image class="icon" src="/common/ui/enter-warm.png"></image></div>
   </div>

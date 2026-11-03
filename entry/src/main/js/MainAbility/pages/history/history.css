@@ -27,5 +27,7 @@
 .empty{flex-direction:column;align-items:center;justify-content:center;}
 .empty-title{font-family:HYQiHei-65S;color:#f1f0e8;text-align:center;}
 .empty-hint{font-family:HYQiHei-65S;color:#adb1a9;text-align:center;}
+.quiet-status{flex-direction:column;align-items:flex-start;justify-content:center;}
+.quiet-text{font-family:HYQiHei-65S;color:#adb1a9;text-align:left;}
 .pager{font-size:12px;color:#adb1a9;text-align:center;}
 .crown-sensor{left:0px;top:0px;width:1px;height:1px;opacity:0;}

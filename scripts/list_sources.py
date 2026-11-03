@@ -31,6 +31,8 @@ CSS='''
 .empty{flex-direction:column;align-items:center;justify-content:center;}
 .empty-title{font-family:HYQiHei-65S;color:#f1f0e8;text-align:center;}
 .empty-hint{font-family:HYQiHei-65S;color:#adb1a9;text-align:center;}
+.quiet-status{flex-direction:column;align-items:flex-start;justify-content:center;}
+.quiet-text{font-family:HYQiHei-65S;color:#adb1a9;text-align:left;}
 .pager{font-size:12px;color:#adb1a9;text-align:center;}
 .crown-sensor{left:0px;top:0px;width:1px;height:1px;opacity:0;}
 '''
@@ -62,5 +64,6 @@ for mode in ['index','history','day','trash']:
  hml+='<div class="swipe-plane" @swipe="onSwipe" style="left:0px;top:{{listY}};width:0px;height:{{listH}};"></div>'
  if mode=='trash':hml+='''<div class="dock" @click="home" style="left:{{dockX}};top:{{dockY}};width:{{dockW}};height:{{hit}};border-radius:{{dockRadius}};justify-content:center;"><image src="/common/ui/back-warm.png" style="width:23px;height:23px;margin-right:{{dockGap}};"></image><text class="dock-label" style="height:{{dockFont*1.4}};font-size:{{dockFont}};color:#adb1a9;">&#x8FD4;&#x56DE;&#x968F;&#x8BB0;</text></div>'''
  else:hml+=DOCK
+ if mode=='index':hml=hml.replace(EMPTY,'''<div class="quiet-status" if="{{empty && !error}}" style="left:{{contentX}};top:{{listY+16+16*w/412}};width:{{contentW}};height:{{33*w/412}};"><text class="quiet-text" style="width:{{contentW}};height:{{33*w/412}};font-size:{{19*w/412}};">{{emptyTitle}}</text></div><text class="message" if="{{error}}" style="left:{{contentX}};top:{{listY}};width:{{contentW}};height:{{listH}};">{{message}}</text>''')
  hml+='</stack></stack>\n';hml=hml.replace('<list class="note-list"','<list class="note-list" @swipe="onSwipe"');(folder/(mode+'.hml')).write_text(hml);(folder/(mode+'.css')).write_text(CSS)
 print('GENERATED_NATIVE_LIST_PAGES index history day trash')
