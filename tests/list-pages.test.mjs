@@ -538,7 +538,7 @@ test('all four complete native list pages wire gestures, image sizes, safe text 
     assert.ok(hml.includes('ref="crown"'),mode+' crown');
     assert.ok(hml.includes('@change="crownChange"'),mode+' crown handler');
     assert.ok(!/<button|<input|\$vm|async\s|await\s|\.\.\./.test(source+hml),mode+' lite subset');
-    assert.ok(css.includes('HYQiHei-65S'),mode+' original font');
+    assert.ok(!/\bfont-family\s*:/i.test(css),mode+' native platform font fallback');
     assert.ok(css.includes('#060808'),mode+' original background');
     assert.ok(css.includes('text-overflow:ellipsis'),mode+' first-line truncation');
     assert.ok(!/height\s*:\s*auto/.test(css+hml),mode+' no collapsing columns');
