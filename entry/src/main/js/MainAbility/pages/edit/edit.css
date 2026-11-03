@@ -16,8 +16,8 @@
 .title{font-size:21px;height:30px;color:#f1f0e8;text-align:center;font-family:HYQiHei-65S;}
 .icon{width:46px;height:46px;align-items:center;justify-content:center;}
 .exact-icon{width:23px;height:23px;}
-.status{height:14px;font-size:11px;color:#adb1a9;text-align:center;font-family:HYQiHei-65S;}
-.composing{height:14px;font-size:13px;color:#70b5ff;text-align:center;font-family:HYQiHei-65S;}
+.status{height:14px;font-size:11px;color:#adb1a9;text-align:center;}
+.composing{height:14px;font-size:13px;color:#70b5ff;text-align:center;}
 .key-viewport{height:141px;background-color:#1c1c1c;}
 .key-sheet{height:141px;top:0px;}
 .keybar{height:44px;flex-direction:row;align-items:center;}
