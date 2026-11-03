@@ -6,7 +6,7 @@ import session from '../../common/session';
 function row(a,t,icon){return {action:a,title:t,icon:icon||'right',subtitle:''};}
 function control(a,t,icon,emphasis){return {action:a,label:t,icon:icon||'',emphasis:!!emphasis};}
 export default {
- data:{mode:'app',ready:false,loading:true,message:'',w:0,h:0,hx:0,hy:0,hw:0,hit:46,title:'',titleFont:24,titleH:32,rows:[],visibleRows:[],displayRows:[],fonts:[],font:'normal',bodyX:0,bodyW:0,bodyY:0,rowH:50,slots:3,offset:0,listY:0,listH:0,contentX:0,contentW:0,fontW:0,fontLabel:'\u5b57\u53f7 \u00b7 \u4e0d\u6539\u53d8\u6b63\u6587\u5185\u5bb9',hint:'',hintH:0,hintFont:13,quiet:false,dock:[],dockX:0,dockY:0,dockW:0,dockCellW:0,dockFont:18,toolControls:[],toolW:0,typeImage:'',empty:false,emptyIcon:'book',emptyTitle:'',emptyPrompt:'',emptyX:0,emptyW:0,emptyY:0,emptyH:0,emptyIconSize:43,emptyIconGap:18,emptyTitleFont:25,emptyTitleH:34,emptyTitleGap:13,emptyPromptFont:18,emptyPromptH:58,rowFont:24,rowIcon:23,rowGap:16,rowTextH:36,noticeY:0},
+ data:{mode:'app',ready:false,loading:true,message:'',w:0,h:0,hx:0,hy:0,hw:0,hit:46,title:'',titleFont:24,titleH:32,rows:[],visibleRows:[],displayRows:[],fonts:[],font:'normal',bodyX:0,bodyW:0,bodyY:0,rowH:50,slots:3,offset:0,listY:0,listH:0,contentX:0,contentW:0,fontW:0,fontLabel:'\u5b57\u53f7 \u00b7 \u4e0d\u6539\u53d8\u6b63\u6587\u5185\u5bb9',hint:'',hintH:0,hintFont:13,quiet:false,dock:[],dockX:0,dockY:0,dockW:0,dockCellW:0,dockFont:18,toolControls:[],toolW:0,toolScale:1,typeImage:'',empty:false,emptyIcon:'book',emptyTitle:'',emptyPrompt:'',emptyX:0,emptyW:0,emptyY:0,emptyH:0,emptyIconSize:43,emptyIconGap:18,emptyTitleFont:25,emptyTitleH:34,emptyTitleGap:13,emptyPromptFont:18,emptyPromptH:58,rowFont:24,rowIcon:23,rowGap:16,rowTextH:36,noticeY:0},
  onInit:function(){
   var p=this;this.alive=true;this.gen=(this.gen||0)+1;var gen=this.gen;
   this.params=shell.params(this);this.mode=this.params.mode||'app';
@@ -31,7 +31,7 @@ export default {
   this.rowH=this.mode==='read'||this.mode==='tool'?50:Math.max(50,74*u);
   this.rowFont=this.mode==='read'?20:this.mode==='tool'?18:this.mode==='clipboard'?22*u:24*u;
   this.rowIcon=23*u;this.rowGap=16*u;this.rowTextH=Math.max(28,this.rowFont*1.4);
-  this.fontW=(b.width-4)/3;this.toolW=b.width/4;this.slots=Math.max(1,Math.floor(this.listH/this.rowH));
+  this.fontW=(b.width-4)/3;this.toolW=b.width/4;this.toolScale=Math.round(b.width/(310*44/60)*10000)/10000;this.slots=Math.max(1,Math.floor(this.listH/this.rowH));
   this.hintFont=this.mode==='tool'?12:this.mode==='app'?19*u:13;
   this.hintH=this.mode==='tool'?60:this.mode==='app'?82*u:53;
   this.dockX=g.dockX;this.dockY=g.dockY;this.dockW=g.dockW;this.dockFont=Math.max(16,18*u);this.dockCellW=g.dockW/Math.max(1,this.dock.length);
