@@ -5,7 +5,7 @@
     {
       "file": "js/runtime/sandbox.js",
       "upstreamSha256": "97ffc9dcb003773e220ad5f2f5d46b932ca76459dde9a3640ac2f9270bc8caa6",
-      "hostSha256": "25ba1794ab372986ab9c94ad0f4991249c4f1fb10cd679513bc84be4e723ebbe"
+      "hostSha256": "5c70527b8b23eb83c0f3bcb124c503886a50bb0a40bca25b85b14d5058d9cbaf"
     },
     {
       "file": "js/runtime/deviceFeature_pageNav.js",
@@ -20,7 +20,7 @@
     {
       "file": "js/css-adapter.js",
       "upstreamSha256": "b8ea821025e5bfe9302a757920ca00370c4cfd92da54776e9f3aa3e22e234f0a",
-      "hostSha256": "9747f59882bcc7365f1e7f7e3d08bdbdfa8b14d39cd49f3590875ff2c3afbb7d"
+      "hostSha256": "67726be1e5711b034d39adc7b2d6b28dc6d4a3c368af0c9aa2bba941624c1c10"
     },
     {
       "file": "js/app.js",

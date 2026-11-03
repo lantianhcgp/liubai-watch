@@ -119,7 +119,23 @@
      const renderFn = definition.render || null;
      const styleSheet = definition.styleSheet || null;
  
-@@ -625,6 +645,34 @@
+@@ -524,6 +544,7 @@
+           css += `${STYLE_PROP_MAP[prop] || prop}: ${formatStyleValue(prop, val)}; `;
+         }
+         css += '}\n';
++        if (styles.textOverflow === 'ellipsis') css += `text.${cls} { display: block; white-space: nowrap; overflow: hidden; }\n`;
+       }
+       const idSelectors = styleSheet.idSelectors || {};
+       for (const [id, styles] of Object.entries(idSelectors)) {
+@@ -534,6 +555,7 @@
+           css += `${STYLE_PROP_MAP[prop] || prop}: ${formatStyleValue(prop, val)}; `;
+         }
+         css += '}\n';
++        if (styles.textOverflow === 'ellipsis') css += `text#${id} { display: block; white-space: nowrap; overflow: hidden; }\n`;
+       }
+       const keyframes = styleSheet['@keyframes'] || {};
+       for (const [name, steps] of Object.entries(keyframes)) {
+@@ -625,6 +647,34 @@
  
    function arrayBufferToText(ab) { return new TextDecoder().decode(ab); }
  
@@ -154,7 +170,7 @@
    function executeModule(code, moduleKey, appData) {
      if (_moduleCache.has(moduleKey)) return _moduleCache.get(moduleKey);
      if (!code && appData.hapFiles) {
-@@ -668,6 +716,7 @@
+@@ -668,6 +718,7 @@
  
    function initApp(appJsCode, appData) {
      _moduleCache.clear();
@@ -213,6 +229,32 @@
    box-sizing: border-box;
    -webkit-tap-highlight-color: transparent;
    flex-shrink: 0;
+@@ -63,6 +73,13 @@
+   display: inline;
+   white-space: pre-wrap;
+ }
++/* Native textOverflow ellipsis is one complete row. Official home frame
++   truncates with … instead of browser pre-wrap plus vertical clipping. */
++text[style*="text-overflow: ellipsis"] {
++  display: block;
++  overflow: hidden;
++  white-space: nowrap;
++}
+ [data-simulator-marquee="true"] {
+   display: block;
+   overflow: hidden;
+@@ -80,8 +97,10 @@
+   45%, 55% { transform: translateX(var(--marquee-translation, 0px)); }
+   90%, 100% { transform: translateX(0); }
+ }
++/* Host parity proven by official rect336/056-editor-tools.jpg:
++   native explicit image width/height uses fill, not browser contain. */
+ img, image {
+-  object-fit: contain;
++  object-fit: fill;
+   display: block;
+ }
+ list-item {
 --- a/js/app.js
 +++ b/js/app.js
 @@ -226,14 +226,14 @@

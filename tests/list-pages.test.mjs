@@ -216,7 +216,7 @@ test('index creates one real file-backed shared store and activates only once un
   assert.deepEqual(plain(env.calls.list[0]),{filter:{deleted:false},offset:0,limit:3});
   assert.equal(env.calls.read.length,0,'reader, not list previews, loads the body');
   assert.equal(page.today,'2031-01-02');
-  assert.match(page.dateText,/1.*2/);
+  assert.equal(page.dateText,'01 / 02','approved home date keeps two digits');
   env.flushTimers();
   assert.ok(page.rotations.some(r=>r.focus===true));
   page.onHide();
@@ -271,6 +271,7 @@ test('lists expose real swipe and crown pagination with boundary reset and post-
   assert.equal(page.rotations.at(-1).focus,true);
 });
 
+test('history approved day number stays two digits',()=>{const env=harness(),page=env.page('index');page.onInit();page.onHide();env.app.getState().params={month:'2031-01'};const history=env.page('history');history.onInit();assert.equal(history.rows[0].number,'04');});
 test('row titles use only the first saved line and metadata is date/time plus preview, never full body', () => {
   const env=harness();
   env.records[0].title='标题第一行\n第二行不进入标题';

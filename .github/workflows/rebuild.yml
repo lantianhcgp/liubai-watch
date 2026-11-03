@@ -84,6 +84,10 @@ jobs:
       - name: Strict input and source association
         run: |
           python3 -c 'from pathlib import Path;import os,json,hashlib;p=Path("_built/liubai-elcton-v3.app");r=json.loads(Path("_built/compiler-proof.json").read_text());assert Path("_built/source-sha.txt").read_text().strip()==os.environ["GITHUB_SHA"];assert hashlib.sha256(p.read_bytes()).hexdigest()==r["appSha256"];assert r["ok"] and not r["pageSelectionPerformed"]'
+      - name: Same artifact genuine cold restart and exact native disk body
+        run: |
+          APP_SHA=$(python3 -c 'from pathlib import Path;import json;print(json.loads(Path("_built/compiler-proof.json").read_text())["appSha256"])')
+          python3 qa/official_cold.py --sim _sim --app _built/liubai-elcton-v3.app --out official-evidence/cold-restart --expected-sha "$APP_SHA"
       - name: Genuine official user paths on all four test windows
         run: python3 qa/official.py --sim _sim --app _built/liubai-elcton-v3.app --out official-evidence
       - uses: actions/upload-artifact@v4
