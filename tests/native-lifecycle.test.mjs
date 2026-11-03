@@ -1,0 +1,2 @@
+import fs from 'node:fs';import test from 'node:test';import assert from 'node:assert/strict';
+for(const page of ['edit','read','menu'])test('native lifecycle active/generation are declared reactive fields '+page,()=>{const s=fs.readFileSync(new URL('../entry/src/main/js/MainAbility/pages/'+page+'/'+page+'.js',import.meta.url),'utf8');assert.ok(s.includes('active:false,generation:0'),'native ViewModel must retain state across onInit/onShow instead of querying twice');});

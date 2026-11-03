@@ -6,7 +6,7 @@ import nav from '../../common/nav.js';
 import Storage from '@system.storage';
 function positionKey(id) { return 'lb2p_'+id; }
 export default {
-  data:{ready:false,w:0,h:0,round:false,hx:0,hy:0,hw:0,hit:46,top:0,bottom:0,footerY:0,trackX:0,trackW:0,progressW:0,lines:[],id:'',date:'',time:'',counter:'',anchor:0,fontKey:'normal',message:'',swipeY:0,crownValue:50},
+  data:{ready:false,active:false,generation:0,w:0,h:0,round:false,hx:0,hy:0,hw:0,hit:46,top:0,bottom:0,footerY:0,trackX:0,trackW:0,progressW:0,lines:[],id:'',date:'',time:'',counter:'',anchor:0,fontKey:'normal',message:'',swipeY:0,crownValue:50},
   onInit:function(){this.activate();},
   onShow:function(){this.activate();},
   onHide:function(){this.remember();life.stop(this);},
