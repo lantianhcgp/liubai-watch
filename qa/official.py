@@ -90,12 +90,15 @@ def launch_args(bundle,name,page,prefix,port,setting,shape,w,h,resource):
  return ['-refresh','region','-projectID',prefix,'-ts','/tmp/'+prefix+'_trace','-j',str(bundle),'-s',prefix,'-cpm','false','-device','liteWearable','-shape',shape,'-sd','320','-pjId',prefix,'-bn',name,'-hs','524288','-f',str(setting),'-ilt','true','-or',str(w),str(h),'-cr',str(w),str(h),'-lws',str(port),'-url',page,'-arp',str(resource)]
 def plan(shape,w,h):
  script="import g from './entry/src/main/js/MainAbility/common/geometry.js';const i="+json.dumps({'windowWidth':w,'windowHeight':h,'screenShape':shape})+";console.log(JSON.stringify({h:g.home(i),e:g.editor(i,true),r:g.reader(i)}));"
- g=json.loads(subprocess.check_output(['node','--input-type=module','-e',script],text=True,cwd=Path(__file__).resolve().parents[1]));hm,ed,rd=g['h'],g['e'],g['r'];scale=141/180
- def key(row,col):return [ed['keyX']+(col*57+row*29+28.5)*scale,ed['keysY']+row*47+23.5]
+ g=json.loads(subprocess.check_output(['node','--input-type=module','-e',script],text=True,cwd=Path(__file__).resolve().parents[1]));hm,ed,rd=g['h'],g['e'],g['r'];scale=141/180;offset=min(0,ed['keyW']-570*scale)
+ def key(row,col):return [ed['keyX']+(col*57+row*29+28.5)*scale+offset,ed['keysY']+row*47+23.5]
  def ev(name,pattern,point=None,hold=.06,gesture=None):return {'name':name,'expect':pattern,'point':point,'hold':hold,'gesture':gesture}
  events=[ev('cold-index',r'LB2 LIST index rows=0 offset=0'),ev('new',r'LB2 EDIT id=new open=true .*chars=0 pinyin= mode=0', [hm['contentX']+hm['contentW']/2,hm['newY']+hm['newH']/2]),ev('key-n',r'LB2 EDIT .*pinyin=n mode=0',key(2,5)),ev('key-i',r'LB2 CAND pinyin=ni rows=[1-9][0-9]*',key(0,7)),ev('choose-han',r'LB2 EDIT .*chars=1 pinyin= mode=0',[ed['footX']+25,ed['footY']+22]),ev('lowercase',r'LB2 EDIT .*mode=1',[ed['footX']+22,ed['footY']+22])]
- # Enter text with original real keys, never inject an app data string.
- for i in range(70):events.append(ev('letter-'+str(i),r'LB2 EDIT .*chars='+str(i+2)+r' pinyin= mode=1',key(1,0)))
+ events.insert(2,{'name':'key-pan','expect':r'LB2 KEY pan offset='+str(round(offset)),'point':[ed['keyX']+ed['keyW']*.85,ed['keysY']+70],'hold':.07,'gesture':'left'})
+ # Enter genuine multi-paragraph text with repeated real keypresses and newline.
+ for i in range(20):
+  events.append(ev('letter-'+str(i),r'LB2 EDIT .*chars='+str(i*2+2)+r' pinyin= mode=1',[ed['keyX']+(29+28.5)*scale,ed['keysY']+70.5]))
+  events.append(ev('newline-'+str(i),r'LB2 EDIT .*chars='+str(i*2+3)+r' pinyin= mode=1',[ed['footX']+ed['footW']-22,ed['footY']+22]))
  events.append(ev('save',r'LB2 READ id=(?P<id>[A-Za-z0-9_-]+) version=1 .*font=normal',[ed['hx']+ed['hw']-23,ed['hy']+23]))
  events.extend([ev('read-top',r'LB2 READ id={id} .*anchor=0 .*font=normal', [rd['w']/2,(rd['top']+rd['bottom'])/2],gesture='down'),ev('read-next',r'LB2 READ id={id} .*anchor=[1-9][0-9]* .*font=normal',[rd['w']/2,(rd['top']+rd['bottom'])/2],gesture='up'),ev('read-more',r'LB2 MENU mode=read-options rows=3',[rd['hx']+rd['hw']-rd['hit']/2,rd['hy']+rd['hit']/2])])
  return g,events
@@ -116,8 +119,10 @@ def run(sim,out,root,shape,w,h,events,sequence,values=None):
     if event.get('point'):
      x,y=event['point'];commands=[mouse('MousePress',x,y)]
      if event.get('gesture'):
-      distance=(-1 if event['gesture']=='up' else 1)*min(150,(h-160)/2)
-      commands.extend(mouse('MouseMove',x,y+distance*k/4) for k in range(1,5));commands.append(mouse('MouseRelease',x,y+distance))
+      distance=(-1 if event['gesture'] in ['up','left'] else 1)*(min(220,w-80) if event['gesture'] in ['left','right'] else min(150,(h-160)/2))
+      if event['gesture'] in ['left','right']:
+       commands.extend(mouse('MouseMove',x+distance*k/4,y) for k in range(1,5));commands.append(mouse('MouseRelease',x+distance,y))
+      else:commands.extend(mouse('MouseMove',x,y+distance*k/4) for k in range(1,5));commands.append(mouse('MouseRelease',x,y+distance))
      else:commands.append(mouse('MouseRelease',x,y))
      for command in commands:pipe.send(command);sent.append(command);pipe.stop.wait(event.get('hold',.06))
     pattern=event['expect']
