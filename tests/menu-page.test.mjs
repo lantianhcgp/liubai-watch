@@ -546,7 +546,7 @@ test('native menu HML/CSS exist, use boolean conditions, original toolbar, pure-
   assert.ok(fs.existsSync(hp), 'menu.hml must be a real deliverable'); assert.ok(fs.existsSync(cp), 'menu.css must be a real deliverable');
   const hml = fs.readFileSync(hp, 'utf8'), css = fs.readFileSync(cp, 'utf8'), js = fs.readFileSync(pagePath, 'utf8');
   assert.ok(hml.includes('ref="crown"')); assert.ok(hml.includes('action(item.action)'));
-  assert.ok(hml.includes('selectFont(item.key)')); assert.ok(hml.includes('toolBarImage')); assert.ok(hml.includes('typeIcon'));
+  assert.ok(hml.includes("selectFont('compact')")); assert.ok(hml.includes('toolBarImage')); assert.ok(hml.includes('typeIcon'));
   assert.ok(hml.includes('height:{{listH}}')); assert.ok(hml.includes('height:{{dialogH}}'));
   assert.ok(!/<(?:button|section|span|p)\b/.test(hml));
   assert.ok(!/<text\b[^>]*@(?:click|touch|swipe)/.test(hml), 'text never owns action hit areas');

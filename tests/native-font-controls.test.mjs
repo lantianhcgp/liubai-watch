@@ -1,0 +1,2 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import test from 'node:test';
+test('native font segments never reconstruct the clicked for-list synchronously',()=>{const h=fs.readFileSync(new URL('../entry/src/main/js/MainAbility/pages/menu/menu.hml',import.meta.url),'utf8');assert.ok(!h.includes('for="{{(i,item) in fonts}}"'),'static font hit controls avoid destroying the current native event receiver');for(const key of ['compact','normal','large'])assert.ok(h.includes("selectFont('"+key+"')"));});
