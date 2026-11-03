@@ -529,7 +529,7 @@ for (const info of [
     for (const field of ['hw', 'hit', 'listH', 'contentW', 'dockW', 'dockPartW', 'dialogH', 'toolBarH', 'hintH', 'fontBlockH']) assert.ok(Number.isFinite(p[field]) && p[field] > 0, field);
     assert.equal(p.top + p.listH + 8, p.dockY);
     assert.ok(p.dockY + p.hit <= p.h); assert.ok(p.dockX >= 0 && p.dockX + p.dockW <= p.w);
-    assert.ok(p.titleW + 2 * p.hit <= p.hw + 0.001);
+    assert.ok(p.titleW + p.hit + 8 <= p.hw + 0.001, 'approved menu has one back hit, not a phantom right hit');
     assert.ok(p.dialogH <= p.listH);
     assert.equal(p.isReadOptions + p.isRecord + p.isApp + p.isConfirm + p.isExit + p.isError + p.isTools + p.isClipboard, 1);
     for (const field of ['showEmpty', 'showMessage', 'showHints', 'showDialog', 'showDockRight', 'showDockIcon']) assert.equal(typeof p[field], 'boolean', field);

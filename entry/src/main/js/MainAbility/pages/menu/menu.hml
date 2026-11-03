@@ -4,7 +4,6 @@
   <div class="header" style="left:{{hx}};top:{{hy}};width:{{hw}};height:{{hit}};">
    <div class="hit" @click="back" style="width:{{hit}};height:{{hit}};"><image class="icon" src="/common/ui/back-warm.png"></image></div>
    <text class="title" style="width:{{titleW}};height:{{hit}};font-size:{{titleFont}};">{{title}}</text>
-   <div class="hit" style="width:{{hit}};height:{{hit}};"></div>
   </div>
   <list class="menu-list" ref="crown" style="left:{{contentX}};top:{{top}};width:{{contentW}};height:{{listH}};">
    <list-item if="{{isReadOptions}}" class="font-block" style="width:{{contentW}};height:{{fontBlockH}};"><text class="font-heading" style="width:{{contentW}};">&#x5B57;&#x53F7; &#x00B7; &#x4E0D;&#x6539;&#x53D8;&#x6B63;&#x6587;&#x5185;&#x5BB9;</text><div class="font-segments" style="width:{{contentW}};"><div class="font" @click="selectFont('compact')" style="width:{{segmentW}};background-color:{{font0Bg}};"><text class="font-label" style="width:{{segmentW}};color:{{font0Color}};">&#x7D27;&#x51D1;</text></div><div class="font" @click="selectFont('normal')" style="width:{{segmentW}};background-color:{{font1Bg}};"><text class="font-label" style="width:{{segmentW}};color:{{font1Color}};">&#x6807;&#x51C6;</text></div><div class="font" @click="selectFont('large')" style="width:{{segmentW}};background-color:{{font2Bg}};"><text class="font-label" style="width:{{segmentW}};color:{{font2Color}};">&#x5927;&#x5B57;</text></div></div></list-item>
@@ -20,13 +19,14 @@
    </list-item>
    <list-item class="row-item" for="{{(i,item) in rows}}" @click="action(item.action)" style="width:{{contentW}};height:{{rowH}};"><stack style="width:{{contentW}};height:{{rowH}};"><div class="menu-row" style="left:0px;top:0px;width:{{contentW}};height:{{rowH-1}};"><image class="icon" src="{{item.icon}}"></image><text class="row-label" style="width:{{rowTextW}};height:{{rowFont*1.5}};font-size:{{rowFont}};color:{{item.color}};">{{item.label}}</text></div><div class="row-divider" style="left:0px;top:{{rowH-1}};width:{{contentW}};height:1px;"></div></stack></list-item>
    <list-item class="hint-box" if="{{showHints}}" style="width:{{contentW}};height:{{hintH}};"><text class="hint" style="width:{{contentW}};">{{hint1}}</text><text class="hint" style="width:{{contentW}};">{{hint2}}</text></list-item>
-   <list-item class="dialog" if="{{showDialog}}" style="width:{{contentW}};height:{{dialogH}};"><image src="{{dialogIcon}}" style="width:{{dialogIconSize}};height:{{dialogIconSize}};"></image><text class="dialog-title" style="width:{{contentW}};height:{{dialogTitleH}};">{{dialogText}}</text><text class="dialog-hint" style="width:{{contentW}};height:{{dialogHintH}};">{{dialogHint1}}</text><text class="dialog-hint" style="width:{{contentW}};height:{{dialogHintH}};">{{dialogHint2}}</text></list-item>
+   <list-item if="{{showDialog}}" style="width:{{contentW}};height:{{dialogTopPad}};"></list-item>
+   <list-item class="dialog" if="{{showDialog}}" style="width:{{contentW}};height:{{dialogH}};"><image src="{{dialogIcon}}" style="width:{{dialogIconSize}};height:{{dialogIconSize}};margin-bottom:{{dialogIconGap}};"></image><text class="dialog-title" style="width:{{contentW}};height:{{dialogTitleH}};font-size:{{dialogTextFont}};margin-bottom:{{dialogTitleGap}};">{{dialogText}}</text><text class="dialog-hint" style="width:{{contentW}};height:{{dialogHintH}};font-size:{{dialogHintFont}};">{{dialogHint1}}</text><text class="dialog-hint" style="width:{{contentW}};height:{{dialogHintH}};font-size:{{dialogHintFont}};">{{dialogHint2}}</text></list-item>
    <list-item class="empty-box" if="{{showEmpty}}" style="width:{{contentW}};height:60px;"><text class="empty-text" style="width:{{contentW}};">{{emptyText}}</text></list-item>
   </list>
   <div class="dock" style="left:{{dockX}};top:{{dockY}};width:{{dockW}};height:{{hit}};">
    <div class="dock-control" @click="action(dockLeftAction)" style="width:{{dockPartW}};height:{{hit-2}};"><image class="icon" if="{{showDockIcon}}" src="{{dockLeftIcon}}"></image><text class="dock-label" style="height:{{dockLabelH}};">{{dockLeftLabel}}</text></div>
    <div class="dock-divider" if="{{showDockRight}}" style="height:{{hit-2}};"></div>
-   <div class="dock-control" if="{{showDockRight}}" @click="action(dockRightAction)" style="width:{{dockPartW}};height:{{hit-2}};"><text class="dock-gold" style="height:{{dockLabelH}};">{{dockRightLabel}}</text></div>
+   <div class="dock-control" if="{{showDockRight}}" @click="action(dockRightAction)" style="width:{{dockPartW}};height:{{hit-2}};background-color:{{dockRightBg}};"><text class="dock-gold" style="height:{{dockLabelH}};color:{{dockRightColor}};">{{dockRightLabel}}</text></div>
   </div>
   <text class="error" if="{{showMessage}}" style="left:{{contentX}};top:{{dockY-26}};width:{{contentW}};">{{message}}</text>
  </stack>

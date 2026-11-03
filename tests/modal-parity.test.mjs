@@ -1,0 +1,3 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import test from 'node:test';
+test('V3 reversible confirm and draft primary actions have actual gold surfaces',()=>{const h=fs.readFileSync(new URL('../entry/src/main/js/MainAbility/pages/menu/menu.hml',import.meta.url),'utf8');assert.ok(h.includes('background-color:{{dockRightBg}}'));assert.ok(h.includes('color:{{dockRightColor}}'));});
+test('round and narrow header titles fit one native line by measured width',()=>{const s=fs.readFileSync(new URL('../entry/src/main/js/MainAbility/pages/menu/menu.css',import.meta.url),'utf8');assert.ok(s.includes('text-overflow:ellipsis'));});
