@@ -36,14 +36,14 @@ jobs:
         run: python3 -m pip install --disable-pip-version-check pillow==11.3.0
       - uses: actions/download-artifact@v4
         with:
-          name: r18-runtime-11
-          run-id: 41557916931
+          name: r18-runtime-12
+          run-id: 41567745564
           github-token: ${{ github.token }}
           path: _compiler
       - name: Verify pinned complete compiled artifact
         run: |
           set -o pipefail
-          python3 -c 'from pathlib import Path;import json,hashlib;d=Path("_compiler/r18-runtime");r=json.loads((d/"provenance.json").read_text());p=d/"liubai-r18-complete.app";assert r["sourceHead"]=="6127a2d5e138bf451e28edd2f48b7c1c9c64d048";assert r["candidateAppSha256"]==hashlib.sha256(p.read_bytes()).hexdigest()=="d232e1cec014bc4a7b158005f472510219a1d4f28190862b90ff7f1f5bb8c1b3";assert len(r["pages"])==8 and r["pageSelectionPerformed"] is False;assert r["parserVerdict"]["status"] in ["passed-small-cli","inconclusive-small-cli-heap"];print("PINNED_COMPLETE_COMPILER_ARTIFACT_VERIFIED")'
+          python3 -c 'from pathlib import Path;import json,hashlib;d=Path("_compiler/r18-runtime");r=json.loads((d/"provenance.json").read_text());p=d/"liubai-r18-complete.app";assert r["sourceHead"]=="58b4d68ca017bd3ef4d3ee4950f4718b58142122";assert r["candidateAppSha256"]==hashlib.sha256(p.read_bytes()).hexdigest()=="f0971f6461174f01676d19e24f5397f0c5e1cc6b1956c20366412618f1a33d86";assert len(r["pages"])==8 and r["pageSelectionPerformed"] is False;assert r["parserVerdict"]["status"] in ["passed-small-cli","inconclusive-small-cli-heap"];print("PINNED_COMPLETE_COMPILER_ARTIFACT_VERIFIED")'
       - name: Run unchanged complete compiled application on official 512KB engine
         run: |
           set -o pipefail
