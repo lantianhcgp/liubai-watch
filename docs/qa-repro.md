@@ -36,6 +36,6 @@ TZ=Asia/Shanghai LIUBAI_FRIEND_STATE=/absolute/empty-state python3 qa/browser_ru
 
 沿用实际 R18 的 `liubai.nexus.by71x` profile，源码 `com.hcbiu.liubai`；profile/私钥只在仓库外。签名后须验证 CMS、精确 profile、Huawei Root + 中间链、版本 code=2/name=0.2.0，并解析 signed.bin 文件表确认除了 config 的签名 bundleName 外，全部代码/map/资源与双模拟器最终 APP 逐字节一致。
 
-新增审查失败回归：根存在但引用页缺失不得清库；提交与回滚双失败须锁写并冷恢复；journal 清除已落盘却报错加回滚失败也不能发布失败正文；空 ID 标志调用拒绝；save/clear 重复回调防重；保存锁覆盖草稿清理；长按每手势一次。
+新增审查失败回归：根存在但引用页缺失不得清库；提交与回滚双失败须锁写并冷恢复；journal 清除已落盘却报错加回滚失败也不能发布失败正文；空 ID 标志调用拒绝；save/clear 重复回调防重；保存锁覆盖草稿清理；长按每手势一次；真实 `life.js` 的 `onHide→save/clear/草稿回调→onShow`，保持正文、同 ID 和有界保存锁，隐身页不得主动路由。
 
 最终视觉判断须逐组件放大原帧，不以截图数量、文件存在、非黑占比或构建成功代替。
