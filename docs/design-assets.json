@@ -293,6 +293,15 @@
         16
       ],
       "sha256": "0df7b9209b15eb9e63e816facb81c308e44a14b2485cffd99cddfce9c4988c43"
+    },
+    {
+      "file": "dock-gold-cap.png",
+      "source": "approved V3 gold emphasis button right semicircle, native raster fallback",
+      "size": [
+        22,
+        44
+      ],
+      "sha256": "68d29fedfb1b6f45e7237bc6a0b56d97ff8e4c75835a677d777d2c356f700829"
     }
   ],
   "appIconSizes": [

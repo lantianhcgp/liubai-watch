@@ -25,7 +25,11 @@
   <div class="dock" style="left:{{dockX}};top:{{dockY}};width:{{dockW}};height:{{hit}};">
    <div class="dock-control" @click="action(dockLeftAction)" style="width:{{dockPartW}};height:{{hit-2}};"><image class="icon" if="{{showDockIcon}}" src="{{dockLeftIcon}}"></image><text class="dock-label" style="height:{{dockLabelH}};">{{dockLeftLabel}}</text></div>
    <div class="dock-divider" if="{{showDockRight}}" style="height:{{hit-2}};"></div>
-   <div class="dock-control" if="{{showDockRight}}" @click="action(dockRightAction)" style="width:{{dockPartW}};height:{{hit-2}};background-color:{{dockRightBg}};"><text class="dock-gold" style="height:{{dockLabelH}};color:{{dockRightColor}};">{{dockRightLabel}}</text></div>
+   <stack class="dock-control" if="{{showDockRight}}" @click="action(dockRightAction)" style="width:{{dockPartW}};height:{{hit-2}};">
+    <div class="dock-fill" style="left:0px;top:0px;width:{{dockFillW}};height:{{hit-2}};background-color:{{dockRightBg}};"></div>
+    <image src="/common/ui/dock-gold-cap.png" style="left:{{dockFillW}};top:0px;width:{{dockCapW}};height:{{hit-2}};"></image>
+    <div class="dock-caption" style="left:0px;top:0px;width:{{dockPartW}};height:{{hit-2}};"><text class="dock-gold" style="height:{{dockLabelH}};color:{{dockRightColor}};">{{dockRightLabel}}</text></div>
+   </stack>
   </div>
   <text class="error" if="{{showMessage}}" style="left:{{contentX}};top:{{dockY-26}};width:{{contentW}};">{{message}}</text>
  </stack>

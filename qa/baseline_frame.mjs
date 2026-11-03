@@ -14,3 +14,9 @@ export async function alignBaseline(c,width,height,displayDate){
  if(Math.abs(clip.width-width)>0.05||Math.abs(clip.height-height)>0.05)throw Error('Reference active window dimensions drift: '+clip.width+'x'+clip.height);
  return clip;
 }
+export async function captureBaseline(c,width,height,displayDate){
+ const clip=await alignBaseline(c,width,height,displayDate);
+ // Beyond-viewport capture hides Chromium scrollbars, re-centering the design after its clip was measured.
+ const screenshot=await c.send('Page.captureScreenshot',{format:'png',clip,captureBeyondViewport:false});
+ return{clip,screenshot};
+}

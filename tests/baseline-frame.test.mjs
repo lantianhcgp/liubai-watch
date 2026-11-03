@@ -17,3 +17,12 @@ test('reference mismatch is rejected instead of silently resizing evidence',asyn
  assert.equal(typeof alignment.alignBaseline,'function','reference pixel coordinate gate missing');
  await assert.rejects(alignment.alignBaseline(host(412,484,true),412,484,'11 / 03'),/window|dimension/i);
 });
+test('reference screenshot never changes viewport scrollbar layout while clipping',async()=>{
+ assert.equal(typeof alignment.captureBaseline,'function','stable screenshot capture gate missing');
+ const c=host(412,484);let sent=null;
+ c.send=async(method,options)=>{sent={method,options};return{data:'cG5n'};};
+ const result=await alignment.captureBaseline(c,412,484,'11 / 03');
+ assert.equal(sent.method,'Page.captureScreenshot');
+ assert.equal(sent.options.captureBeyondViewport,false,'captureBeyondViewport true hides scrollbars and shifts centered reference by 7.5px');
+ assert.equal(sent.options.clip,result.clip);assert.equal(result.screenshot.data,'cG5n');
+});

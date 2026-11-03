@@ -25,6 +25,25 @@ def verify_asset(relative,raw,known):
  expected=known.get(relative) or ADDITIONAL_ASSETS.get(relative)
  assert expected and sha(raw)==expected, 'Unverified V3 asset: '+relative
  return True
+def dialog_cap_bytes():
+ # Transparent right semicircle at actual display dimensions. Supersampled
+ # coverage but unfiltered PNG scanlines keep verification stdlib-only.
+ import struct,zlib
+ width,height,samples=22,44,8
+ raw=bytearray()
+ for y in range(height):
+  raw.append(0)
+  for x in range(width):
+   count=0
+   for sy in range(samples):
+    for sx in range(samples):
+     dx=x+(sx+.5)/samples;dy=y+(sy+.5)/samples-height/2
+     if dx*dx+dy*dy<=(height/2)**2:count+=1
+   alpha=round(255*count/(samples*samples))
+   raw.extend((230,199,140,alpha))
+ def chunk(kind,data):
+  return struct.pack('>I',len(data))+kind+data+struct.pack('>I',zlib.crc32(kind+data)&0xffffffff)
+ return b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',width,height,8,6,0,0,0))+chunk(b'IDAT',zlib.compress(bytes(raw),9))+chunk(b'IEND',b'')
 def main():
  from PIL import Image,ImageDraw,ImageFont
  assert sha(MANIFEST.read_bytes())==EXPECTED_MANIFEST
@@ -53,6 +72,7 @@ def main():
    for x in range(part.width):
     r,g,b,a=src[x,y];v=max(r,g,b);dst[x,y]=(241,240,232,max(0,min(255,round((v-55)*255/180))))
   out=out.crop(out.getbbox());out.thumbnail((23,23),Image.Resampling.LANCZOS);out.save(DEST/(name+'.png'));rows.append({'file':name+'.png','source':'original CrabKeyboard toolBar.png icon region','size':list(out.size),'sha256':sha((DEST/(name+'.png')).read_bytes())})
+ cap=dialog_cap_bytes();(DEST/'dock-gold-cap.png').write_bytes(cap);rows.append({'file':'dock-gold-cap.png','source':'approved V3 gold emphasis button right semicircle, native raster fallback','size':[22,44],'sha256':sha(cap)})
  media=ROOT/'entry/src/main/resources/base/media';media.mkdir(parents=True,exist_ok=True)
  icon=Image.new('RGBA',(456,456));d=ImageDraw.Draw(icon);d.ellipse((0,0,455,455),fill='#e6c78c');d.rounded_rectangle((116,88,338,367),radius=28,outline='#292d27',width=13);d.line((161,91,161,367),fill='#292d27',width=12);d.line((199,165,300,165),fill='#292d27',width=10);d.line((199,211,300,211),fill='#292d27',width=10);d.line((199,257,264,257),fill='#292d27',width=10)
  for name,size in [('icon',114),('icon_small',32)]:icon.resize((size,size),Image.Resampling.LANCZOS).save(media/(name+'.png'))

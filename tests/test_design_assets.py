@@ -32,6 +32,37 @@ class AssetProvenanceTests(unittest.TestCase):
             with self.assertRaises((AssertionError, ValueError)):
                 verify('entry/src/main/js/MainAbility/common/icons/' + source, blob + b'corruption', {})
 
+    def test_native_dialog_cap_is_transparent_at_corners_and_solid_at_center(self):
+        # The real file is generated without PNG filters so CI can inspect its
+        # scanlines with stdlib only; no Pillow dependency in hash/pixel tests.
+        import struct
+        import zlib
+        path = ROOT / 'entry/src/main/js/MainAbility/common/ui/dock-gold-cap.png'
+        self.assertTrue(path.exists(), 'native dialog primary needs actual round-cap pixels')
+        blob = path.read_bytes()
+        self.assertEqual(blob[:8], b'\x89PNG\r\n\x1a\n')
+        pos, packed, size = 8, b'', None
+        while pos < len(blob):
+            length = struct.unpack('>I', blob[pos:pos+4])[0]
+            kind, data = blob[pos+4:pos+8], blob[pos+8:pos+8+length]
+            if kind == b'IHDR':
+                w, h, depth, color, _, _, interlace = struct.unpack('>IIBBBBB', data)
+                self.assertEqual((w,h,depth,color,interlace), (22,44,8,6,0))
+                size = (w,h)
+            if kind == b'IDAT': packed += data
+            pos += 12 + length
+        self.assertEqual(size,(22,44))
+        raw = zlib.decompress(packed)
+        stride = 22*4+1
+        self.assertEqual(len(raw),44*stride)
+        self.assertTrue(all(raw[y*stride] == 0 for y in range(44)))
+        pixel=lambda x,y: tuple(raw[y*stride+1+x*4:y*stride+5+x*4])
+        self.assertEqual(pixel(21,0)[3],0)
+        self.assertEqual(pixel(21,43)[3],0)
+        self.assertEqual(pixel(0,22),(230,199,140,255))
+        self.assertEqual(pixel(20,22),(230,199,140,255))
+        self.assertGreater(sum(pixel(x,y)[3] for y in range(44) for x in range(22)),22*44*255*.7)
+
     def test_unknown_asset_cannot_bypass_hash_check(self):
         verify = self.load()
         with self.assertRaises((AssertionError, ValueError)):

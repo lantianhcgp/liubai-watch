@@ -295,7 +295,7 @@ test('confirmation labels express reversible trash, and cancel returns to the sa
   assert.equal(h.page.title, '移入回收站');
   assert.equal(h.page.dialogText, '这条记录先收起来？');
   assert.ok(h.page.dialogHint1.includes('恢复'));
-  assert.ok(h.page.dialogHint2.includes('不会永久'));
+  assert.equal(h.page.dialogHint2,'不会立即永久删除。','approved V3 literal, not obsolete shortened wording');
   assert.equal(h.page.dockLeftLabel, '保留'); assert.equal(h.page.dockRightLabel, '移入');
   assert.equal(h.page.showDockRight, true);
   h.page.action(h.page.dockLeftAction); assertReadRoute(h);
@@ -462,6 +462,20 @@ for (const [width,height,shape] of [[412,484,'rect'],[454,454,'circle'],[390,390
   assert.ok(p.dialogH>=total,'column height covers all real children');
   assert.ok(p.dialogY+total<p.dockY-8,'full content above bottom bar');
   h.page.onDestroy();
+});
+test('dialog dock fits inside its native border and has a pixel-backed right round cap',()=>{
+  const hml=fs.readFileSync(new URL('../entry/src/main/js/MainAbility/pages/menu/menu.hml',import.meta.url),'utf8');
+  assert.match(hml,/src="\/common\/ui\/dock-gold-cap\.png"/,'native parent border radius does not clip child gold fill');
+  assert.match(hml,/left:\{\{dockFillW\}\}/);
+  for(const info of [{windowWidth:412,windowHeight:484,screenShape:'rect'},{windowWidth:454,windowHeight:454,screenShape:'circle'},{windowWidth:390,windowHeight:390,screenShape:'circle'},{windowWidth:336,windowHeight:480,screenShape:'rect'}]){
+    const h=open({params:{mode:'confirm',id:'n1'},info}),p=h.page;
+    assert.equal(2*p.dockPartW+1,p.dockW-2,'two controls and divider fit inside two one-pixel borders');
+    assert.equal(p.dockFillW+p.dockCapW,p.dockPartW);
+    assert.equal(p.dockCapW,(p.hit-2)/2);
+    assert.equal(p.dialogHint1,'可以在回收站恢复。');
+    assert.equal(p.dialogHint2,'不会立即永久删除。');
+    h.page.onDestroy();
+  }
 });
 test('app-menu keeps V3 readable quiet-status typography separate from tools micro-hints',()=>{
   const h=open({params:{mode:'app'},editor:snapshot});

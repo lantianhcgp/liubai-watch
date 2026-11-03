@@ -49,3 +49,7 @@ rebuild.yml 先对同一 _built/liubai-elcton-v3.app 执行 qa/official_cold.py�
 签后原生复测：`.github/workflows/cold-pinned.yml` 仅手动运行，传入本次 `build_run`、精确 `source_sha` 和安全的 `signed_fixture`。fixture 仅有签包 SHA、编译 APP SHA、实际签后 config 的 Base64 与全部资源哈希/大小，不含私钥、CMS 或 profile。`qa/signed_input.py` 严格核对资源集合与每项字节后生成 `_signed/exact-native.app`；只允许 app.bundleName 的签名身份变化，版本与其余字段不得改变。再对该输入执行真实冷重启和四窗口路径，显式传入 expected-bundle。原报告仍保留 `signedEnvelopeInstallationTested=false`，预览器资源通过不证明真机签名封装安装成功。
 
 最终补充门禁：quiet-empty 的两行说明行盒精确使用 `ceil(18u×1.6)`，总 column 高度取实际标题行盒与各元素间距之和，336 窗口也不把标题高度漏算。所有 V3 派生资源（包括旧 manifest 未列入的 warm/empty-copy）均显式钉住来源哈希；未知资源拒绝绕过。朋友模拟器冷加载时先等真实 `DOMContentLoaded` 初始化，再经 SensorPanel 控件设置设备并读取实际 getDeviceInfo 确认；未绑定控制器不得悄悄沿用 466 圆屏。首次错误保留为失败证据，不修改 APP Device API 或 data 来变绿。
+
+原稿截图使用 `captureBaseline` 的 `captureBeyondViewport=false`：true 会临时隐藏 Chromium 滚动条并移动居中表壳约 7.5px，即使尺寸和 scale 正确也会错位。截图前输出真实活动窗口 bbox 并对齐日期；批准 HTML 保持原字节。
+
+当前原生 `readText` 对零字节文件/EOF 返回 202（`_ReadFileImpl` 二进制实证）；草稿由已校验头的长度 0＋空校验表达空 part，不写空文件再读回。非空 part 保持严格 UTF-8/字节与 checksum 验证，不泛型把 202 当空。确认页父 dock 圆角不裁子金底，使用 22×44 透明右半圆 cap＋矩形 fill，宽度扣除两侧 1px 边框，原动作和布局不变。

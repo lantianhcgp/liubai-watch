@@ -429,3 +429,172 @@ test('API throws and non-missing read failures return callbacks, never successfu
   assert.equal((await outcome(store, 'read', old.id)).err, 'IO_302');
   assert.equal((await ok(store, 'read', old.id)).text, old.text);
 });
+
+// synthetic test only: preserve real disk operations, but deliver native empty-read 202.
+// _ReadFileImpl: fileSize-position <= 0 returns -202, not successful empty text.
+function nativeEmptyReadApi(host) {
+  var api = {}, method;
+  for (method in host.api) api[method] = host.api[method];
+  api.readText = function(options) {
+    var forwarded = {}, key;
+    for (key in options) forwarded[key] = options[key];
+    forwarded.success = function(value) {
+      if (value.text === '') {
+        options.fail('synthetic test only: fileSize-position <= 0', 202);
+        return;
+      }
+      options.success(value);
+    };
+    host.api.readText(forwarded);
+  };
+  return api;
+}
+async function nativeDraftFixture(t) {
+  const host = createDiskHost();
+  t.after(() => host.close());
+  const api = nativeEmptyReadApi(host), create = factory(), store = create(api);
+  await ok(store, 'init');
+  return { host, api, create, store };
+}
+
+test('native empty-read 202: new nonempty text with empty original skips its part and verifies header', async t => {
+  const { host, api, create, store } = await nativeDraftFixture(t);
+  const snapshot = { schema: 1, id: null, text: '\u6d4b'.repeat(1024), original: '', cursor: 1024,
+    pinyin: '', mode: 'pinyin', originalVersion: 0 };
+  host.resetLog();
+  await ok(store, 'saveDraft', snapshot);
+  const { current } = await roots(host), g = current.d;
+  const headerUri = ROOT + 'd' + g + '.json', emptyUri = ROOT + 'do' + g + '.txt';
+  const header = JSON.parse(await host.read(headerUri)).data;
+  assert.equal(header.b, 3072);
+  assert.equal(header.a, 0);
+  assert.equal(header.o, checksum(''));
+  assert.equal(header.t, checksum(snapshot.text));
+  assert.equal(await host.read(ROOT + 'dt' + g + '.txt'), snapshot.text);
+  assert.equal((await host.files()).includes('do' + g + '.txt'), false);
+  assert.equal(host.calls.some(c => c.uri === emptyUri), false);
+  const written = host.calls.findIndex(c => c.method === 'writeText' && c.uri === headerUri);
+  const verified = host.calls.findIndex(c => c.method === 'readText' && c.uri === headerUri);
+  assert.ok(written >= 0 && verified > written, 'header must be read back from real disk');
+  const cold = create(api); await ok(cold, 'init');
+  host.resetLog();
+  assert.deepEqual(await ok(cold, 'loadDraft'), snapshot);
+  assert.equal(host.calls.some(c => c.uri === emptyUri), false);
+  host.inject('readText', o => /^internal:\/\/app\/lb2\/d\d+\.json$/.test(o.uri), 'corrupt');
+  assert.equal((await outcome(store, 'saveDraft', snapshot)).err, 'VERIFY_WRITE');
+  assert.equal((await roots(host)).current.d, g);
+  const protectedCold = create(api); await ok(protectedCold, 'init');
+  assert.deepEqual(await ok(protectedCold, 'loadDraft'), snapshot);
+});
+
+test('native empty-read 202: empty body with pending pinyin persists without either text part', async t => {
+  const { host, api, create, store } = await nativeDraftFixture(t);
+  const snapshot = { schema: 1, id: null, text: '', original: '', cursor: 0,
+    pinyin: 'liubai', mode: 'pinyin', originalVersion: 0 };
+  host.resetLog();
+  await ok(store, 'saveDraft', snapshot);
+  const { current } = await roots(host), g = current.d;
+  const header = JSON.parse(await host.read(ROOT + 'd' + g + '.json')).data;
+  assert.deepEqual([header.b, header.a, header.t, header.o], [0, 0, checksum(''), checksum('')]);
+  const files = await host.files();
+  assert.equal(files.includes('dt' + g + '.txt'), false);
+  assert.equal(files.includes('do' + g + '.txt'), false);
+  const cold = create(api); await ok(cold, 'init');
+  assert.deepEqual(await ok(cold, 'loadDraft'), snapshot);
+  assert.equal(host.calls.some(c => /^internal:\/\/app\/lb2\/d[ot]\d+\.txt$/.test(c.uri)), false);
+});
+
+test('native empty-read 202: existing nonempty original survives an empty edited body', async t => {
+  const { host, api, create, store } = await nativeDraftFixture(t);
+  const record = await ok(store, 'save', null, '\u539f'.repeat(1024));
+  const snapshot = { schema: 1, id: record.id, text: '', original: record.text, cursor: 0,
+    pinyin: '', mode: 'pinyin', originalVersion: record.version };
+  host.resetLog();
+  await ok(store, 'saveDraft', snapshot);
+  const { current } = await roots(host), g = current.d;
+  assert.equal((await host.files()).includes('dt' + g + '.txt'), false);
+  assert.equal(await host.read(ROOT + 'do' + g + '.txt'), record.text);
+  const header = JSON.parse(await host.read(ROOT + 'd' + g + '.json')).data;
+  assert.deepEqual([header.b, header.t, header.a], [0, checksum(''), 3072]);
+  const cold = create(api); await ok(cold, 'init');
+  assert.deepEqual(await ok(cold, 'loadDraft'), snapshot);
+  assert.deepEqual(await ok(cold, 'read', record.id), record);
+  assert.equal(host.calls.some(c => c.uri === ROOT + 'dt' + g + '.txt'), false);
+});
+
+test('native empty-read 202: checked old-format zero-byte parts load without reading them', async t => {
+  const { host, store, create } = await fixture(t);
+  const api = nativeEmptyReadApi(host);
+  for (const snapshot of [{ text: '', cursor: 0, pinyin: 'legacy' },
+    { schema: 1, id: null, text: '', original: '', cursor: 0, pinyin: 'legacy' }]) {
+    await ok(store, 'saveDraft', snapshot);
+    const g = (await roots(host)).current.d;
+    for (const part of ['dt', 'do']) {
+      const uri = ROOT + part + g + '.txt';
+      await host.write(uri, ''); // Materialize actual legacy zero-byte files, even after the fix.
+      assert.equal(Buffer.byteLength(await host.read(uri)), 0);
+      const native = await new Promise(resolve => api.readText({ uri, position: 0, length: 4096,
+        encoding: 'UTF-8', success: value => resolve({ err: null, value }),
+        fail: (data, code) => resolve({ err: 'IO_' + code }) }));
+      assert.equal(native.err, 'IO_202', 'adapter must reject an actual zero-byte disk read');
+    }
+    const cold = create(api); await ok(cold, 'init');
+    host.resetLog();
+    assert.deepEqual(await ok(cold, 'loadDraft'), snapshot);
+    assert.equal(host.calls.some(c => /^internal:\/\/app\/lb2\/d[ot]\d+\.txt$/.test(c.uri)), false);
+  }
+});
+
+test('native empty-read 202: nonempty missing or corrupt parts and arbitrary 202 still fail', async t => {
+  const { host, api, create, store } = await nativeDraftFixture(t);
+  const snapshot = { schema: 1, id: null, text: 'synthetic test only body', original: 'synthetic test only original' };
+  await ok(store, 'saveDraft', snapshot);
+  const g = (await roots(host)).current.d;
+  const cold = create(api); await ok(cold, 'init');
+  for (const part of ['dt', 'do']) {
+    const uri = ROOT + part + g + '.txt', saved = await host.read(uri);
+    await host.remove(uri);
+    assert.equal((await outcome(cold, 'loadDraft')).err, 'IO_301');
+    await host.write(uri, saved + '!');
+    assert.equal((await outcome(cold, 'loadDraft')).err, 'DRAFT_CORRUPT');
+    await host.write(uri, '');
+    assert.equal((await outcome(cold, 'loadDraft')).err, 'IO_202');
+    await host.write(uri, saved);
+    for (const code of [202, 302]) {
+      host.inject('readText', o => o.uri === uri, 'fail', 1, code);
+      assert.equal((await outcome(cold, 'loadDraft')).err, 'IO_' + code);
+    }
+    assert.deepEqual(await ok(cold, 'loadDraft'), snapshot);
+  }
+});
+
+test('native empty-read 202: zero byte counts require the exact empty checksum and numeric zero', async t => {
+  const { host, store } = await nativeDraftFixture(t);
+  const snapshot = { schema: 1, text: 'synthetic test only body', original: 'synthetic test only original' };
+  await ok(store, 'saveDraft', snapshot);
+  const g = (await roots(host)).current.d, uri = ROOT + 'd' + g + '.json';
+  const checked = JSON.parse(await host.read(uri)).data;
+  for (const [part, bytes, sum] of [['dt', 'b', 't'], ['do', 'a', 'o']]) {
+    const partUri = ROOT + part + g + '.txt', saved = await host.read(partUri);
+    const bad = plain(checked); bad[bytes] = 0;
+    await host.write(uri, envelope(bad));
+    assert.equal((await outcome(store, 'loadDraft')).err, 'DRAFT_CORRUPT');
+    await host.write(partUri, '');
+    assert.ok((await outcome(store, 'loadDraft')).err, 'zero bytes with nonempty checksum must fail');
+    bad[sum] = checksum('');
+    for (const count of ['0', null, false, undefined]) {
+      bad[bytes] = count;
+      await host.write(uri, envelope(bad));
+      assert.ok((await outcome(store, 'loadDraft')).err, 'only numeric zero may restore empty text');
+    }
+    bad[bytes] = 0;
+    for (const hash of [String(checksum('')), null, false, undefined]) {
+      bad[sum] = hash;
+      await host.write(uri, envelope(bad));
+      assert.ok((await outcome(store, 'loadDraft')).err, 'empty checksum must match strictly');
+    }
+    await host.write(partUri, saved);
+    await host.write(uri, envelope(checked));
+    assert.deepEqual(await ok(store, 'loadDraft'), snapshot);
+  }
+});
