@@ -43,3 +43,7 @@ TZ=Asia/Shanghai LIUBAI_FRIEND_STATE=/absolute/empty-state python3 qa/browser_ru
 最后原稿格式门禁：主页日期 MM / DD、回看日号 DD、阅读页码两位补零（不截断三位页数），对应行为测试先 RED 后 GREEN。hmlwsim 原 image 默认 contain 与 text 默认 pre-wrap 曾产生非原生差距；现隔离宿主依据官方 rect336/056-editor-tools.jpg 的铺满图和 fit3/085-reader-home.jpg 的单行省略号，改为显式宽高 fill，且对 compiled class/id 声明 textOverflow=ellipsis 的 text 设置单行溢出。全部更改均在 qa/host-patch.diff 披露，不修改 APP、业务 data 或正确的原生布局。
 
 rebuild.yml 先对同一 _built/liubai-elcton-v3.app 执行 qa/official_cold.py（真实点击中文/英文/换行、保存→进程结束→保留磁盘→重启回读同 ID 和逐字节正文），再跑四窗口完整路径；expected SHA 来自该 artifact 的 compiler-proof，不再单独复用旧载荷冷重启结论。
+
+最终图检补回的原稿行为：主页置顶优先不变；某日与回收站按创建时间倒序且跨分页保持；回收站每条显示“点按恢复 · 不会自动清除”、不显示置顶图形；剪切板空态为原金色 copy 图标、25u 标题和 18u 双行说明，单个“返回键盘”按钮回编辑；笔记本 quiet-status 提示为原 19u 字号、1.7 行高、16u 顶距，不沿用工具页微型提示。
+
+签后原生复测：`.github/workflows/cold-pinned.yml` 仅手动运行，传入本次 `build_run`、精确 `source_sha` 和安全的 `signed_fixture`。fixture 仅有签包 SHA、编译 APP SHA、实际签后 config 的 Base64 与全部资源哈希/大小，不含私钥、CMS 或 profile。`qa/signed_input.py` 严格核对资源集合与每项字节后生成 `_signed/exact-native.app`；只允许 app.bundleName 的签名身份变化，版本与其余字段不得改变。再对该输入执行真实冷重启和四窗口路径，显式传入 expected-bundle。原报告仍保留 `signedEnvelopeInstallationTested=false`，预览器资源通过不证明真机签名封装安装成功。

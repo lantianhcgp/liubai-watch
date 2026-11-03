@@ -416,6 +416,15 @@ test('day consumes the full original reader viewport and opens records with comp
   assert.deepEqual(env.routerCalls[0].args,{uri:'pages/read/read',id:'test-note-4',source:'day',day:'2031-01-02',month:'2031-01'});
 });
 
+test('trash displays the approved restore guidance, not record preview or pinned chrome',()=>{
+  const env=harness({existingStore:true});env.records[6].pinned=true;
+  const page=env.page('trash');page.onInit();
+  assert.equal(page.rows[0].meta,'点按恢复 · 不会自动清除');
+  assert.equal(page.rows[0].pinned,false);
+  assert.equal(page.rows[0].title,env.records[6].title);
+  assert.equal(env.calls.read.length,0);
+});
+
 test('trash restores the actual record before opening the reader, with one operation for rapid taps', () => {
   const env=harness({existingStore:true,deferFlag:true}), page=env.page('trash');page.onInit();
   assert.deepEqual(plain(env.calls.list[0].filter),{deleted:true});

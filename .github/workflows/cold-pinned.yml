@@ -1,16 +1,26 @@
-name: liubai-official-cold-pinned
+name: liubai-official-signed-payload
 on:
   workflow_dispatch:
-  push:
-    branches: [rebuild/elcton-v3]
-    paths: ['qa/official_cold.py', 'tests/test_official_cold.py', '.github/workflows/cold-pinned.yml']
+    inputs:
+      build_run:
+        description: Successful complete compiler workflow run
+        required: true
+        type: string
+      source_sha:
+        description: Exact compiler source commit
+        required: true
+        type: string
+      signed_fixture:
+        description: Safe signed-record hashes and config only, never signing keys or profile
+        required: true
+        type: string
 permissions:
   contents: read
   actions: read
 jobs:
-  cold:
+  signed:
     runs-on: macos-14
-    timeout-minutes: 12
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -18,6 +28,7 @@ jobs:
           repository: lantianhcgp/deveco-sim-ci
           ref: aa3a315a766f6dd4983ad8dad9eed2c948c6faba
           ssh-key: ${{ secrets.LIUBAI_OFFICIAL_SIM_SSH_KEY }}
+          persist-credentials: false
           path: _sim
       - uses: actions/setup-node@v4
         with:
@@ -28,19 +39,31 @@ jobs:
       - run: python3 -m pip install --disable-pip-version-check pillow==11.3.0
       - uses: actions/download-artifact@v4
         with:
-          run-id: 41625160288
+          run-id: ${{ inputs.build_run }}
           github-token: ${{ github.token }}
-          name: liubai-elcton-41625160288
+          name: liubai-elcton-${{ inputs.build_run }}
           path: _built
-      - name: Exact original source and APP, do not compile or select pages
+      - name: Exact source and locally verified signed record table
+        env:
+          EXPECTED_SOURCE: ${{ inputs.source_sha }}
+          EXPECTED_RUN: ${{ inputs.build_run }}
+          SIGNED_FIXTURE: ${{ inputs.signed_fixture }}
         run: |
-          python3 -c 'from pathlib import Path;import hashlib;assert Path("_built/source-sha.txt").read_text().strip()=="36a46672faf3c670107e97f3ac8e12376671c7b2";assert hashlib.sha256(Path("_built/liubai-elcton-v3.app").read_bytes()).hexdigest()=="21989320913d136f148ab7adc9767ced884faa4fa9ac37e6ec9195333b38927c"'
-          python3 tests/test_official_cold.py
-      - name: Genuine input, terminate native process, preserve disk, restart and read exact id
-        run: python3 qa/official_cold.py --sim _sim --app _built/liubai-elcton-v3.app --out cold-evidence --expected-sha 21989320913d136f148ab7adc9767ced884faa4fa9ac37e6ec9195333b38927c
+          python3 -c 'import os,json,re;from pathlib import Path;s=os.environ["EXPECTED_SOURCE"];assert re.fullmatch(r"[0-9a-f]{40}",s);assert re.fullmatch(r"[0-9]{10,13}",os.environ["EXPECTED_RUN"]);assert Path("_built/source-sha.txt").read_text().strip()==s;f=json.loads(os.environ["SIGNED_FIXTURE"]);assert set(f)=={"schema","compilerAppSha256","signedHapSha256","bundle","signedConfigBase64","records"};Path("_signed").mkdir();Path("_signed/signed-fixture.json").write_text(json.dumps(f))'
+          python3 tests/test_signed_input.py
+          python3 qa/signed_input.py --compiler _built/liubai-elcton-v3.app --fixture _signed/signed-fixture.json --output _signed/exact-native.app --report signed-evidence/signed-native-input-proof.json
+      - name: Genuine cold process restart of exact signed resources
+        run: |
+          APP_SHA=$(python3 -c 'import json;from pathlib import Path;print(json.loads(Path("signed-evidence/signed-native-input-proof.json").read_text())["nativeInputAppSha256"])')
+          BUNDLE=$(python3 -c 'import json;from pathlib import Path;print(json.loads(Path("signed-evidence/signed-native-input-proof.json").read_text())["bundle"])')
+          python3 qa/official_cold.py --sim _sim --app _signed/exact-native.app --out signed-evidence/cold-restart --expected-sha "$APP_SHA" --expected-bundle "$BUNDLE"
+      - name: Genuine four-window user paths on the exact signed payload
+        run: |
+          BUNDLE=$(python3 -c 'import json;from pathlib import Path;print(json.loads(Path("signed-evidence/signed-native-input-proof.json").read_text())["bundle"])')
+          python3 qa/official.py --sim _sim --app _signed/exact-native.app --out signed-evidence --expected-bundle "$BUNDLE"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: liubai-official-cold-${{ github.run_id }}
-          path: cold-evidence/
+          name: liubai-signed-native-${{ github.run_id }}
+          path: signed-evidence/
           if-no-files-found: error

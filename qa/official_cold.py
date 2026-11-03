@@ -33,6 +33,7 @@ def main():
     p.add_argument('--sim', type=Path, required=True)
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--expected-sha', required=True)
+    p.add_argument('--expected-bundle', default='com.hcbiu.liubai')
     a = p.parse_args()
     app_sha = pinned_input(a.app, a.expected_sha)
     a.sim = a.sim.resolve()
@@ -41,7 +42,9 @@ def main():
     records = official.read_app(a.app)
     config = json.loads(records['config.json'])
     manifest = json.loads(records['assets/js/MainAbility/manifest.json'])
-    assert manifest['pages'] == official.PAGES and config['app']['bundleName'] == 'com.hcbiu.liubai'
+    from signed_input import validate_native_identity
+    validate_native_identity(config, a.expected_bundle)
+    assert manifest['pages'] == official.PAGES
     root = a.sim / 'apps/liubai-final-cold'
     assert not root.exists()
     for key, value in records.items():
@@ -68,7 +71,7 @@ def main():
     assert second['ok'] and all(second['cleanup'].values()), 'Restart/read original saved id failed'
     proof_after = exact_record(sandbox / 'lb2', record_id, '你a\n')
     assert proof_before == proof_after
-    report = {'ok': True, 'appSha256': app_sha, 'record': proof_after, 'scope': 'Original APP on official unmodified Huawei Simulator, real pointer input/save, native disk retained across terminated processes; not target-watch power-loss proof', 'noInjectedAppStateOrApi': True, 'noNotesSeeded': True, 'steps': len(first['steps']) + len(second['steps']), 'first': first, 'restart': second}
+    report = {'ok': True, 'appSha256': app_sha, 'bundle': a.expected_bundle, 'record': proof_after, 'scope': 'Original APP on official unmodified Huawei Simulator, real pointer input/save, native disk retained across terminated processes; not target-watch power-loss proof', 'noInjectedAppStateOrApi': True, 'noNotesSeeded': True, 'steps': len(first['steps']) + len(second['steps']), 'first': first, 'restart': second}
     (a.out / 'cold-acceptance.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
     print(json.dumps({'ok': True, 'appSha256': app_sha, 'steps': report['steps'], 'exactNativeDiskBody': proof_after, 'processRestartVerified': True}), flush=True)
 

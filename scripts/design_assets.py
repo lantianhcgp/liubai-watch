@@ -17,6 +17,8 @@ def main():
  names={**{name:'entry/src/main/js/MainAbility/common/icons/'+src+'.png' for name,src in MAP.items()},'app-name':'entry/src/main/js/MainAbility/common/type/app_name.png','write-note':'entry/src/main/js/MainAbility/common/type/write_note.png'}
  for name in ['back','edit','copy','restore','check','alert']:names[name+'-warm']='entry/src/main/js/MainAbility/common/icons/'+name+'_warm.png'
  names['trash-danger']='entry/src/main/js/MainAbility/common/icons/trash_warm.png'
+ names['trash-warm']='entry/src/main/js/MainAbility/common/icons/trash_warm.png'
+ names['empty-copy-gold']='entry/src/main/js/MainAbility/common/icons/empty_copy_gold.png'
  for name,relative in names.items():
   raw=(SOURCE/relative).read_bytes()
   if relative in known:assert sha(raw)==known[relative]

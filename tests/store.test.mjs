@@ -151,6 +151,22 @@ test('list paginates metadata only, sorts pinned then newest, and days counts ac
   assert.equal((await ok(store, 'read', records[9].id)).title, records[9].title);
 });
 
+test('V3 day and trash pages stay chronological across pages while home prioritizes pins', async t => {
+  const clock={value:new Date(2026,10,1,17,15).getTime()};
+  const {store}=await fixture(t,clock);
+  const older=await ok(store,'save',null,'older synthetic test only');
+  clock.value=new Date(2026,10,1,21,40).getTime();
+  const newer=await ok(store,'save',null,'newer synthetic test only');
+  await ok(store,'setFlag',older.id,'pinned',true);
+  assert.deepEqual((await ok(store,'list',{},0,8)).rows.map(r=>r.id),[older.id,newer.id]);
+  assert.equal((await ok(store,'list',{day:'2026-11-01'},0,1)).rows[0].id,newer.id);
+  assert.equal((await ok(store,'list',{day:'2026-11-01'},1,1)).rows[0].id,older.id);
+  await ok(store,'setFlag',older.id,'deleted',true);
+  await ok(store,'setFlag',newer.id,'deleted',true);
+  assert.equal((await ok(store,'list',{deleted:true},0,1)).rows[0].id,newer.id);
+  assert.equal((await ok(store,'list',{deleted:true},1,1)).rows[0].id,older.id);
+});
+
 test('one edit changes one page generation; read loads one body, flags load no bodies', async t => {
   const { host, store } = await fixture(t);
   const records = [];

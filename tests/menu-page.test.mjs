@@ -443,12 +443,26 @@ test('tools clipboard and clipboard bottom routes preserve snapshot without any 
   assert.deepEqual(copy(h.state.editor), snapshot); h.page.onDestroy();
   const c = open({ params: { mode: 'clipboard' }, editor: snapshot });
   assert.equal(c.page.title, '剪切板'); assert.equal(c.page.showEmpty, true);
-  assert.equal(c.page.emptyText, '先从记录菜单复制');
-  assert.ok(c.page.hint2.includes('不是手机系统剪切板'));
-  assert.equal(c.page.dockLeftLabel, '返回键盘'); assert.equal(c.page.dockRightLabel, '返回编辑');
-  c.page.action(c.page.dockLeftAction); assert.equal(lastRoute(c).params.mode, 'tools');
-  c.page.action(c.page.dockRightAction); assertEditorRoute(c); c.page.onDestroy();
+  assert.equal(c.page.showDialog,true);
+  assert.equal(c.page.showHints,false);
+  assert.equal(c.page.dialogIcon,'/common/ui/empty-copy-gold.png');
+  assert.equal(c.page.dialogText,'这里还没有内容');
+  assert.equal(c.page.dialogHint1,'先从记录菜单复制。');
+  assert.equal(c.page.dialogHint2,'它不是手机系统剪切板。');
+  assert.equal(c.page.showDockRight,false);
+  assert.equal(c.page.dockLeftLabel,'返回键盘');
+  c.page.action(c.page.dockLeftAction); assertEditorRoute(c); c.page.onDestroy();
 });
+test('app-menu keeps V3 readable quiet-status typography separate from tools micro-hints',()=>{
+  const h=open({params:{mode:'app'},editor:snapshot});
+  assert.equal(h.page.hintFont,19);
+  assert.equal(h.page.hintLineH,Math.ceil(19*1.7));
+  assert.equal(h.page.hintTopPad,16);
+  assert.equal(h.page.hintH,Math.ceil(19*1.7)*2+16);
+  assert.equal(h.page.rows[0].icon,'/common/ui/trash-warm.png');
+  h.page.onDestroy();
+});
+
 test('clipboard rows truncate only display to 70 characters while pasting the selected full text', () => {
   const full = '😀' + '完整复制正文'.repeat(18);
   const h = open({ params: { mode: 'clipboard' }, editor: snapshot, clipboard: ['第一个', full] });

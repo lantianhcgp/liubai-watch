@@ -246,6 +246,28 @@
       "sha256": "70346d994d40437c663f847c248ddc35ecdac9b809f84a8c74f02ae532fff635"
     },
     {
+      "file": "trash-warm.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/trash_warm.png",
+      "sourceSha256": "e41f54125684bd05bcbdae8b8f9f7096f51347adcf0442a8f89ca6367508142a",
+      "size": [
+        24,
+        24
+      ],
+      "pixelSha256": "945a0167c0925c86f04b93836d40efd1e8db62aabc9490b21b8a75ba02f67eee",
+      "sha256": "e41f54125684bd05bcbdae8b8f9f7096f51347adcf0442a8f89ca6367508142a"
+    },
+    {
+      "file": "empty-copy-gold.png",
+      "source": "entry/src/main/js/MainAbility/common/icons/empty_copy_gold.png",
+      "sourceSha256": "16f53aba9ec88cba41d835b50201df974bdbc7237a175de875abcaf23b0829b8",
+      "size": [
+        43,
+        43
+      ],
+      "pixelSha256": "2421ec47f82b99f6f4979f94c40693989addaf75820e6edf4f1d790ae6d8b672",
+      "sha256": "16f53aba9ec88cba41d835b50201df974bdbc7237a175de875abcaf23b0829b8"
+    },
+    {
       "file": "tool-prev.png",
       "source": "original CrabKeyboard toolBar.png icon region",
       "size": [

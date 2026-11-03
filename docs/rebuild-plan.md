@@ -33,7 +33,7 @@ common/context.js：state(), nav(uri,params), params()；app onCreate/getState�
 7. 三环境分工：自制lite-sim仅查规则/日志定位；hmlwsim读取最终真实APP，真实点击/滑动/表冠；官方Mach-O Simulator在macOS-14读取同包，真实命令管道+语义日志，四窗口分工明确。
 8. 双正式验收：新建/编辑/中文候选/英文符号/横滑上滑/空格换行删除/光标/剪切板/同ID保存/取消/草稿冷重载/置顶/回看/回收站/长文首中末/字号锚点/I-O失败与重试/重复动作。各窗口逐页面原帧→组件放大→像素与几何断言，拒仅非黑/文件存在/CI绿。
 9. 二阶段独立审查：先Spec合规，再代码质量；具体失败不降低阈值。最终APP、双模拟器证据hash完全一致才签名。
-10. 使用实际上一R18留白profile身份，私钥仓外；CMS/链/版本/完整载荷回读；不得用课程表证书覆盖课表。交付一个完整候选和真实证据到Documents与haps，更新进度并移除15分钟cron。
+10. 使用实际 R18 留白 profile 身份 liubai.nexus.by71x，私钥仓外；CMS/完整华为链/版本/全部资源回读；不得用课程表证书覆盖课表。签后只允许 config.app.bundleName 改成该身份，由已验签 HAP 回读资源生成安全哈希 fixture，再用 qa/signed_input.py 核对和重建字节一致的原生输入，执行官方四窗口与冷重启。原生输入不包含 CMS/profile，不把此步骤称为真机安装通过。交付一个完整候选和真实证据到 Documents 与 haps，更新进度并移除15分钟cron。
 
 ## 环境边界
 四测试输入412×484 rect、454×454 circle、390×390 circle、336×480 rect；不宣称所有型号通用。hmlwsim V8/官方预览均不证明FIT3固件、真机file/掉电、物理表冠、长期功耗及低堆设备。只交付一个经双模拟器验收候选，不伪称已真机通过。
