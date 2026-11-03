@@ -1,0 +1,1029 @@
+{
+  "schema": 1,
+  "compilerAppSha256": "0bf283d6243ca0b4d17eb1e65d75d8d6f231c1acffcb1d4a48f3cef7af5fb642",
+  "signedHapSha256": "9064f62640d61536f630c0c211d1a20a705246c19a8d9aefada00ac86f4b5527",
+  "bundle": "liubai.nexus.by71x",
+  "signedConfigBase64": "eyJhcHAiOnsiYXBpVmVyc2lvbiI6eyJjb21wYXRpYmxlIjo0MDAwMDAxMCwicmVsZWFzZVR5cGUiOiJSZWxlYXNlIiwidGFyZ2V0Ijo2MDEwMTAyNH0sInZlbmRvciI6ImhjYml1IiwiYnVuZGxlTmFtZSI6ImxpdWJhaS5uZXh1cy5ieTcxeCIsInZlcnNpb24iOnsiY29kZSI6MSwibmFtZSI6IjAuMS4wIn19LCJkZXZpY2VDb25maWciOnt9LCJtb2R1bGUiOnsiZGV2aWNlVHlwZSI6WyJsaXRlV2VhcmFibGUiXSwiYWJpbGl0aWVzIjpbeyJpY29uSWQiOjE2Nzc3MjE5LCJkZXNjcmlwdGlvbklkIjoxNjc3NzIxNiwibGFiZWxJZCI6MTY3NzcyMTcsInNyY1BhdGgiOiJNYWluQWJpbGl0eSIsIm5hbWUiOiIuTWFpbkFiaWxpdHkiLCJzcmNMYW5ndWFnZSI6ImpzIiwiaWNvbiI6IiRtZWRpYTppY29uIiwiZGVzY3JpcHRpb24iOiIkc3RyaW5nOk1haW5BYmlsaXR5X2Rlc2MiLCJsYWJlbCI6IiRzdHJpbmc6TWFpbkFiaWxpdHlfbGFiZWwiLCJ0eXBlIjoicGFnZSJ9XSwibWFpbkFiaWxpdHkiOiIuTWFpbkFiaWxpdHkiLCJkaXN0cm8iOnsibW9kdWxlVHlwZSI6ImVudHJ5IiwiZGVsaXZlcnlXaXRoSW5zdGFsbCI6dHJ1ZSwibW9kdWxlTmFtZSI6ImVudHJ5In0sInBhY2thZ2UiOiJjb20uaGNiaXUubGl1YmFpIiwianMiOlt7InBhZ2VzIjpbInBhZ2VzL2Jvb3QvYm9vdCIsInBhZ2VzL2luZGV4L2luZGV4IiwicGFnZXMvcmVhZC9yZWFkIiwicGFnZXMvZWRpdC9lZGl0IiwicGFnZXMvbWVudS9tZW51IiwicGFnZXMvaGlzdG9yeS9oaXN0b3J5IiwicGFnZXMvZGF5L2RheSIsInBhZ2VzL3RyYXNoL3RyYXNoIl0sIm5hbWUiOiIuTWFpbkFiaWxpdHkifV19fQ==",
+  "records": {
+    "config.json": {
+      "bytes": 820,
+      "sha256": "579a6cea8082540bb5d62bf8329d5b8ede56ccaa3ce553aa343c742b108a7027"
+    },
+    "pack.info": {
+      "bytes": 621,
+      "sha256": "c537e49707eb461be7fc9c33b6abe6857a48fdce0349a327ff5538f2434abb03"
+    },
+    "assets/entry/resources.index": {
+      "bytes": 456,
+      "sha256": "ab2d2a9a0038dff669d1f8ad71d635bc0973cf74c3067e5eedd96d14a7672354"
+    },
+    "assets/js/MainAbility/app.js": {
+      "bytes": 4138,
+      "sha256": "7f178acd75dec7b68f43f0948d558576edce6c9f0868a98c9a8d8fcafcacffa1"
+    },
+    "assets/js/MainAbility/app.js.map": {
+      "bytes": 6082,
+      "sha256": "0901321bb0c2223db1e84892ad1cf41fac22d4f0a187e488947d79b31d42de02"
+    },
+    "assets/js/MainAbility/image_convert_result.txt": {
+      "bytes": 12,
+      "sha256": "49ab4dfe7ddef300e71fa70066a6afa9833d776a840213fb08e1cb22d2eea686"
+    },
+    "assets/js/MainAbility/manifest.json": {
+      "bytes": 320,
+      "sha256": "5f19a3a13a4410ebf05b52842cf8b277b4d6535de3730ee0c09797aaa4508243"
+    },
+    "assets/js/MainAbility/i18n/en-US.json": {
+      "bytes": 107,
+      "sha256": "23cceba6f9ecc22f842a7ac2d92f17d44ce16e3565f6cfa88517786f0515a172"
+    },
+    "assets/js/MainAbility/i18n/zh-CN.json": {
+      "bytes": 117,
+      "sha256": "2dfda49b62cbbae9468bd7f982eeb69849f477c7fada9206cb90a067c422deb4"
+    },
+    "assets/entry/resources/base/media/icon_small.png": {
+      "bytes": 178,
+      "sha256": "1b92ccaff2a2fe99f89372ead47613f12b8cb0ba3f70fef68b54d596cae7bd1f"
+    },
+    "assets/entry/resources/base/media/icon_small.png.bin": {
+      "bytes": 4104,
+      "sha256": "49d56b98d329be608f42ac327843f3d1604d544fa56d30db75516b9c665ead88"
+    },
+    "assets/entry/resources/base/media/icon.png": {
+      "bytes": 3011,
+      "sha256": "7781f960d3e15666998361a70fefdc875f72d8bf75a0582fb11ff016edad2027"
+    },
+    "assets/entry/resources/base/media/icon.png.bin": {
+      "bytes": 51992,
+      "sha256": "098c896695ddff3e7033f60b915218e7dd8f8f87d1dc885dcdeca1c45344c1ed"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/key0.dat": {
+      "bytes": 160,
+      "sha256": "5e11bee947d910c30e0b8ff78f0f1f8ef13dae734eab1530b575bacf5e947438"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/key1.dat": {
+      "bytes": 3858,
+      "sha256": "108d1988191546478e900f3d3ee9b3936087568b38fbf4d5402773ef0ba84c7a"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/key10.dat": {
+      "bytes": 2240,
+      "sha256": "47adc073685456d78b395619943ce3a263586b1ad2c20a5c5bc92e9afac8bdeb"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/key11.dat": {
+      "bytes": 207,
+      "sha256": "0062f2fe4c0a3ed1688b661af0b97f56363252397b7db3338c268b28d8c9ebf8"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/key12.dat": {
+      "bytes": 10,
+      "sha256": "3256c8c6dbe5d442c1574054b707cad0770a36300749b35f63f3356a6be2c37d"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/key2.dat": {
+      "bytes": 15769,
+      "sha256": "d3374d6ba69693941140d605377e8605b2b58fab2f9f0f4de22ea65320af75b5"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/key3.dat": {
+      "bytes": 52737,
+      "sha256": "a9143c93d290936d5d80a63a96cdecb727e9164fbe93d79699db658ef55db4a8"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/key4.dat": {
+      "bytes": 121300,
+      "sha256": "3b43a05d75775da2540082901489d5f93dee67b9eb697abc240c09d420a92541"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/key5.dat": {
+      "bytes": 171852,
+      "sha256": "567faca008509253af620b81e6f462760bb763b47a34dd17af2ba95a84a248f0"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/key6.dat": {
+      "bytes": 163381,
+      "sha256": "51675714c69c9208824bbd4eb7161e6e1525deaa53e67fb2b7636707f7cbab43"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/key7.dat": {
+      "bytes": 105862,
+      "sha256": "3c6e5a6e19394457b3116b5686633368905ad1608a5969db20c78e845807f8be"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/key8.dat": {
+      "bytes": 46260,
+      "sha256": "983d35a6d923a774ec4f9d226c3f855ba09ad9c4bf7ef767863299a57e10872d"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/key9.dat": {
+      "bytes": 12808,
+      "sha256": "38b92c029355ff7447ca438dad98193b8028df466bcc7451025851dc3cc57071"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/value1.dat": {
+      "bytes": 3541,
+      "sha256": "1e05f1516557cf57ff7028c0fd609f700067c91a624cfb85f2a3cd8d143442a7"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/value10.dat": {
+      "bytes": 3537,
+      "sha256": "07f0839a8698d1cad27850345a2270731e2f291e427e5790dca702c951be6f60"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/value11.dat": {
+      "bytes": 301,
+      "sha256": "78095340a5bc710bb7905c630fef67bc9552a2a4d54077bd201abc4955564fba"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/value12.dat": {
+      "bytes": 12,
+      "sha256": "2d2168ca32ae532972280e463c6a386eeb92f5abfdbda5a86f60c63df8e06e84"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/value2.dat": {
+      "bytes": 38505,
+      "sha256": "c669bf17fcec5ec13830ac1a4921fa907e765afa02225270702449cb3e36a1de"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/value3.dat": {
+      "bytes": 11103,
+      "sha256": "c9f1dbfbed9cd41f8aaa28f8e6776dd7bec0635336d020bd2911c159e0b64e39"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/value4.dat": {
+      "bytes": 39062,
+      "sha256": "bb0d8753f4d9698f94960b3a5a6c7aded68d8c24a1f135ce1d26f2f7f689dbfb"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/value5.dat": {
+      "bytes": 81640,
+      "sha256": "079a575c68a3e62be14ba7785b2779d2e13f43db61e3a26f75c34643f378073b"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/value6.dat": {
+      "bytes": 107909,
+      "sha256": "42d5975139f72d775dd04b89cfad4dc5cf4d18ae8f24df393b89713d871a6ae8"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/value7.dat": {
+      "bytes": 89008,
+      "sha256": "7af9e02b55df5e99fbbab0e1959e037fb7a7c660b43dc1301d184c01499e17fb"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/value8.dat": {
+      "bytes": 48615,
+      "sha256": "7f1266f177dee0349ea9e416b6c20a5145c2fddb696246b69e972df4a26b12b9"
+    },
+    "assets/entry/resources/rawfile/pinyinDictV5_flash1001/value9.dat": {
+      "bytes": 16518,
+      "sha256": "00da2449de0fda49833c0ae7d4a500d036ac98f14a531684c8a3c58dab2980e0"
+    },
+    "assets/js/MainAbility/common/icons/alert_gold.png": {
+      "bytes": 622,
+      "sha256": "11058acc7ad8e49f2fb1ce792a95b02be7e37419bdf7c64a52e22ef597fa914e"
+    },
+    "assets/js/MainAbility/common/icons/alert_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "005498a3f70b8c31b6dfe26e26cfb6381f957914955729bc80501f92493429c3"
+    },
+    "assets/js/MainAbility/common/icons/alert_muted.png": {
+      "bytes": 626,
+      "sha256": "f5d9611aa1c5ac4472a0048ed106dbab141e370c0230601133f5d66d1d9ae333"
+    },
+    "assets/js/MainAbility/common/icons/alert_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "0531c3c200c298bfaa81fec379875ebf004f5bbf40a47d486fa08121eeb8a480"
+    },
+    "assets/js/MainAbility/common/icons/alert_warm.png": {
+      "bytes": 618,
+      "sha256": "478d0c43bc8415a2491e538e87750f2db1f907f12635f3f8fd8314e4b5c9240e"
+    },
+    "assets/js/MainAbility/common/icons/alert_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "91cd9e46ba80ad6d3eb627882667e4c2dd9936c63ea917c6b14db35c5d2baf49"
+    },
+    "assets/js/MainAbility/common/icons/back_editor_muted.png": {
+      "bytes": 433,
+      "sha256": "a85988bc5f128e53ac7a63780e1b3a33571c1369855ed6eca6f46021afae6ac1"
+    },
+    "assets/js/MainAbility/common/icons/back_editor_muted.png.bin": {
+      "bytes": 2124,
+      "sha256": "9d3b96945e90e118a818aef36f38ad225e12eed87d1758622e3ace9a7f1ca528"
+    },
+    "assets/js/MainAbility/common/icons/back_gold.png": {
+      "bytes": 346,
+      "sha256": "830b71c94392a6923dde20ce4b8563fe6a86c533b6614a5f0a752ca425223ba7"
+    },
+    "assets/js/MainAbility/common/icons/back_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "7297a6ff0c1948b2399a57334fb9910e6528437f67d90219984922f91666a781"
+    },
+    "assets/js/MainAbility/common/icons/back_muted.png": {
+      "bytes": 334,
+      "sha256": "de71e173d11eae695af89181377f52edd88120e805abef312803f40a5df2e529"
+    },
+    "assets/js/MainAbility/common/icons/back_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "9c8d613f8e6169249dba2e65b64121609aa157fa36f9ad71aec0ec0a8b842df9"
+    },
+    "assets/js/MainAbility/common/icons/back_nav_muted.png": {
+      "bytes": 387,
+      "sha256": "68ca980a37e20195d22b5b29d0681458785ca2c1fc9a4f241a5544b658218425"
+    },
+    "assets/js/MainAbility/common/icons/back_nav_muted.png.bin": {
+      "bytes": 2124,
+      "sha256": "821b3172874ebf530b4c421e8247599e9c1ec8cfb20f56b990b864cf2b138a42"
+    },
+    "assets/js/MainAbility/common/icons/back_warm.png": {
+      "bytes": 328,
+      "sha256": "9a7d638496aa0dae5abf8ec4ad6c08cd79dc749f515f235ed653a4b7ba4a24ad"
+    },
+    "assets/js/MainAbility/common/icons/back_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "076e92330afc918227e529f26d54259416e50de0b307726d0a4d61ecd1ef6bb9"
+    },
+    "assets/js/MainAbility/common/icons/book_gold.png": {
+      "bytes": 339,
+      "sha256": "ec1049801647fb6efcc6d43f35a3805ee74093ff1d2e06eac598e284f1686ea8"
+    },
+    "assets/js/MainAbility/common/icons/book_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "11eb637c20a7a0cb97ad5724cd2ef1e5b4533256715969413e1619db4a9c2ff5"
+    },
+    "assets/js/MainAbility/common/icons/book_muted.png": {
+      "bytes": 339,
+      "sha256": "ad25561eb9e83bdbda61394b78e0f00a70b6b4a12e57b28f08a6904d7bab2eb3"
+    },
+    "assets/js/MainAbility/common/icons/book_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "6323a34163b763b24ea5584a51a961f9c43523566bbc42f5b573d6a6eb4e99f9"
+    },
+    "assets/js/MainAbility/common/icons/book_nav_gold.png": {
+      "bytes": 372,
+      "sha256": "dd6022242fd227d6ca3c5bbd7f319c20879500dc6110ea23de54660ca97197c9"
+    },
+    "assets/js/MainAbility/common/icons/book_nav_gold.png.bin": {
+      "bytes": 1608,
+      "sha256": "41b84fd0042ce678fce1f6861bcfd43df9c86f2306595971b801680aad087dd8"
+    },
+    "assets/js/MainAbility/common/icons/book_nav_muted.png": {
+      "bytes": 368,
+      "sha256": "568754e981eb23c76bb3435a9107926c27e04d631e0f2871a87bed2cf873a102"
+    },
+    "assets/js/MainAbility/common/icons/book_nav_muted.png.bin": {
+      "bytes": 1608,
+      "sha256": "1488432b68d048be841eb935975c81d90ac2825bc29ad0872ba86cad50254806"
+    },
+    "assets/js/MainAbility/common/icons/book_warm.png": {
+      "bytes": 327,
+      "sha256": "0614388c57408e1a8c5554259a56464bafe5195bfae0a174314202e248a911a3"
+    },
+    "assets/js/MainAbility/common/icons/book_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "a91fe445ddca4edeb56dab8b695f858578de6f2274013e516e8dd370b4c67b8a"
+    },
+    "assets/js/MainAbility/common/icons/calendar_gold.png": {
+      "bytes": 613,
+      "sha256": "3f5f6ee2b9422dc2271ff12fdef9d827b123aeba18164524aebeff70cac5b71c"
+    },
+    "assets/js/MainAbility/common/icons/calendar_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "7f80ec702743d5b8cac6293c289def56f14b9e96d5e9e3b659ebf140b82091b8"
+    },
+    "assets/js/MainAbility/common/icons/calendar_muted.png": {
+      "bytes": 625,
+      "sha256": "f7774b782f7b71ab71d9ffbfea8c79f488b6650719bdbab7db486a77a7b86788"
+    },
+    "assets/js/MainAbility/common/icons/calendar_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "aa057dd35549cea906f8f0fd32c751d8e5332c308529e0b7dff6a60d443c8bee"
+    },
+    "assets/js/MainAbility/common/icons/calendar_nav_gold.png": {
+      "bytes": 661,
+      "sha256": "66004b0c84584b2926706460b2182172b9f11ef9cb52e6040c4379909fa29abc"
+    },
+    "assets/js/MainAbility/common/icons/calendar_nav_gold.png.bin": {
+      "bytes": 1608,
+      "sha256": "f967cd076bf95777283a82d5b199fe7fbf18d4f597c8ad601970df8d41a9d587"
+    },
+    "assets/js/MainAbility/common/icons/calendar_nav_muted.png": {
+      "bytes": 645,
+      "sha256": "8f61db3c511bb9ac8031eae4ea00ab2b5d29707abcbbc5a029a6a5649a60a70c"
+    },
+    "assets/js/MainAbility/common/icons/calendar_nav_muted.png.bin": {
+      "bytes": 1608,
+      "sha256": "e977ee62db37dadbb693fc48667f7d1ac9fe003199fb279bf13acf904d50cf76"
+    },
+    "assets/js/MainAbility/common/icons/calendar_warm.png": {
+      "bytes": 611,
+      "sha256": "3548856a4c8a666be2922aa99b3d353ac7916ce6a81107ad19c00de47d0d34d4"
+    },
+    "assets/js/MainAbility/common/icons/calendar_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "a7701555408a5f0d624bfa5e7c73b4116f2e9b2a9fbedfb3e966a5122b0d1aeb"
+    },
+    "assets/js/MainAbility/common/icons/check_gold.png": {
+      "bytes": 402,
+      "sha256": "e4e1294e60df1d31daaefef970c65fcc05742a699e520436320da9893055df30"
+    },
+    "assets/js/MainAbility/common/icons/check_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "4e60fdeddc6db803d9e4c4d2f55e77a92b05b271ab3df6e14a442ed91cfee2ad"
+    },
+    "assets/js/MainAbility/common/icons/check_muted.png": {
+      "bytes": 397,
+      "sha256": "6d46560d75f17e45dc62f525546f2a9441a49b68f35ea284d54a9d47f10b5e80"
+    },
+    "assets/js/MainAbility/common/icons/check_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "c1450a6a280a6660804c6ea7ccf13228899f8476aea7eaae7a988ecb05ec1e7c"
+    },
+    "assets/js/MainAbility/common/icons/check_warm.png": {
+      "bytes": 371,
+      "sha256": "42f56d849592daf47ad9355498895ccd5b33ee4b2b5d6da4a11a467e1f458217"
+    },
+    "assets/js/MainAbility/common/icons/check_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "8180e8e6f56885439325c256b9e6f660d571998664bd7808d9eb361fcb33ea79"
+    },
+    "assets/js/MainAbility/common/icons/copy_gold.png": {
+      "bytes": 473,
+      "sha256": "9e082d4c2ff5a344d3eeacd556be3cf980e8faad2de64d8588f71c3db8fa92bf"
+    },
+    "assets/js/MainAbility/common/icons/copy_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "ed9670ee6fc6dda760b411e327e0f3d8d6a03aa32de0f5cd97499b557b2fe871"
+    },
+    "assets/js/MainAbility/common/icons/copy_muted.png": {
+      "bytes": 504,
+      "sha256": "9671aa1d180ee0a0cf7a4e6aacc646bffeacd19fa2180e97b8001b55172850b6"
+    },
+    "assets/js/MainAbility/common/icons/copy_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "90042af4cc458a0cdc67ef92db23e5f03f62c92b717f2ee190f343f425f48fb8"
+    },
+    "assets/js/MainAbility/common/icons/copy_warm.png": {
+      "bytes": 478,
+      "sha256": "f1a9471a740fc6b8b9ece90d6461629ca0691b8259015d7fc5945c352c34844c"
+    },
+    "assets/js/MainAbility/common/icons/copy_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "a43b95247fbc7644910c0388fe3aaaa0a6e02ac7bc8a264d6c750d93ad91b601"
+    },
+    "assets/js/MainAbility/common/icons/delete_gold.png": {
+      "bytes": 568,
+      "sha256": "653c73bafadd6421d4cc64b2f506213c94c670802666b4994387a87e90fff718"
+    },
+    "assets/js/MainAbility/common/icons/delete_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "d35d1016c8cec72009a5434274fc43449acdc9b664de0c2504c01af3aef8744a"
+    },
+    "assets/js/MainAbility/common/icons/delete_key_warm.png": {
+      "bytes": 658,
+      "sha256": "40ef393f85abb419451e4a120b849817e6d05efe14c7100874caf657fda57aea"
+    },
+    "assets/js/MainAbility/common/icons/delete_key_warm.png.bin": {
+      "bytes": 2124,
+      "sha256": "2b02521e8a312e6c4abbdfba353f88da7a27e4e3f88f238ded8f8137be265f54"
+    },
+    "assets/js/MainAbility/common/icons/delete_muted.png": {
+      "bytes": 552,
+      "sha256": "5eabdd39287c4e52578b57bb68f111f3a3a89979962f92275f6af61b3d16c819"
+    },
+    "assets/js/MainAbility/common/icons/delete_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "5d011c76776146bbbbe30fdd66a7edff2bfa385309372e9b40c56d4e7aa31c86"
+    },
+    "assets/js/MainAbility/common/icons/delete_warm.png": {
+      "bytes": 544,
+      "sha256": "1ab1e5656fcb1318bb2a0375f09c4428ff10eb08881187d5421e1af14c4a6b6b"
+    },
+    "assets/js/MainAbility/common/icons/delete_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "2a5db86c6f993672027642b233d4aefb288e71a6844125e9bb8abdeb6921e6f0"
+    },
+    "assets/js/MainAbility/common/icons/dots_editor_warm.png": {
+      "bytes": 393,
+      "sha256": "9c6aafc1f794bbd2e2dd00491cf8a2bbdddad0aaa517d58dc4bedf5810a888d0"
+    },
+    "assets/js/MainAbility/common/icons/dots_editor_warm.png.bin": {
+      "bytes": 2124,
+      "sha256": "c6c43e230e07dcc9a08f852d73441fed7e5f549b0ead2835a1aaf588a7644001"
+    },
+    "assets/js/MainAbility/common/icons/dots_gold.png": {
+      "bytes": 233,
+      "sha256": "876498e88f0a0999ce98c70d275810c80470eae0b0fc2f7c31849666893f99b1"
+    },
+    "assets/js/MainAbility/common/icons/dots_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "c1adfbab9bb8551846597401987048a67d677d3968e241a1350741c162bc5a4a"
+    },
+    "assets/js/MainAbility/common/icons/dots_header_warm.png": {
+      "bytes": 393,
+      "sha256": "9c6aafc1f794bbd2e2dd00491cf8a2bbdddad0aaa517d58dc4bedf5810a888d0"
+    },
+    "assets/js/MainAbility/common/icons/dots_header_warm.png.bin": {
+      "bytes": 2124,
+      "sha256": "c6c43e230e07dcc9a08f852d73441fed7e5f549b0ead2835a1aaf588a7644001"
+    },
+    "assets/js/MainAbility/common/icons/dots_muted.png": {
+      "bytes": 241,
+      "sha256": "e34b0d90501232d793b22d2b024388c9e138aa49721155d08d422c30eee6bfd4"
+    },
+    "assets/js/MainAbility/common/icons/dots_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "f63f1ae419d83f2d820f65cedf82836f3c2121a62d8453e400f5f1b6de150e9a"
+    },
+    "assets/js/MainAbility/common/icons/dots_reader_gold.png": {
+      "bytes": 503,
+      "sha256": "770308a9582b2fee156dde43dc5976b221e14a89afe44a2b40984863efe76c84"
+    },
+    "assets/js/MainAbility/common/icons/dots_reader_gold.png.bin": {
+      "bytes": 2712,
+      "sha256": "9a845b77a7c10da9f3658d85abe25724d39cddf22c1adef369336e4d855bb0cc"
+    },
+    "assets/js/MainAbility/common/icons/dots_warm.png": {
+      "bytes": 228,
+      "sha256": "c9ec505c75e435826a314dad7ed3ea35a8e8e797adb0282c1fa7cd441cb048b0"
+    },
+    "assets/js/MainAbility/common/icons/dots_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "ba90bd5abc01646a9fe13e25624d40136e8758993ba70ca107392309a6f4a3db"
+    },
+    "assets/js/MainAbility/common/icons/edit_gold.png": {
+      "bytes": 485,
+      "sha256": "16286323d3fee775cb933906d418e71fcc69c1cf0026735a7abf30588fdd1133"
+    },
+    "assets/js/MainAbility/common/icons/edit_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "a2504096eedf8e918ec3176f11ac41326c0aa4669aa3de767b4ec3155b9f2508"
+    },
+    "assets/js/MainAbility/common/icons/edit_muted.png": {
+      "bytes": 463,
+      "sha256": "7dffba5e8a90dfea8f07e6591572617c4dfeb09b7a9a620ebbfac9eb64b57119"
+    },
+    "assets/js/MainAbility/common/icons/edit_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "ac3059f1c159fd51399d92bc087383fedec3d85c58429721f125d0607ebbd2a2"
+    },
+    "assets/js/MainAbility/common/icons/edit_warm.png": {
+      "bytes": 457,
+      "sha256": "e634ab913fa2ef19c4196f1379093e973a2f420a8f716cb5e102f1c0d50d689a"
+    },
+    "assets/js/MainAbility/common/icons/edit_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "5f1f99de8b24c9617989ce45a89dbfa8bd119f70304dac6c529bf53b407cd987"
+    },
+    "assets/js/MainAbility/common/icons/empty_alert_gold.png": {
+      "bytes": 1374,
+      "sha256": "5823ee6822b5edaf3d6ae90215603835fbf23edc9e25058ce03f7b697f963478"
+    },
+    "assets/js/MainAbility/common/icons/empty_alert_gold.png.bin": {
+      "bytes": 7404,
+      "sha256": "258ca8f3c9ecf6c4334a1896accd91bbbe1b26a0da7dce1efdf73203f0e8bfeb"
+    },
+    "assets/js/MainAbility/common/icons/empty_book_gold.png": {
+      "bytes": 632,
+      "sha256": "2ae1833cbbc8e6a108457f77538bd1cc7b7979a6b83e5ea7c4bd717327c1dd36"
+    },
+    "assets/js/MainAbility/common/icons/empty_book_gold.png.bin": {
+      "bytes": 7404,
+      "sha256": "7d0a7444bee270feaec278a9fc104449c4f3f9096cae8c9688b0d6b99e340cfc"
+    },
+    "assets/js/MainAbility/common/icons/empty_copy_gold.png": {
+      "bytes": 923,
+      "sha256": "16f53aba9ec88cba41d835b50201df974bdbc7237a175de875abcaf23b0829b8"
+    },
+    "assets/js/MainAbility/common/icons/empty_copy_gold.png.bin": {
+      "bytes": 7404,
+      "sha256": "7d04cd780abcfc51027110392a645743d86b966f568cb08dc975c5f52908fbdc"
+    },
+    "assets/js/MainAbility/common/icons/empty_restore_gold.png": {
+      "bytes": 1423,
+      "sha256": "b597ba303408d1335a62b1a296cf3d6b3b7ab5f0499dae6d5c4b53c77cf86da7"
+    },
+    "assets/js/MainAbility/common/icons/empty_restore_gold.png.bin": {
+      "bytes": 7404,
+      "sha256": "8bd9e51ace58c1b4f162b455ea7377cfb3a4e382b2a37a3c7107feb8d0cf4e6a"
+    },
+    "assets/js/MainAbility/common/icons/empty_trash_gold.png": {
+      "bytes": 1099,
+      "sha256": "4e8f6a6554854656c57e4c4cfc20c50f0a96f170a60385d5e8360b1d0186c135"
+    },
+    "assets/js/MainAbility/common/icons/empty_trash_gold.png.bin": {
+      "bytes": 7404,
+      "sha256": "05f07fdc0adb5313b7924b7fed4e21e86dbcac81149813b29d377e67ab71b122"
+    },
+    "assets/js/MainAbility/common/icons/enter_gold.png": {
+      "bytes": 402,
+      "sha256": "62722af55524ced08709bd3f35d35837d273da7195b31bae1c769be2eab12119"
+    },
+    "assets/js/MainAbility/common/icons/enter_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "ce0923c93114e6586d8eb0fa5daa815c27260706b4db202b0cf20fbe9f733915"
+    },
+    "assets/js/MainAbility/common/icons/enter_key_warm.png": {
+      "bytes": 460,
+      "sha256": "83a21ad9ef4e26d119541441630aebb1366304c0bbe79894355780eb90f9c0b3"
+    },
+    "assets/js/MainAbility/common/icons/enter_key_warm.png.bin": {
+      "bytes": 2124,
+      "sha256": "0ae5f972a3983c3504e5000911cd6dc64a46c4d9175175a9c3a7438a5875fde7"
+    },
+    "assets/js/MainAbility/common/icons/enter_muted.png": {
+      "bytes": 400,
+      "sha256": "519222eb5b6dc7dfede16993a9bb9b463d90711d6e9b4dd1efc369edb06771c3"
+    },
+    "assets/js/MainAbility/common/icons/enter_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "ad22f193102baa6c7e6503f8e5f098fa92e26c96e028b80145f34b884d66c0e2"
+    },
+    "assets/js/MainAbility/common/icons/enter_warm.png": {
+      "bytes": 390,
+      "sha256": "e9979740164fdd0b9be2a99cabfb15570de18d8e7805976dbe0647952ec8586c"
+    },
+    "assets/js/MainAbility/common/icons/enter_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "5e77f1e0afc6f08ae8144cb1aaa0a89287415f172fd9e4a240aa601eb0841586"
+    },
+    "assets/js/MainAbility/common/icons/pin_gold.png": {
+      "bytes": 451,
+      "sha256": "28da92401fdefcffe4255f4b7bea26c292ae5fa3fd6bc1c22665b6c3fea8fa4d"
+    },
+    "assets/js/MainAbility/common/icons/pin_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "f423e7da507d2cca3d55129cafc2c0506f2fc1375846bc3b3a9ebfd71e4deab2"
+    },
+    "assets/js/MainAbility/common/icons/pin_muted.png": {
+      "bytes": 451,
+      "sha256": "321b3ed3e6d6661f7c33efbd1787a7c435736c8a4ed9b9c5b3e8116d657b0fe9"
+    },
+    "assets/js/MainAbility/common/icons/pin_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "8a2d58c97c2a64527da4f5b611730f087195e9dfbd1a889f767667c06071b2a5"
+    },
+    "assets/js/MainAbility/common/icons/pin_row_gold.png": {
+      "bytes": 383,
+      "sha256": "59437c0088ec6d69793253e53e171a34a4ec3a2b6a9608b6b265d54df91c38ec"
+    },
+    "assets/js/MainAbility/common/icons/pin_row_gold.png.bin": {
+      "bytes": 1164,
+      "sha256": "e69ddf28399658b47f89756bc8f1e81fb63b67926946a8c8a501ae7e13762d0e"
+    },
+    "assets/js/MainAbility/common/icons/pin_warm.png": {
+      "bytes": 419,
+      "sha256": "b05e0b8be0b4fadb4215409de52b39236d7d4bee8ac9b18480203c5164d437bc"
+    },
+    "assets/js/MainAbility/common/icons/pin_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "56562c7553d719fbadcc6337b509946db88592a7cc66db02caaebc6990034a22"
+    },
+    "assets/js/MainAbility/common/icons/plus_cta_ink.png": {
+      "bytes": 386,
+      "sha256": "376db5f56130a48d2dfb48494d9ff1f095c4518d499ea0af2421316f88fe650c"
+    },
+    "assets/js/MainAbility/common/icons/plus_cta_ink.png.bin": {
+      "bytes": 2924,
+      "sha256": "ff029f09943ccc937a512e336430cdc5622cc7944a480b761390f98b24077f36"
+    },
+    "assets/js/MainAbility/common/icons/plus_dark.png": {
+      "bytes": 171,
+      "sha256": "8598a0502c4ee9384d84ccb4eb96fe2e990f0b3ca649664ca16c93ab32da088e"
+    },
+    "assets/js/MainAbility/common/icons/plus_dark.png.bin": {
+      "bytes": 2312,
+      "sha256": "82438f91892a88efcdeeff7b743d49ca52c00b77356d4efd36987e01f9c9320a"
+    },
+    "assets/js/MainAbility/common/icons/plus_gold.png": {
+      "bytes": 259,
+      "sha256": "2a23439c6299aa4c2eb82b2ad23e8265dd5eacfe154b061f9f726210ed730dfe"
+    },
+    "assets/js/MainAbility/common/icons/plus_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "908108d92f17daba3e6036e9fefd4660ed6e63b831cb49248d6a01f11011ec1a"
+    },
+    "assets/js/MainAbility/common/icons/plus_muted.png": {
+      "bytes": 260,
+      "sha256": "03d8b263ccf3de0837470dd919da626dcd9f6b21da3167861efe77dd89a45fe5"
+    },
+    "assets/js/MainAbility/common/icons/plus_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "218e39ba710fd1ec78a022ba2aacbf25021e69bafd841bad6baa449ae3638b4c"
+    },
+    "assets/js/MainAbility/common/icons/plus_warm.png": {
+      "bytes": 258,
+      "sha256": "5eb213c474239209d37b84cd69b739f3a85464b49e9b2f554ae36591aaf9023c"
+    },
+    "assets/js/MainAbility/common/icons/plus_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "9a42851bc3d320893cb29708a603ae6e4d21978f74ff1ae1bfe6c27587539422"
+    },
+    "assets/js/MainAbility/common/icons/restore_gold.png": {
+      "bytes": 761,
+      "sha256": "c224328d8f96746f348e0758448cf1f27f8e5806d889221ae2b06277fed1b28b"
+    },
+    "assets/js/MainAbility/common/icons/restore_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "07d42fd8cf57e52c796ee92e345af1559ec432815097ffc105cd8004bd47d60b"
+    },
+    "assets/js/MainAbility/common/icons/restore_muted.png": {
+      "bytes": 760,
+      "sha256": "11df777bfa8404879db7633df7415a2ce6d8028435311ba29fdabcc21713ef42"
+    },
+    "assets/js/MainAbility/common/icons/restore_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "87ec98a586a431af0a2947c9c053ec650accd9848e6d4c2b04c17efc1dce2baf"
+    },
+    "assets/js/MainAbility/common/icons/restore_warm.png": {
+      "bytes": 723,
+      "sha256": "e4adaae18496ae0903f89a35b97484de028ee3ac3c732fd1343536ab9e9dfd4a"
+    },
+    "assets/js/MainAbility/common/icons/restore_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "5ab8464f39c82d88e7b048b41be23bfa87504fcb503d63d2b0f6efa22e4f7db6"
+    },
+    "assets/js/MainAbility/common/icons/right_gold.png": {
+      "bytes": 340,
+      "sha256": "6569dcfd9673713bd1efb3b71cf3ff41a4b4112edc7d574b02ebda2f2b4e1aca"
+    },
+    "assets/js/MainAbility/common/icons/right_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "9deec388593bbf91fadeed082b8f5f55c08fc59acf25f57687cd1ac94649e12d"
+    },
+    "assets/js/MainAbility/common/icons/right_muted.png": {
+      "bytes": 327,
+      "sha256": "2fcb57d4cd7fe55d5216a9754753414c492bd095366bf319b5fe2e66001e1784"
+    },
+    "assets/js/MainAbility/common/icons/right_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "d351ad6d6a14cf28b4b0ca58c7276b3cdce0aac082dcf5defed06f23add89da5"
+    },
+    "assets/js/MainAbility/common/icons/right_nav_muted.png": {
+      "bytes": 386,
+      "sha256": "1b2c794b625236fa1522baafdf3054f8f2b2f56bbda28a2bdea8975fb713ee88"
+    },
+    "assets/js/MainAbility/common/icons/right_nav_muted.png.bin": {
+      "bytes": 2124,
+      "sha256": "c5680715b5be903ad9b04b0293733e949f0e4995b30b4aaf5b3971d2bab7f265"
+    },
+    "assets/js/MainAbility/common/icons/right_warm.png": {
+      "bytes": 317,
+      "sha256": "cb7c66e427d6ebd1444701fc211b45af014e9503fcb2ace90bcbd72b7c5b59dc"
+    },
+    "assets/js/MainAbility/common/icons/right_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "211ac761f837ecdc3ba6424d95fa15308c20c965f36a36303464c6180815fab5"
+    },
+    "assets/js/MainAbility/common/icons/trash_gold.png": {
+      "bytes": 502,
+      "sha256": "2c9d704cce069a3a9dce01d4e18545d48d935e68dc2e4bdcb39099c769ec48b2"
+    },
+    "assets/js/MainAbility/common/icons/trash_gold.png.bin": {
+      "bytes": 2312,
+      "sha256": "23c489f890524ecaddb4b77c6628d90ab09c9dc09f8d7a3287eefefa9feb57ad"
+    },
+    "assets/js/MainAbility/common/icons/trash_muted.png": {
+      "bytes": 524,
+      "sha256": "5ded81b1deb2e89dead92a6cd711fe3b8361ea8ad5bd766e0ac4a89f1efc0066"
+    },
+    "assets/js/MainAbility/common/icons/trash_muted.png.bin": {
+      "bytes": 2312,
+      "sha256": "2cfe3026352e34f404c39a503ae2659c128cf2ad46aa1ba72b5a46b52026d259"
+    },
+    "assets/js/MainAbility/common/icons/trash_warm.png": {
+      "bytes": 514,
+      "sha256": "e41f54125684bd05bcbdae8b8f9f7096f51347adcf0442a8f89ca6367508142a"
+    },
+    "assets/js/MainAbility/common/icons/trash_warm.png.bin": {
+      "bytes": 2312,
+      "sha256": "d88c1d61f1afa1c0047e3b2f9ac98752f0b61290b23a42af2a4265c7d67dc02d"
+    },
+    "assets/js/MainAbility/common/keyboard/LICENSE": {
+      "bytes": 1093,
+      "sha256": "b140337f94481310f35abfd2210fde308ba30411899095fd961a77b94e022775"
+    },
+    "assets/js/MainAbility/common/type/app_name.png": {
+      "bytes": 1370,
+      "sha256": "9d8cbd0f44d5dcfb23aa462599a2ac84ebbf4c0fd6a9107f0242d9e9fd01e772"
+    },
+    "assets/js/MainAbility/common/type/app_name.png.bin": {
+      "bytes": 8592,
+      "sha256": "e2de5f8bb477527d3fc65fefcf9106c99877a47c76693ddd031f25e409917e3d"
+    },
+    "assets/js/MainAbility/common/type/write_note.png": {
+      "bytes": 1681,
+      "sha256": "10d431551d8a573710f6bbf2e554638d821e62404eb4cdd5603c914bb700972a"
+    },
+    "assets/js/MainAbility/common/type/write_note.png.bin": {
+      "bytes": 9392,
+      "sha256": "6f4323a7fa6af298fb71aedfafb57e173e1e5995dce95932d332941df9602e5f"
+    },
+    "assets/js/MainAbility/pages/boot/boot.js": {
+      "bytes": 22141,
+      "sha256": "9bd9ed54fa66dd64591d967b07d7123ebe375a7ede8a43171510bfdf28b166e6"
+    },
+    "assets/js/MainAbility/pages/boot/boot.js.map": {
+      "bytes": 32540,
+      "sha256": "045154d47c61b3c8918fa15c1cecb2312feab373e5eddee207de9b5ff92bee8c"
+    },
+    "assets/js/MainAbility/pages/day/day.js": {
+      "bytes": 26394,
+      "sha256": "833654b524ee67c550004b3eb6abe8892cd9d8c98cbb39eea9cb0edf0c79f863"
+    },
+    "assets/js/MainAbility/pages/day/day.js.map": {
+      "bytes": 33647,
+      "sha256": "3039cfc1ee8c25d3ac92446e1d63e56edea57b1b6d2fbc75b9296ab9d88acc34"
+    },
+    "assets/js/MainAbility/pages/edit/edit.js": {
+      "bytes": 40934,
+      "sha256": "01f6d6f7fa99e989f851a037d5cab31f7c06e6740382fdf4e60bde9efd81d5ff"
+    },
+    "assets/js/MainAbility/pages/edit/edit.js.map": {
+      "bytes": 54165,
+      "sha256": "fae0d393d13dbf3a4827b6e3dab399a27dec8a4007d42c0b8bd582a43ca8af09"
+    },
+    "assets/js/MainAbility/pages/history/history.js": {
+      "bytes": 28630,
+      "sha256": "4dcb3544ed7cffbb57694cd59ccdf53ece2e8269d81d654d1c72ab31276fe446"
+    },
+    "assets/js/MainAbility/pages/history/history.js.map": {
+      "bytes": 35792,
+      "sha256": "b168ce7a7650930e62296d09eceaf61ed3af427c54674fe78c6979cafee96d21"
+    },
+    "assets/js/MainAbility/pages/index/index.js": {
+      "bytes": 28692,
+      "sha256": "aa7c0030df1e9a47a99bfc80946e3d1bc3d830dce47c7b168dd38091b67108ef"
+    },
+    "assets/js/MainAbility/pages/index/index.js.map": {
+      "bytes": 35822,
+      "sha256": "bf8b5baeb259e2c09d454a27e9081706e285219f61a881aa1f23b8f7620315b4"
+    },
+    "assets/js/MainAbility/pages/menu/menu.js": {
+      "bytes": 31252,
+      "sha256": "8733f3a6e911f8ecf0b53f97d3a83346faedd754afc4754a70cfae85d746494f"
+    },
+    "assets/js/MainAbility/pages/menu/menu.js.map": {
+      "bytes": 35090,
+      "sha256": "6a12c14f27f417538f9b33822a9669ffcf31f34c7593103676a40f2d6d8b33e0"
+    },
+    "assets/js/MainAbility/pages/read/read.js": {
+      "bytes": 21759,
+      "sha256": "f22c51a900054cd2286de87d9f5d98d20ee9352b53888f7d6a0504b388e69b8b"
+    },
+    "assets/js/MainAbility/pages/read/read.js.map": {
+      "bytes": 30461,
+      "sha256": "a8eadbacc3262b3c59456fdd80d68bebffcb1f7a670e05ab41dea75cd6891c28"
+    },
+    "assets/js/MainAbility/pages/trash/trash.js": {
+      "bytes": 26420,
+      "sha256": "8bc3985ec670d7633f477238a9736bffe47aa89508b8ed5fe3f70f249741661e"
+    },
+    "assets/js/MainAbility/pages/trash/trash.js.map": {
+      "bytes": 33612,
+      "sha256": "771fe4743f0b0fac319a6ea4aa37504e738cb72136d6fd9b99da6b87cba1cb17"
+    },
+    "assets/js/MainAbility/common/keyboard/circle/confirm.png": {
+      "bytes": 959,
+      "sha256": "34bc6b345935ceef55fa9584ee2546445295036952d3deb0a066840edde202c4"
+    },
+    "assets/js/MainAbility/common/keyboard/circle/confirm.png.bin": {
+      "bytes": 6408,
+      "sha256": "16d2cfa1f9a3078a9e461cab34cdd8013c334fb08121d6531d66e1285696bc36"
+    },
+    "assets/js/MainAbility/common/keyboard/circle/confirm0.png": {
+      "bytes": 939,
+      "sha256": "e7b606848e75fbf29a80e727e76869537db84aa0be92726bbc526fc9026dae98"
+    },
+    "assets/js/MainAbility/common/keyboard/circle/confirm0.png.bin": {
+      "bytes": 6408,
+      "sha256": "89e43577393895f590543a3fb088c4feef42028674782fedab2ac1689ac17752"
+    },
+    "assets/js/MainAbility/common/keyboard/circle/delete.png": {
+      "bytes": 2330,
+      "sha256": "f3f7b6df5cb4147f283ae0aa21ff077d1d3fb282d11bb32fe67610f360e1662f"
+    },
+    "assets/js/MainAbility/common/keyboard/circle/delete.png.bin": {
+      "bytes": 24008,
+      "sha256": "e98f5dfbda9212696e41c57d4ed7029e33d008a269df64385760ab206167748e"
+    },
+    "assets/js/MainAbility/common/keyboard/circle/enter.png": {
+      "bytes": 1826,
+      "sha256": "805f9528c6d2f57a3cf721990a9062ad7a9927d96f34bb83201da922c724fe26"
+    },
+    "assets/js/MainAbility/common/keyboard/circle/enter.png.bin": {
+      "bytes": 12608,
+      "sha256": "53ed692b7fb016da0f7fdbdadc098cf7e3084e56e973a5d47f737672e6686e68"
+    },
+    "assets/js/MainAbility/common/keyboard/circle/search.png": {
+      "bytes": 2274,
+      "sha256": "fcdd1a99682fb35ae0ed5abf1f1c6ecb95dede9d9e58d19b8ee791ef6dca5ccd"
+    },
+    "assets/js/MainAbility/common/keyboard/circle/search.png.bin": {
+      "bytes": 12608,
+      "sha256": "03ea91d787832bee0280ce922d65822a7de24cdf670d270b093a2162a19ff2d1"
+    },
+    "assets/js/MainAbility/common/keyboard/circle/space.png": {
+      "bytes": 1830,
+      "sha256": "f540c9de7f5f7811ff4ae4abbdad3fa5d49d97b334827d0f251f040e65323034"
+    },
+    "assets/js/MainAbility/common/keyboard/circle/space.png.bin": {
+      "bytes": 23408,
+      "sha256": "315cb6e30bcb87c4d4930f904593c453c554b71e5c4bc454820f32314d5b0bb3"
+    },
+    "assets/js/MainAbility/common/keyboard/common/0.png": {
+      "bytes": 20896,
+      "sha256": "f85412c70333cdaa565d4f615387c1b7aceb9afd891748554eb18b5b21dd23fc"
+    },
+    "assets/js/MainAbility/common/keyboard/common/0.png.bin": {
+      "bytes": 410408,
+      "sha256": "237dca73f514c3b43b4571479147b1275b86b5010e75a7f84c51f4a27eabc631"
+    },
+    "assets/js/MainAbility/common/keyboard/common/1.png": {
+      "bytes": 20799,
+      "sha256": "09ee04c1c5c33e79b3450e84e0fdad557f4c832cebfd5c184958523c8b8501fb"
+    },
+    "assets/js/MainAbility/common/keyboard/common/1.png.bin": {
+      "bytes": 410408,
+      "sha256": "7d103bc380675c82086a8e9c038151e2cf32296a85667bc38dcf2b95b047f4d4"
+    },
+    "assets/js/MainAbility/common/keyboard/common/2.png": {
+      "bytes": 21575,
+      "sha256": "8dca52bdf9de140e59935bf134a1a4b11dd0046e70124a0f0798935cb01af594"
+    },
+    "assets/js/MainAbility/common/keyboard/common/2.png.bin": {
+      "bytes": 410408,
+      "sha256": "6f3c145e517b21828c853a33e21dd2868630c0a2a3b4dd45bae79631db2ce0c9"
+    },
+    "assets/js/MainAbility/common/keyboard/common/3.png": {
+      "bytes": 24914,
+      "sha256": "5e6555c064a36c56dfc386810bed0dca258b2dcc188e71ab7a482c165c860178"
+    },
+    "assets/js/MainAbility/common/keyboard/common/3.png.bin": {
+      "bytes": 533528,
+      "sha256": "21cfe356c89e25c3908150ff8e4bf097804f12a7d9817f3dfbcf1806cc372039"
+    },
+    "assets/js/MainAbility/common/keyboard/common/close.png": {
+      "bytes": 1475,
+      "sha256": "07e676e13037bf3d1bb4dd6363b6e0c299534384db91ae82288c632b709a5527"
+    },
+    "assets/js/MainAbility/common/keyboard/common/close.png.bin": {
+      "bytes": 14408,
+      "sha256": "faf0aba829eeebede71a57bf6de60ef04173fdd3b166cad2d7c335a60fd2bc6b"
+    },
+    "assets/js/MainAbility/common/keyboard/common/dot.png": {
+      "bytes": 1188,
+      "sha256": "d40b66a4d60b9f3c6e65aa195e71f79a2bdbc58a5ebf071d693949f01805711d"
+    },
+    "assets/js/MainAbility/common/keyboard/common/dot.png.bin": {
+      "bytes": 3176,
+      "sha256": "16835eeac9b99fd72bde4eab49742c69433b4950f9d5915384149531882ffdfc"
+    },
+    "assets/js/MainAbility/common/keyboard/common/key0.png": {
+      "bytes": 758,
+      "sha256": "4265c09a253fc52c24af0a0e2c7d575d5f24d51070fd1d7b758ad730bfb32854"
+    },
+    "assets/js/MainAbility/common/keyboard/common/key0.png.bin": {
+      "bytes": 3852,
+      "sha256": "cbdd7e37454762eb845aefd2a0665edc3f4dad8368d649cc80d3fecde205acf6"
+    },
+    "assets/js/MainAbility/common/keyboard/common/key1.png": {
+      "bytes": 723,
+      "sha256": "34cf5e220d2b8fa0b2a494a628c120ee605496c083273c4ca1175b87fd5f1557"
+    },
+    "assets/js/MainAbility/common/keyboard/common/key1.png.bin": {
+      "bytes": 3852,
+      "sha256": "10c5bc0845bad70db2bb8bf44547b64b4d5ead8f54de414ada6d33fec095a0d1"
+    },
+    "assets/js/MainAbility/common/keyboard/common/key2.png": {
+      "bytes": 774,
+      "sha256": "b8cbb06e8942226a49f9b0b2eedd0bf5921f74f664378ce8483f568a5e312e21"
+    },
+    "assets/js/MainAbility/common/keyboard/common/key2.png.bin": {
+      "bytes": 3852,
+      "sha256": "fd36f6093a94ada1d4d62895e4296617726628e3763b7ec6dbb8b6e9911e3f77"
+    },
+    "assets/js/MainAbility/common/keyboard/common/key3.png": {
+      "bytes": 826,
+      "sha256": "a15466ad6c3d17dc6b01469a30672309ae815764f9c55620c73de4305650a838"
+    },
+    "assets/js/MainAbility/common/keyboard/common/key3.png.bin": {
+      "bytes": 3852,
+      "sha256": "553d7a63a4e2764642800de4805fb98a40322c0ee86841699c528b43a2be1e36"
+    },
+    "assets/js/MainAbility/common/keyboard/common/pyShadow.png": {
+      "bytes": 279,
+      "sha256": "bb13ebd395d7470a492fe17b62c4a834d6b7f01b954f710f797e46cbdb657574"
+    },
+    "assets/js/MainAbility/common/keyboard/common/pyShadow.png.bin": {
+      "bytes": 65248,
+      "sha256": "fca40646bc22296d47ef61df80168a2f258af67eb5c5d3a8a1fae2af4bc04f1e"
+    },
+    "assets/js/MainAbility/common/keyboard/common/selectBar.png": {
+      "bytes": 2220,
+      "sha256": "8da4e4b1f8e6a5536f21dea7455a964d542925ca947dffde0fd5a268988fa628"
+    },
+    "assets/js/MainAbility/common/keyboard/common/selectBar.png.bin": {
+      "bytes": 74408,
+      "sha256": "925556b5b76edfccad7e6b8b627f48fdb87ddcbe600bfe2f7fcd9330b7910433"
+    },
+    "assets/js/MainAbility/common/keyboard/common/shadow.png": {
+      "bytes": 1147,
+      "sha256": "23f186fea4cf0b8aa529f2b93ffb07f7c16e6a98aa986ba3747e42714feb8faa"
+    },
+    "assets/js/MainAbility/common/keyboard/common/shadow.png.bin": {
+      "bytes": 7208,
+      "sha256": "bbebf9594caa0d05638a68a9a474acffc137176d9f3d458fede0e1aed0e0eb1c"
+    },
+    "assets/js/MainAbility/common/keyboard/common/switchL.png": {
+      "bytes": 1972,
+      "sha256": "0c7f3b6c9f4a6efddb860db8447af5e2ba96fbbfe96d510007d5c6fdbd9a4c1f"
+    },
+    "assets/js/MainAbility/common/keyboard/common/switchL.png.bin": {
+      "bytes": 12928,
+      "sha256": "720806eb6a0a034861694e8ccd970bd4a9bf25d8437a71ca5d9a5135ddd24791"
+    },
+    "assets/js/MainAbility/common/keyboard/common/switchR.png": {
+      "bytes": 1967,
+      "sha256": "1e37c9b478d7d04290e6e43be6c043d915f99a5d8e767d89290c79fc66795b1c"
+    },
+    "assets/js/MainAbility/common/keyboard/common/switchR.png.bin": {
+      "bytes": 12928,
+      "sha256": "7ef440aac42ffbf24c3beafb510f2f2d28455ad9951c35685ce8dd1fccbff2cb"
+    },
+    "assets/js/MainAbility/common/keyboard/common/tool_clipboard.png": {
+      "bytes": 1065,
+      "sha256": "a8b8c6226ddac6343e6058035f48b43deadf8ce6f579bd6dfbce377e8a929399"
+    },
+    "assets/js/MainAbility/common/keyboard/common/tool_clipboard.png.bin": {
+      "bytes": 2124,
+      "sha256": "93d854102f435100f81a77a328c4de91848f53cf350c9d617cf705cb24cb7651"
+    },
+    "assets/js/MainAbility/common/keyboard/common/tool_next.png": {
+      "bytes": 719,
+      "sha256": "b9ec7b3dd5a61235c62350e595a7802e1002325b7e5bacd5b459521623ec0d80"
+    },
+    "assets/js/MainAbility/common/keyboard/common/tool_next.png.bin": {
+      "bytes": 2124,
+      "sha256": "b2776616178ef527c6485644efec489b4ceb56bd11aec1dcce67a2ca1c9567bd"
+    },
+    "assets/js/MainAbility/common/keyboard/common/tool_prev.png": {
+      "bytes": 722,
+      "sha256": "9d191879ab3f748391d21af4849753bd23e8040a2214bac2c5daafb1121f3c24"
+    },
+    "assets/js/MainAbility/common/keyboard/common/tool_prev.png.bin": {
+      "bytes": 2124,
+      "sha256": "8b91fa56103aa6c7caba58669e80f6913beeef9c7013563d87cf6a8c721116b8"
+    },
+    "assets/js/MainAbility/common/keyboard/common/toolBar.png": {
+      "bytes": 3868,
+      "sha256": "2417e6fda6c072c7837b3cea080f45be65b3c24b753a7fb2bac4c86694bcf676"
+    },
+    "assets/js/MainAbility/common/keyboard/common/toolBar.png.bin": {
+      "bytes": 74408,
+      "sha256": "04114a5a612965e9d57cc4db2614fc7c5eeb0cd1d4ecb875e895cdec6b27d30f"
+    },
+    "assets/js/MainAbility/common/keyboard/common/toolCover.png": {
+      "bytes": 1401,
+      "sha256": "0aca85d66449ef4aa959e86cc9e3503469e819559b95e62ebb266d59951deb92"
+    },
+    "assets/js/MainAbility/common/keyboard/common/toolCover.png.bin": {
+      "bytes": 15608,
+      "sha256": "aae51dc9221f8735a53eb62981fdb88977da9e11ae2b58470f464c9694ed1a75"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/cancel.png": {
+      "bytes": 2694,
+      "sha256": "12f646ce86da0889b0462d4bcab24aec89cd372af4865f6a00509f580b841a1f"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/cancel.png.bin": {
+      "bytes": 15048,
+      "sha256": "94bff285d80cdd36fa62de35a921d2f70336e515f10e262254c3589cd44b3f1d"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/confirm.png": {
+      "bytes": 2460,
+      "sha256": "5c9392696c0f3738cf33563d4ad279aa5b85cc028ccb1b3cc616db4c1087fec5"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/confirm.png.bin": {
+      "bytes": 12808,
+      "sha256": "7133ac6681865296e7cb73a19262bda0976970f20b4a3759842f32105dd18856"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/confirm0.png": {
+      "bytes": 1917,
+      "sha256": "47f8981b5a101dec5e22794d33d63945bb345f563333b51330de7aa05c421916"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/confirm0.png.bin": {
+      "bytes": 12808,
+      "sha256": "60b358342f3449de7290e059181d9606ea41f24577d5c9b5c523d9e4cdee5079"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/delete.png": {
+      "bytes": 2480,
+      "sha256": "93fc24f8e9af2707c00778b77d42e5010886bfaed7f7d6fc5018ec830bb70e2d"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/delete.png.bin": {
+      "bytes": 20408,
+      "sha256": "37df7a6771aa7236c8a82c46228b2ad9cd34ad75c893912d7cb588a296482067"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/enter.png": {
+      "bytes": 1888,
+      "sha256": "017a0671d3a531171ec607552c6be95fbd2e868e365825f069efbae41f9f07c0"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/enter.png.bin": {
+      "bytes": 27008,
+      "sha256": "1a84e7e9f34ba2ab147d2140f62ae7e6a2aa650aa71d0b572d929b90fb5710a4"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/search.png": {
+      "bytes": 2553,
+      "sha256": "fa810fa74bbbb5643b23adaef90643e8a9644259fb63e019af5cb6c3700bb610"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/search.png.bin": {
+      "bytes": 27008,
+      "sha256": "627090c0eb5d907d57022c1f0f8aca29b897312d51e2e2962cc5f6d1ae507c9e"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/space.png": {
+      "bytes": 1850,
+      "sha256": "244a6da12bf2b3191d7dd8030b3129f8cf5a86bb86cd9a0fb955630d47fdf68d"
+    },
+    "assets/js/MainAbility/common/keyboard/rect/space.png.bin": {
+      "bytes": 27008,
+      "sha256": "a60a8b5d19a0e4242ed4b98c736cd6a8b9de11241fe3ec08579a22c90a01e2ee"
+    }
+  }
+}

@@ -44,13 +44,21 @@ jobs:
         run: |
           set -o pipefail
           python3 -c 'from pathlib import Path;import json,hashlib;d=Path("_compiler/r18-runtime");r=json.loads((d/"provenance.json").read_text());p=d/"liubai-r18-complete.app";assert r["sourceHead"]=="0176dc6d7e105939197a7a045260a4c35605deef";assert r["candidateAppSha256"]==hashlib.sha256(p.read_bytes()).hexdigest()=="0bf283d6243ca0b4d17eb1e65d75d8d6f231c1acffcb1d4a48f3cef7af5fb642";assert len(r["pages"])==8 and r["pageSelectionPerformed"] is False;assert r["parserVerdict"]["status"] in ["passed-small-cli","inconclusive-small-cli-heap"];print("PINNED_COMPLETE_COMPILER_ARTIFACT_VERIFIED")'
-      - name: Run unchanged complete compiled application on official 512KB engine
+      - name: Prepare exact records read back from the locally verified signed HAP
+        run: |
+          set -o pipefail
+          python3 qa/install-r18-signed/test_prepare.py
+          python3 qa/install-r18-signed/prepare.py --compiler _compiler/r18-runtime/liubai-r18-complete.app --fixture qa/install-r18-signed/exact-signed-records.json --output _signed/exact-native.app --report build/r18-official/signed-native-input-proof.json
+          # Local reference ZIP digest e326666830c385df13fdb67d591280fed79e224d3a329b67ef449c1c2e986a9c.
+          # ZIP compression can differ; all 255 signed records must still be byte-exact.
+          python3 -c 'from pathlib import Path;import json;f=json.loads(Path("qa/install-r18-signed/exact-signed-records.json").read_text());r=json.loads(Path("build/r18-official/signed-native-input-proof.json").read_text());assert r["signedRecordsByteExact"] is True and r["files"]==255;assert r["signedHapSha256"]==f["signedHapSha256"]=="9064f62640d61536f630c0c211d1a20a705246c19a8d9aefada00ac86f4b5527";assert r["bundle"]=="liubai.nexus.by71x";print("SIGNED_HAP_RECORDS_EXACT")'
+      - name: Run exact signed payload on official 512KB engine - not an installation test
         run: |
           set -o pipefail
           python3 qa/install-r18-official/test_flow.py
           python3 qa/install-r18-official/test_semantics.py
           python3 qa/install-r18-official/test_resources.py
-          python3 qa/install-r18-official/acceptance.py --sim _sim --app _compiler/r18-runtime/liubai-r18-complete.app --restart --out build/r18-official
+          python3 qa/install-r18-official/acceptance.py --sim _sim --app _signed/exact-native.app --restart --out build/r18-official
       - name: Save raw experiment evidence - not release approval
         if: always()
         uses: actions/upload-artifact@v4
