@@ -55,10 +55,10 @@ export default {
   }else if(this.mode==='tool'){
    // Keep these callback action tokens/order for existing callers; only V3's two text rows render.
    this.rows=[row('left','\u524d\u79fb'),row('right','\u540e\u79fb'),row('home','\u79fb\u5230\u6b63\u6587\u5f00\u5934','back'),row('end','\u79fb\u5230\u6b63\u6587\u7ed3\u5c3e','right'),row('type','\u7c7b\u578b'),row('copy','\u590d\u5236\u5168\u6587'),row('paste','\u526a\u5207\u677f')];
-   this.displayRows=[this.rows[2],this.rows[3]];
-   this.toolControls=[control('left','\u524d\u79fb'),control('type','\u7c7b\u578b'),control('paste','\u526a\u5207\u677f'),control('right','\u540e\u79fb')];
+   this.toolRows=[this.rows[2],this.rows[3]];
    var s=session.get(),type=s&&s.id===this.id&&s.type>=0&&s.type<4?s.type:0;
    this.typeImage='/common/keyboard/common/key'+type+'.png';
+   this.toolControls=[control('left','\u524d\u79fb'),control('type','\u7c7b\u578b'),control('paste','\u526a\u5207\u677f'),control('right','\u540e\u79fb')];
    this.hint='\u5de5\u5177\u53ea\u8c03\u6574\u8f93\u5165\u4f4d\u7f6e\uff0c\u4e0d\u6539\u52a8\u5df2\u4fdd\u5b58\u7684\u539f\u6587\u3002';
    this.dock=[control('back','\u8fd4\u56de\u7f16\u8f91','back')];
   }else if(this.mode==='clipboard'){
@@ -87,7 +87,7 @@ export default {
   this.paint();
  },
  paint:function(){
-  var display=this.mode==='tool'?this.displayRows:this.empty?[]:this.rows;
+  var display=this.mode==='tool'?(this.toolRows||[]):this.empty?[]:this.rows;
   this.dockCellW=this.dockW/Math.max(1,this.dock.length);
   if(this.mode==='clipboard'){
    // Native list scrolls whole clipboard values; never put record text in router params.
