@@ -33,6 +33,13 @@ class FlowTests(unittest.TestCase):
   self.assertEqual(down[-1][0]['args']['y'],300)
   self.assertEqual(a.pointer_sequence({'name':'cold'}),[])
   with self.assertRaises(ValueError):a.pointer_sequence({'point':[206,150],'gesture':'left'})
+ def test_receipts_are_original_channel_messages_not_duplicate_stdout(self):
+  s=importlib.util.spec_from_file_location('acceptance',HERE/'acceptance.py');assert s and s.loader
+  a=importlib.util.module_from_spec(s);s.loader.exec_module(a)
+  messages=['{"command":"MouseRelease","result":true}','{"property":"memoryUsage","result":{"totalBytes":524280}}','{"command":"MousePress","result":true}','{"command":"MouseRelease","result":true}']
+  self.assertEqual(a.command_receipts(messages,1),[('MousePress','true'),('MouseRelease','true')])
+  self.assertEqual(a.command_receipts(['{"command":"MouseMove","result":false}'],0),[('MouseMove','false')])
+  with self.assertRaises(ValueError):a.command_receipts(['{"command":"MouseRelease","result":"true"}'],0)
  def test_no_local_module_shadows_python_runtime_dependencies(self):
   self.assertFalse((HERE/'logging.py').exists())
   self.assertFalse((HERE/'socket.py').exists())

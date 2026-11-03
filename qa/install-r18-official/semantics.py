@@ -87,7 +87,7 @@ def user_plan(geom):
  add('read-prev',[206,150],read)
  events[-1]['gesture']='down'
  add('read-menu',rr,r'LBQA MENU read rows=3 id={id} ')
- add('font-large',[h.get('contentX',24)+menu_w*5/6,menu_y+22],r'LBQA FONT large id={id} anchor=0',timeout=30)
+ add('font-large',[h.get('contentX',24)+menu_w*5/6,menu_y+22+6+23],r'LBQA FONT large id={id} anchor=0',timeout=30)
  add('font-back',head,r'LBQA READ {id} chars='+str(chars)+r' anchor=0 end=\d+ pages=\d+ font=large rev='+rev)
  add('read-back',rh,r'LBQA LIST index rows=1 offset=0')
  add('index-open',row,any_read)

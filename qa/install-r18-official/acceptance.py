@@ -42,6 +42,15 @@ def pointer_sequence(event):
  commands.append((flow.mouse('MouseRelease',x,y+delta),.09))
  return commands
 
+def command_receipts(messages,cursor):
+ receipts=[]
+ for raw in messages[cursor:]:
+  msg=json.loads(raw)
+  if msg.get('command') not in ['MousePress','MouseMove','MouseRelease']:continue
+  if type(msg.get('result')) is not bool:raise ValueError('Non-boolean command receipt')
+  receipts.append((msg['command'],'true' if msg['result'] else 'false'))
+ return receipts
+
 def resource_args(root):
  return ['-arp',str(root/'assets/entry')]
 
@@ -91,9 +100,9 @@ def run(sim,out,root,events,sequence,values=None):
   for i,event in enumerate(events):
    label=str(i).zfill(2)+'-'+event['name'];row={'name':event['name'],'cursorBefore':cursor,'point':event.get('point'),'gesture':event.get('gesture'),'sent':[]};steps.append(row)
    if engine_proc.poll() is not None:raise RuntimeError('Engine exited before '+label)
-   text=log.read_text(errors='replace');start=len(text) if event.get('point') else cursor;ack_cursor=len(text)
+   text=log.read_text(errors='replace');start=len(text) if event.get('point') else cursor;ack_cursor=len(pipe.messages)
    if event.get('point'):
-    ack_cursor=len(text)
+    ack_cursor=len(pipe.messages)
     for payload,pause in pointer_sequence(event):
      blob=(json.dumps(payload,separators=(',',':'))+'\0').encode();live=0
      for c in list(pipe.connections):
@@ -114,9 +123,12 @@ def run(sim,out,root,events,sequence,values=None):
    row.update({'pattern':pattern,'marker':match['text'],'cursorAfter':cursor,'stateMatched':True})
    if event.get('check')=='multipage':assert int(values['pages'])>=2,'Test body did not exercise pagination'
    if row['sent']:
-    receipt=text[ack_cursor:]
-    acknowledgements=re.findall(r'"command"\s*:\s*"(MousePress|MouseMove|MouseRelease)"\s*,\s*"result"\s*:\s*(true|false)',receipt)
+    receipt_deadline=time.monotonic()+2
+    acknowledgements=command_receipts(pipe.messages,ack_cursor)
+    while len(acknowledgements)<len(row['sent']) and time.monotonic()<receipt_deadline:
+     pipe.stop.wait(.05);acknowledgements=command_receipts(pipe.messages,ack_cursor)
     row['acknowledgements']=acknowledgements
+    row['receiptSource']='original-null-delimited-command-pipe'
     assert acknowledgements==[(p['command'],'true') for p in row['sent']],('Native rejected action',label,acknowledgements)
    # UI settle in the DRIVER only; state has already been proven, not a substituted app timer.
    pipe.stop.wait(.22)
