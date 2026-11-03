@@ -90,7 +90,7 @@ def launch_args(bundle,name,page,prefix,port,setting,shape,w,h,resource):
  return ['-refresh','region','-projectID',prefix,'-ts','/tmp/'+prefix+'_trace','-j',str(bundle),'-s',prefix,'-cpm','false','-device','liteWearable','-shape',shape,'-sd','320','-pjId',prefix,'-bn',name,'-hs','524288','-f',str(setting),'-ilt','true','-or',str(w),str(h),'-cr',str(w),str(h),'-lws',str(port),'-url',page,'-arp',str(resource)]
 def plan(shape,w,h):
  script="import g from './entry/src/main/js/MainAbility/common/geometry.js';const i="+json.dumps({'windowWidth':w,'windowHeight':h,'screenShape':shape})+";console.log(JSON.stringify({h:g.home(i),e:g.editor(i,true),r:g.reader(i)}));"
- g=json.loads(subprocess.check_output(['node','--input-type=module','-e',script],text=True));hm,ed,rd=g['h'],g['e'],g['r'];scale=141/180
+ g=json.loads(subprocess.check_output(['node','--input-type=module','-e',script],text=True,cwd=Path(__file__).resolve().parents[1]));hm,ed,rd=g['h'],g['e'],g['r'];scale=141/180
  def key(row,col):return [ed['keyX']+(col*57+row*29+28.5)*scale,ed['keysY']+row*47+23.5]
  def ev(name,pattern,point=None,hold=.06,gesture=None):return {'name':name,'expect':pattern,'point':point,'hold':hold,'gesture':gesture}
  events=[ev('cold-index',r'LB2 LIST index rows=0 offset=0'),ev('new',r'LB2 EDIT id=new open=true .*chars=0 pinyin= mode=0', [hm['contentX']+hm['contentW']/2,hm['newY']+hm['newH']/2]),ev('key-n',r'LB2 EDIT .*pinyin=n mode=0',key(2,5)),ev('key-i',r'LB2 CAND pinyin=ni rows=[1-9][0-9]*',key(0,7)),ev('choose-han',r'LB2 EDIT .*chars=1 pinyin= mode=0',[ed['footX']+25,ed['footY']+22]),ev('lowercase',r'LB2 EDIT .*mode=1',[ed['footX']+22,ed['footY']+22])]
