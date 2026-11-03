@@ -31,6 +31,17 @@ def pattern_for(pattern,values):
 def checksum_records(records):
  return {n:{'bytes':len(b),'sha256':native.sha(b)} for n,b in records.items()}
 
+def pointer_sequence(event):
+ if not event.get('point'):return []
+ x,y=event['point'];gesture=event.get('gesture')
+ if not gesture:return [(flow.mouse('MousePress',x,y),event.get('hold',.09)),(flow.mouse('MouseRelease',x,y),.09)]
+ if gesture not in ['up','down']:raise ValueError('Unsupported pointer gesture: '+str(gesture))
+ delta=-150 if gesture=='up' else 150
+ commands=[(flow.mouse('MousePress',x,y),.06)]
+ for step in range(1,5):commands.append((flow.mouse('MouseMove',x,round(y+delta*step/4)),.06))
+ commands.append((flow.mouse('MouseRelease',x,y+delta),.09))
+ return commands
+
 def resource_args(root):
  return ['-arp',str(root/'assets/entry')]
 
@@ -78,18 +89,18 @@ def run(sim,out,root,events,sequence,values=None):
    pipe.stop.wait(.08)
   ws=subprocess.Popen(['node',str(sim/'ws_client.js'),str(port),str(raw),'900000'],stdout=wh,stderr=subprocess.STDOUT)
   for i,event in enumerate(events):
-   label=str(i).zfill(2)+'-'+event['name'];row={'name':event['name'],'cursorBefore':cursor,'point':event.get('point'),'sent':[]};steps.append(row)
+   label=str(i).zfill(2)+'-'+event['name'];row={'name':event['name'],'cursorBefore':cursor,'point':event.get('point'),'gesture':event.get('gesture'),'sent':[]};steps.append(row)
    if engine_proc.poll() is not None:raise RuntimeError('Engine exited before '+label)
    text=log.read_text(errors='replace');start=len(text) if event.get('point') else cursor;ack_cursor=len(text)
    if event.get('point'):
-    x,y=event['point'];ack_cursor=len(text)
-    for command in ['MousePress','MouseRelease']:
-     payload=flow.mouse(command,x,y);blob=(json.dumps(payload,separators=(',',':'))+'\0').encode();live=0
+    ack_cursor=len(text)
+    for payload,pause in pointer_sequence(event):
+     blob=(json.dumps(payload,separators=(',',':'))+'\0').encode();live=0
      for c in list(pipe.connections):
       try:c.sendall(blob);live+=1
       except OSError:pass
      if not live:raise RuntimeError('Native command channel absent at '+label)
-     row['sent'].append(payload);pipe.stop.wait(event.get('hold',.09) if command=='MousePress' else .09)
+     row['sent'].append(payload);pipe.stop.wait(pause)
    pattern=pattern_for(event['expect'],values);deadline=time.monotonic()+event.get('timeout',30)
    while True:
     text=log.read_text(errors='replace');err=sem.errors(text)
@@ -104,9 +115,9 @@ def run(sim,out,root,events,sequence,values=None):
    if event.get('check')=='multipage':assert int(values['pages'])>=2,'Test body did not exercise pagination'
    if row['sent']:
     receipt=text[ack_cursor:]
-    acknowledgements=re.findall(r'"command"\s*:\s*"(MousePress|MouseRelease)"\s*,\s*"result"\s*:\s*(true|false)',receipt)
+    acknowledgements=re.findall(r'"command"\s*:\s*"(MousePress|MouseMove|MouseRelease)"\s*,\s*"result"\s*:\s*(true|false)',receipt)
     row['acknowledgements']=acknowledgements
-    assert acknowledgements==[('MousePress','true'),('MouseRelease','true')],('Native rejected action',label,acknowledgements)
+    assert acknowledgements==[(p['command'],'true') for p in row['sent']],('Native rejected action',label,acknowledgements)
    # UI settle in the DRIVER only; state has already been proven, not a substituted app timer.
    pipe.stop.wait(.22)
    data=raw.read_bytes() if raw.exists() else b'';chunk=data[raw_cursor:];raw_cursor=len(data)

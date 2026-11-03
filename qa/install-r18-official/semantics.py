@@ -82,8 +82,10 @@ def user_plan(geom):
  add('tools-back',head,edit(chars,1))
  add('save',er,r'LBQA SAVED (?P<id>[A-Za-z0-9_-]+) chars='+str(chars)+r' bytes='+str(byte_count)+r' rev='+rev,timeout=60)
  add('saved-read',expect=read,timeout=40,check='multipage')
- add('read-next',[300,200],r'LBQA READ {id} chars='+str(chars)+r' anchor=[1-9]\d* end=\d+ pages=\d+ font=\w+ rev='+rev)
- add('read-prev',[70,200],read)
+ add('read-next',[206,300],r'LBQA READ {id} chars='+str(chars)+r' anchor=[1-9]\d* end=\d+ pages=\d+ font=\w+ rev='+rev)
+ events[-1]['gesture']='up'
+ add('read-prev',[206,150],read)
+ events[-1]['gesture']='down'
  add('read-menu',rr,r'LBQA MENU read rows=3 id={id} ')
  add('font-large',[h.get('contentX',24)+menu_w*5/6,menu_y+22],r'LBQA FONT large id={id} anchor=0',timeout=30)
  add('font-back',head,r'LBQA READ {id} chars='+str(chars)+r' anchor=0 end=\d+ pages=\d+ font=large rev='+rev)
