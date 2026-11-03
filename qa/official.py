@@ -34,7 +34,7 @@ def frames(raw):
  for i,at in enumerate(starts):
   end=starts[i+1] if i+1<len(starts) else len(raw)
   if end-at<40:continue
-  w,h,fmt=struct.unpack_from('>III',raw,at+12);payload=raw[at+40:end]
+  w,h=struct.unpack_from('>II',raw,at+12);fmt=struct.unpack_from('>H',raw,at+20)[0];payload=raw[at+40:end]
   if fmt==2 and payload.startswith(b'\xff\xd8'):
    stop=payload.rfind(b'\xff\xd9')
    if stop>=0:result.append((w,h,payload[:stop+2]))
@@ -135,7 +135,12 @@ def run(sim,out,root,shape,w,h,events,sequence,values=None):
      ack_end=time.monotonic()+2
      while len([m for m in pipe.messages[receipts_at:] if m.get('command') in ['MousePress','MouseMove','MouseRelease']])<len(sent) and time.monotonic()<ack_end:pipe.stop.wait(.05)
      verify_receipts(pipe.messages[receipts_at:],[m['command'] for m in sent])
-    data=raw.read_bytes() if raw.exists() else b'';decoded=frames(data[cursor:]);cursor=len(data)
+    data=raw.read_bytes() if raw.exists() else b'';decoded=frames(data[cursor:]);
+    if not decoded:
+     frame_deadline=time.monotonic()+3
+     while not decoded and time.monotonic()<frame_deadline:
+      pipe.stop.wait(.1);data=raw.read_bytes() if raw.exists() else b'';decoded=frames(data[cursor:])
+    cursor=len(data)
     if decoded:
      fw,fh,b=decoded[-1]
      if (fw,fh)!=(w,h):raise GateError('Native frame resolution mismatch')

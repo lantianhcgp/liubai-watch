@@ -14,5 +14,5 @@ class Gate(unittest.TestCase):
  def test_no_frame_is_never_pass(self):
   m=module();self.assertTrue(hasattr(m,'frames'),'frame gate missing');self.assertEqual(m.frames(b''),[]);self.assertEqual(m.frames(b'garbage'),[])
  def test_safe_frame_header(self):
-  m=module();self.assertTrue(hasattr(m,'frames'),'frame gate missing');h=bytearray(40);struct.pack_into('>I',h,0,0x12345678);struct.pack_into('>I',h,12,412);struct.pack_into('>I',h,16,484);struct.pack_into('>I',h,20,2);self.assertEqual(len(m.frames(bytes(h)+b'\xff\xd8demo\xff\xd9')),1)
+  m=module();self.assertTrue(hasattr(m,'frames'),'frame gate missing');h=bytearray(40);struct.pack_into('>I',h,0,0x12345678);struct.pack_into('>I',h,12,412);struct.pack_into('>I',h,16,484);struct.pack_into('>H',h,20,2);self.assertEqual(len(m.frames(bytes(h)+b'\xff\xd8demo\xff\xd9')),1)
 if __name__=='__main__':unittest.main()
