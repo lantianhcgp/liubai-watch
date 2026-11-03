@@ -53,3 +53,5 @@ rebuild.yml 先对同一 _built/liubai-elcton-v3.app 执行 qa/official_cold.py�
 原稿截图使用 `captureBaseline` 的 `captureBeyondViewport=false`：true 会临时隐藏 Chromium 滚动条并移动居中表壳约 7.5px，即使尺寸和 scale 正确也会错位。截图前输出真实活动窗口 bbox 并对齐日期；批准 HTML 保持原字节。
 
 当前原生 `readText` 对零字节文件/EOF 返回 202（`_ReadFileImpl` 二进制实证）；草稿由已校验头的长度 0＋空校验表达空 part，不写空文件再读回。非空 part 保持严格 UTF-8/字节与 checksum 验证，不泛型把 202 当空。确认页父 dock 圆角不裁子金底，使用 22×44 透明右半圆 cap＋矩形 fill，宽度扣除两侧 1px 边框，原动作和布局不变。
+
+454 原生取证：选词更新动态 for 数组、同时 if 删除候选栏，可出现 chars=1 日志成功却无新帧、下一模式键无响应。候选 receiver 改为永久 20 个数字槽位，文本/宽度读取当前候选且有守卫；普通栏和候选栏以 show 切换，保持节点，不使用延迟定时器蒙混。原生关键步骤 new／empty-save-rejected／choose-han／lowercase 必须在 MouseRelease 发出后取得有效新帧且不同于前帧；旧帧复用只能出现在明确无视觉变化的步骤，报告 frameFresh／frameReused 和 raw 字节范围。新增真实点按空保存负例，不删旧覆盖；四窗预计 94／94／98／94＝380 个有序检查点，最终按实际报告逐条计数。

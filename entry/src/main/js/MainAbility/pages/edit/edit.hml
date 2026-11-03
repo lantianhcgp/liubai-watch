@@ -18,14 +18,14 @@
   <stack class="key-viewport" if="{{open}}" style="left:{{keyX}};top:{{keysY}};width:{{keyW}};height:141px;">
    <image class="key-sheet" src="{{image}}" @click="tapKey" @touchstart="startKey" @touchmove="moveKey" @touchend="endKey" @longpress="longKey" style="left:{{sheetOffset}};top:0px;width:{{sheetW}};height:141px;"></image>
   </stack>
-  <div class="keybar" if="{{open && !hasPinyin}}" style="left:{{footX}};top:{{footY}};width:{{footW}};height:44px;">
+  <div class="keybar" show="{{open && !hasPinyin}}" style="left:{{footX}};top:{{footY}};width:{{footW}};height:44px;">
    <div class="mode-key" @click="mode"><image class="mode-image" src="{{typeImage}}"></image></div>
    <div class="space-key" @click="space" style="width:{{spaceW}};"><image class="space-image" src="{{spaceImage}}" style="width:{{spaceImageW}};"></image></div>
    <div class="small-key" @click="del"><image class="icon" src="/common/ui/delete-warm.png"></image></div>
    <div class="small-key" @click="enter"><image class="icon" src="/common/ui/enter-warm.png"></image></div>
   </div>
-  <div class="candidate-keybar" if="{{open && hasPinyin}}" style="left:{{footX}};top:{{footY}};width:{{footW}};height:44px;">
-   <list class="candidate-list" ref="candidateList" style="width:{{footW-49}};height:44px;"><list-item class="candidate" for="{{(i,c) in candidates}}" @click="choose(i)" style="width:{{c.width}};height:44px;"><text class="candidate-text" style="width:{{c.width}};color:{{i===0?'#70b5ff':'#f1f0e8'}};">{{c.text}}</text></list-item></list>
+  <div class="candidate-keybar" show="{{open && hasPinyin}}" style="left:{{footX}};top:{{footY}};width:{{footW}};height:44px;">
+   <list class="candidate-list" ref="candidateList" style="width:{{footW-49}};height:44px;"><list-item class="candidate" for="{{(i,slot) in candidateSlots}}" @click="choose(slot)" show="{{slot &lt; candidates.length}}" style="width:{{candidates[slot]?candidates[slot].width:0}};height:44px;"><text class="candidate-text" style="width:{{candidates[slot]?candidates[slot].width:0}};color:{{slot===0?'#70b5ff':'#f1f0e8'}};">{{candidates[slot]?candidates[slot].text:''}}</text></list-item></list>
    <div class="small-key" @click="del"><image class="icon" src="/common/ui/delete-warm.png"></image></div>
   </div>
   <div class="folded-bar" if="{{!open}}" style="left:{{footX}};top:{{footY}};width:{{footW}};height:44px;">

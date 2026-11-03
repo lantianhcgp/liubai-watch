@@ -1,0 +1,28 @@
+{
+  "scope": "Actual official app frames used solely for frame freshness unit tests; not new execution evidence",
+  "sourceAppSha256": "e7acb6bc9d2a9e87d84b51b698bc790ad633a930e3a83bdad2739d1ac133b97a",
+  "frames": [
+    {
+      "file": "key-i.jpg",
+      "original": "/storage/emulated/0/Documents/liubai-rebuild-2026-11-03/final-d2e6648/official-failed/fit3/004-key-i.jpg",
+      "sha256": "c08f6e2053f3c673de38ed933d1f9c1da4f961506d93f83ec9d29b864982a7e9",
+      "bytes": 25086,
+      "size": [
+        412,
+        484
+      ],
+      "marker": "LB2 CAND pinyin=ni rows=20"
+    },
+    {
+      "file": "choose-han.jpg",
+      "original": "/storage/emulated/0/Documents/liubai-rebuild-2026-11-03/final-d2e6648/official-failed/fit3/005-choose-han.jpg",
+      "sha256": "004bbed9f06b67a8df61d87ca8b5278052caf9be3c371cc0416d669262cb21cd",
+      "bytes": 23324,
+      "size": [
+        412,
+        484
+      ],
+      "marker": "LB2 EDIT id=new open=true cursor=1 anchor=1 chars=1 pinyin= mode=0"
+    }
+  ]
+}

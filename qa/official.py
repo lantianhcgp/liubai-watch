@@ -39,6 +39,14 @@ def frames(raw):
    stop=payload.rfind(b'\xff\xd9')
    if stop>=0:result.append((w,h,payload[:stop+2]))
  return result
+def select_event_frame(decoded,previous,required):
+ if required:
+  for frame in reversed(decoded):
+   if frame[2]!=previous:return frame
+  raise GateError('Required native state has no new changed frame')
+ if decoded:return decoded[-1]
+ if previous is None:raise GateError('No native pixels for initial state')
+ return None
 class CommandPipe:
  def __init__(self,prefix):
   self.path=Path('/tmp/'+prefix+'_commandPipe');self.stop=threading.Event();self.messages=[];self.connections=[]
@@ -97,7 +105,9 @@ def plan(shape,w,h):
  def key(row,col):return [ed['keyX']+(col*57+row*29+28.5)*scale+offset,ed['keysY']+row*47+23.5]
  def ev(name,pattern,point=None,hold=.06,gesture=None):return {'name':name,'expect':pattern,'point':point,'hold':hold,'gesture':gesture}
  events=[ev('cold-index',r'LB2 DEVICE w='+str(w)+r' h='+str(h)+r' shape=rect[\s\S]*?LB2 LIST index rows=0 offset=0'),ev('new',r'LB2 EDIT id=new open=true .*chars=0 pinyin= mode=0', [hm['contentX']+hm['contentW']/2,hm['newY']+hm['newH']/2]),ev('key-n',r'LB2 EDIT .*pinyin=n mode=0',key(2,5)),ev('key-i',r'LB2 CAND pinyin=ni rows=[1-9][0-9]*',key(0,7)),ev('choose-han',r'LB2 EDIT .*chars=1 pinyin= mode=0',[ed['footX']+25,ed['footY']+22]),ev('lowercase',r'LB2 EDIT .*mode=1',[ed['footX']+22,ed['footY']+22])]
- events.insert(2,{'name':'key-pan','expect':r'LB2 KEY pan offset='+str(round(offset)),'point':[ed['keyX']+ed['keyW']*.85,ed['keysY']+70],'hold':.07,'gesture':'left'})
+ events.insert(2,ev('empty-save-rejected',r'LB2 SAVE empty chars=0 pinyin=',[ed['hx']+ed['hw']-23,ed['hy']+23]))
+ events.insert(3,{'name':'key-pan','expect':r'LB2 KEY pan offset='+str(round(offset)),'point':[ed['keyX']+ed['keyW']*.85,ed['keysY']+70],'hold':.07,'gesture':'left'})
+ for event in events:event['requireFreshFrame']=event['name'] in ['new','empty-save-rejected','choose-han','lowercase']
  # Enter genuine multi-paragraph text with repeated real keypresses and newline.
  for i in range(20):
   events.append(ev('letter-'+str(i),r'LB2 EDIT .*chars='+str(i*2+2)+r' pinyin= mode=1',[ed['keyX']+(29+28.5)*scale,ed['keysY']+70.5]))
@@ -120,6 +130,9 @@ def run(sim,out,root,shape,w,h,events,sequence,values=None):
     pipe.stop.wait(.08)
    ws=subprocess.Popen(['node',str(sim/'ws_client.js'),str(port),str(raw),'900000'],stdout=wh,stderr=subprocess.STDOUT)
    for i,event in enumerate(events):
+    event_frame_start=raw.stat().st_size if event.get('point') and raw.exists() else cursor
+    previous=(out/last).read_bytes() if last else None
+    required=event.get('requireFreshFrame',False)
     text=log.read_text(errors='replace');start=len(text) if event.get('point') else marks.cursor;receipts_at=len(pipe.messages);sent=[]
     if event.get('point'):
      x,y=event['point'];commands=[mouse('MousePress',x,y)]
@@ -129,7 +142,9 @@ def run(sim,out,root,shape,w,h,events,sequence,values=None):
        commands.extend(mouse('MouseMove',x+distance*k/4,y) for k in range(1,5));commands.append(mouse('MouseRelease',x+distance,y))
       else:commands.extend(mouse('MouseMove',x,y+distance*k/4) for k in range(1,5));commands.append(mouse('MouseRelease',x,y+distance))
      else:commands.append(mouse('MouseRelease',x,y))
-     for command in commands:pipe.send(command);sent.append(command);pipe.stop.wait(event.get('hold',.06))
+     for command in commands:
+      if required and command['command']=='MouseRelease':event_frame_start=raw.stat().st_size if raw.exists() else 0
+      pipe.send(command);sent.append(command);pipe.stop.wait(event.get('hold',.06))
     pattern=event['expect']
     for k,v in values.items():pattern=pattern.replace('{'+k+'}',re.escape(v))
     deadline=time.monotonic()+25
@@ -145,21 +160,22 @@ def run(sim,out,root,shape,w,h,events,sequence,values=None):
      ack_end=time.monotonic()+2
      while len([m for m in pipe.messages[receipts_at:] if m.get('command') in ['MousePress','MouseMove','MouseRelease']])<len(sent) and time.monotonic()<ack_end:pipe.stop.wait(.05)
      verify_receipts(pipe.messages[receipts_at:],[m['command'] for m in sent])
-    data=raw.read_bytes() if raw.exists() else b'';decoded=frames(data[cursor:]);
-    if not decoded:
-     frame_deadline=time.monotonic()+3
-     while not decoded and time.monotonic()<frame_deadline:
-      pipe.stop.wait(.1);data=raw.read_bytes() if raw.exists() else b'';decoded=frames(data[cursor:])
+    data=raw.read_bytes() if raw.exists() else b'';decoded=frames(data[event_frame_start:])
+    frame_deadline=time.monotonic()+3
+    while not decoded or required and not any(frame[2]!=previous for frame in decoded):
+     if time.monotonic()>frame_deadline:break
+     pipe.stop.wait(.1);data=raw.read_bytes() if raw.exists() else b'';decoded=frames(data[event_frame_start:])
+    selected=select_event_frame(decoded,previous,required)
     cursor=len(data)
-    if decoded:
-     fw,fh,b=decoded[-1]
+    if selected:
+     fw,fh,b=selected
      if (fw,fh)!=(w,h):raise GateError('Native frame resolution mismatch')
      name=f'{i:03d}-{event["name"]}.jpg';(out/name).write_bytes(b)
      from PIL import Image
      with Image.open(io.BytesIO(b)) as im:im.load();assert im.size==(w,h)
      last=name
     if not last:raise GateError('No native pixels for '+event['name'])
-    steps.append({'name':event['name'],'marker':matched,'sent':sent,'frame':last,'frameSha256':sha((out/last).read_bytes())})
+    steps.append({'name':event['name'],'marker':matched,'sent':sent,'frame':last,'frameSha256':sha((out/last).read_bytes()),'frameFresh':bool(selected and selected[2]!=previous),'frameReused':selected is None,'requireFreshFrame':required,'rawFrameStart':event_frame_start,'rawFrameEnd':cursor})
   except Exception as e:error=repr(e)
   finally:
    for p in [ws,proc]:

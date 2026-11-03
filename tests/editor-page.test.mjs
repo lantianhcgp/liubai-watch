@@ -15,3 +15,75 @@ test('real lifecycle hide/show while save is pending does not lose input or admi
 test('real lifecycle pending draft drains the queued save exactly once even after hide/show',()=>{const {page,state,sent}=load(null,true);let doneDraft,saveCount=0;state.store.saveDraft=(_s,cb)=>{doneDraft=cb};state.store.save=(_id,s,cb)=>{saveCount++;cb(null,{id:'n1',text:s,version:1})};page.onInit();page.insert('draft waiting');page.writeDraft();page.save();page.onHide();page.onShow();assert.equal(page.text,'draft waiting');assert.equal(page.saving,true);doneDraft(null,true);assert.equal(saveCount,1);assert.equal(page.saving,false);assert.equal(sent.length,1);page.onDestroy();});
 test('real lifecycle failure while hidden resumes retained editable text, not a blank new record',()=>{const {page,state,sent}=load(null,true);let finish;state.store.save=(_id,s,cb)=>{finish=cb};page.onInit();page.insert('failure retained');page.save();page.onHide();finish('IO_300');assert.equal(sent.length,0);page.onShow();assert.equal(page.saving,false);assert.equal(page.text,'failure retained');assert.equal(page.id,null);assert.equal(page.insert('!'),true);page.onDestroy();});
 test('cancel keeps editor snapshot and routes to explicit exit confirmation',()=>{const {page,state,sent}=load();page.onInit();page.insert('keep');page.cancel();assert.equal(state.editor.text,'keep');assert.equal(sent[0].args.mode,'exit');page.onDestroy();});
+
+test('candidate receiver iterates permanent slots with guarded top-level bindings',()=>{
+  const hml=fs.readFileSync(new URL('../entry/src/main/js/MainAbility/pages/edit/edit.hml',import.meta.url),'utf8');
+  const item=hml.match(/<list-item class="candidate"[^>]*>/)[0];
+  assert.match(item,/for="\{\{\(i,slot\) in candidateSlots\}\}"/,'candidate receiver must iterate permanent slots, not candidates');
+  assert.match(item,/@click="choose\(slot\)"/);
+  assert.match(item,/show="\{\{slot\s+(?:&lt;|&#60;|&#x3[cC];)\s+candidates\.length\}\}"/);
+  assert.doesNotMatch(item,/\sif=/);
+  assert.ok(item.includes('width:{{candidates[slot]?candidates[slot].width:0}};'));
+  assert.ok(hml.includes('<text class="candidate-text" style="width:{{candidates[slot]?candidates[slot].width:0}};color:{{slot===0?\'#70b5ff\':\'#f1f0e8\'}};">{{candidates[slot]?candidates[slot].text:\'\'}}</text>'));
+  assert.doesNotMatch(hml,/for="\{\{[^"\n]*\bin candidates\}\}"/);
+  assert.doesNotMatch(fs.readFileSync(p,'utf8'),/\bcandidateSlots\s*=(?!=)/,'slot source must never be reassigned');
+});
+
+test('candidate and ordinary keybars stay mounted and switch only with show',()=>{
+  const hml=fs.readFileSync(new URL('../entry/src/main/js/MainAbility/pages/edit/edit.hml',import.meta.url),'utf8');
+  for(const [name,condition] of [['candidate-keybar','open && hasPinyin'],['keybar','open && !hasPinyin']]){
+    const tag=hml.match(new RegExp('<div class="'+name+'"[^>]*>'))[0];
+    assert.ok(tag.includes('show="{{'+condition+'}}"'),name+' must remain mounted via show');
+    assert.doesNotMatch(tag,/\sif=/,name+' must not destroy its receiver');
+  }
+});
+
+test('twenty fixed slots survive full selection, residual pinyin and overbudget rejection',()=>{
+  const {page}=load(null,true);
+  try{
+    page.onInit();
+    const slots=page.candidateSlots;
+    assert.deepEqual(Array.from(slots||[]),Array.from({length:20},(_,i)=>i),'twenty permanent candidate slots are required');
+    page.pinyin='ni';page.hasPinyin=true;
+    page.candidates=Array.from({length:20},()=>({text:'你',len:2,width:44}));
+    page.choose(slots[19]);
+    assert.equal(page.text,'你');assert.equal(page.cursor,1);assert.equal(page.pinyin,'');assert.equal(page.hasPinyin,false);
+    assert.equal(page.candidates.length,0);assert.equal(page.candidateSlots,slots);
+    page.choose(slots[19]);assert.equal(page.text,'你','hidden empty slots do nothing');
+
+    let finishLookup,lookedUp;
+    page.kbd.lookup=(s,cb)=>{lookedUp=s;finishLookup=cb};
+    page.pinyin='nihao';page.hasPinyin=true;page.candidates=[{text:'你',len:2,width:44}];
+    page.choose(slots[0]);
+    assert.equal(page.text,'你你');assert.equal(page.cursor,2);assert.equal(page.pinyin,'hao');assert.equal(page.hasPinyin,true);
+    assert.equal(page.candidates.length,0);assert.equal(lookedUp,'hao');assert.equal(page.candidateSlots,slots);
+    finishLookup(null,{pinyin:'hao',candidates:[{text:'好',len:3}]});
+    assert.equal(page.candidates.length,1);assert.equal(page.candidates[0].text,'好');assert.ok(page.candidates[0].width>=44);
+    page.choose(slots[19]);assert.equal(page.text,'你你');assert.equal(page.pinyin,'hao');assert.equal(page.candidateSlots,slots);
+
+    const body='a'.repeat(3071),candidates=[{text:'你',len:2,width:44}];
+    page.text=body;page.cursor=body.length;page.pinyin='ni';page.hasPinyin=true;page.candidates=candidates;
+    page.choose(slots[0]);
+    assert.equal(page.text,body);assert.equal(page.cursor,body.length);assert.equal(page.pinyin,'ni');assert.equal(page.hasPinyin,true);
+    assert.equal(page.candidates,candidates);assert.equal(page.message,'输入已达上限，原文保留');assert.equal(page.candidateSlots,slots);
+    page.onHide();page.onShow();assert.equal(page.candidateSlots,slots,'lifecycle never replaces the slot source');
+  }finally{page.onDestroy();}
+});
+
+test('empty save retains input and rejection message, sends nothing and logs its negative semantic marker',()=>{
+  const {page,state,sent}=load(null,true),logs=[],originalInfo=console.info;
+  let saves=0,clears=0;
+  state.store.save=()=>{saves++};state.store.clearDraft=()=>{clears++};
+  try{
+    console.info=(...args)=>logs.push(args.join(' '));
+    page.onInit();
+    for(const body of ['',' \n\t\u3000']){
+      page.text=body;page.cursor=body.length;page.message='prior';page.reflow(true);
+      page.save();
+      assert.equal(page.text,body);assert.equal(page.cursor,body.length);assert.equal(page.pinyin,'');assert.equal(page.id,null);
+      assert.equal(page.message,'空记录不保存');assert.equal(page.saving,false);assert.equal(page.doneLabel,'完成');
+      assert.equal(page.ready,true);assert.equal(page.open,true);assert.equal(sent.length,0);assert.equal(saves,0);assert.equal(clears,0);
+      assert.ok(logs.includes('LB2 SAVE empty chars=0 pinyin='),'empty save needs an observable negative semantic marker');
+    }
+  }finally{console.info=originalInfo;page.onDestroy();}
+});
