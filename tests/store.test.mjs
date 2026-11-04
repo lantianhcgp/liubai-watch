@@ -8,7 +8,7 @@ import { createDiskHost } from './store-disk-host.mjs';
 const sourcePath = new URL('../entry/src/main/js/MainAbility/common/store.js', import.meta.url);
 const ROOT = 'internal://app/lb2/';
 const required = ['init', 'list', 'days', 'read', 'save', 'setFlag', 'saveDraft', 'loadDraft', 'clearDraft'];
-function factory(clock) {
+function factory(clock, logger) {
   assert.ok(existsSync(sourcePath), 'common/store.js must exist');
   const source = readFileSync(sourcePath, 'utf8');
   assert.ok(source.includes('export default createStore;'), 'static factory export required');
@@ -16,7 +16,7 @@ function factory(clock) {
     constructor(...args) { super(...(args.length ? args : [clock.value])); }
     static now() { return clock.value; }
   } : Date;
-  const context = vm.createContext({ Date: ClockDate });
+  const context = vm.createContext({ Date: ClockDate, console: logger || console });
   new vm.Script(source.replace('export default createStore;', 'this.createStore = createStore;')).runInContext(context);
   return context.createStore;
 }
@@ -141,6 +141,33 @@ test('disposing after one valid root was read cannot publish successful initiali
   host.inject('readText',o=>o.uri.endsWith('/b.json'),'hold');const store=factory()(host.api);
   const first=outcome(store,'init'),second=outcome(store,'init');await waitHeld(host);store.dispose();host.release();
   const settled=await Promise.all([first,second]);assert.deepEqual(settled.map(x=>x.err),['DISPOSED','DISPOSED']);
+});
+
+test('ready initialization callback exceptions are isolated with the fixed marker', async t => {
+  const host=createDiskHost();t.after(()=>host.close());const logs=[];
+  const store=factory(undefined,{error:x=>logs.push(x)})(host.api);await ok(store,'init');
+  let observed;assert.doesNotThrow(()=>store.init(err=>{observed=err;throw Error('synthetic private ready body');}));
+  assert.equal(observed,null);assert.deepEqual(logs,['LB2 STORE init callback exception']);
+  assert.equal((await ok(store,'list',{},0,8)).total,0);
+});
+
+test('disposed initialization callback exceptions are isolated with the fixed marker', t => {
+  const host=createDiskHost();t.after(()=>host.close());const logs=[];
+  const store=factory(undefined,{error:x=>logs.push(x)})(host.api);store.dispose();let observed;
+  assert.doesNotThrow(()=>store.init(err=>{observed=err;throw Error('synthetic private disposed body');}));
+  assert.equal(observed,'DISPOSED');assert.deepEqual(logs,['LB2 STORE init callback exception']);
+  assert.equal(host.calls.length,0);
+});
+
+test('excess initialization callback exceptions cannot affect the eight waiting callers', async t => {
+  const host=createDiskHost();t.after(()=>host.close());host.inject('mkdir',()=>true,'hold');const logs=[];
+  const store=factory(undefined,{error:x=>logs.push(x)})(host.api);
+  const waiting=Array.from({length:8},()=>outcome(store,'init'));let observed,escaped;
+  try{store.init(err=>{observed=err;throw Error('synthetic private excess body');});}catch(error){escaped=error;}
+  host.release();const results=await Promise.all(waiting);
+  assert.equal(observed,'INIT_WAIT_LIMIT');assert.equal(escaped,undefined);
+  assert.deepEqual(logs,['LB2 STORE init callback exception']);assert.ok(results.every(x=>x.err===null));
+  assert.equal(host.calls.filter(x=>x.method==='mkdir').length,1);
 });
 
 test('real disk first init creates two checked short roots and no seeded records', async t => {
