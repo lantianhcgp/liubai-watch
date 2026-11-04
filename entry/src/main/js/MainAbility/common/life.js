@@ -20,8 +20,14 @@ function start(page, ready) {
     page.h = info.windowHeight;
     page.round = info.screenShape === 'circle';
     console.info('LB2 DEVICE w='+page.w+' h='+page.h+' shape='+info.screenShape);
-    page.message = '';
-    ready(gen);
+    try { ready(gen); } catch(e) {
+      if (!alive(page,gen)) { return; }
+      cancelInit(page);
+      cancelQuery(page);
+      page.ready = false;
+      page.message = '\u542f\u52a8\u5931\u8d25\uff0c\u70b9\u6309\u91cd\u8bd5\nBOOT_PREPARE';
+      console.error('LB2 BOOT prepare exception');
+    }
   },fail:function(d,code){fail(code);}}); } catch(e) { fail('EXCEPTION'); }
 }
 function alive(page,gen) { return page.active === true && page.generation === gen; }
@@ -45,9 +51,14 @@ function cancelInit(page) {
     try { cancel(); } catch(e) { console.error('LB2 INIT cancel exception'); }
   }
 }
+function cancelQuery(page) {
+  if (page.queryTimer !== null && page.queryTimer !== undefined) { clearTimeout(page.queryTimer); }
+  page.queryTimer = null;
+}
 function stop(page) {
   page.active = false;
   cancelInit(page);
+  cancelQuery(page);
   page.generation = (page.generation || 0) + 1;
   if (page.focusTimer) { clearTimeout(page.focusTimer); page.focusTimer=null; }
   if (page.draftTimer) { clearTimeout(page.draftTimer); page.draftTimer=null; }
@@ -55,4 +66,4 @@ function stop(page) {
   if (ref && ref.rotation) { ref.rotation({focus:false}); }
 }
 function retry(page,ready) { stop(page); start(page,ready); }
-export default {start:start,alive:alive,apply:apply,focus:focus,cancelInit:cancelInit,stop:stop,retry:retry};
+export default {start:start,alive:alive,apply:apply,focus:focus,cancelInit:cancelInit,cancelQuery:cancelQuery,stop:stop,retry:retry};
