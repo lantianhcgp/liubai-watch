@@ -13,7 +13,7 @@ def records(app):
 def verify(d):
  c=json.loads(d['config.json']);m=json.loads(d[PREFIX+'manifest.json']);a=c['app'];mod=c['module']
  assert a['bundleName']=='com.hcbiu.liubai','Wrong developer identity'
- assert a['version']=={'code':3,'name':'0.2.1'},'Source version drift'
+ assert a['version']=={'code':4,'name':'0.2.2'},'Source version drift'
  assert a['apiVersion']['compatible']==40000010 and a['apiVersion']['target']==60101024,'Wrong SDK profile'
  assert not c.get('deviceConfig',{}),'Debug config is not allowed'
  assert mod['package']=='com.hcbiu.liubai'

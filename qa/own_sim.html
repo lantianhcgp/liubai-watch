@@ -3,14 +3,15 @@ import {Page,createSysMocks} from '/runtime/engine.js';
 import {ModuleLoader} from '/runtime/moduleloader.js';
 const source=await(await fetch('/__source')).json(),entries=[],scenario=new URL(location.href).searchParams.get('scenario')||'';
 const reporter={push:o=>entries.push(o),api:(api,args,state,detail)=>entries.push({kind:'api',api,args,state,detail}),event:(event,detail)=>entries.push({kind:'event',event,...detail}),exception:(e,detail)=>entries.push({kind:'exception',message:String(e),stack:e.stack,...detail}),lifecycle:(page,event,detail)=>entries.push({kind:'lifecycle',page,event,detail}),dataChange:()=>{}};
-let sim,loader,current=null,pending=null,fsCalls=[],fault={strictLength:false,failNextRead:scenario==='init-fail',failReads:false};
+let sim,loader,current=null,pending=null,fsCalls=[],fault={strictLength:false,failNextRead:scenario==='init-fail',failReads:false,holdInit:scenario==='init-busy',held:[]};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const mocks=createSysMocks(reporter,{onNavigate:uri=>{pending=uri;setTimeout(()=>{if(pending===uri){pending=null;mount(uri)}},10)}});
 for(const method of ['readText','writeText','get','access','mkdir','delete','list'])mocks.file[method]=function(o){const args={};for(const k in o)if(typeof o[k]!=='function')args[k]=o[k];const log={method,args:method==='writeText'?{...args,text:undefined,bytes:new TextEncoder().encode(args.text||'').length}:args};fsCalls.push(log);
  fetch('/__fs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method,args})}).then(r=>r.json()).then(async r=>{
   if(method==='readText'&&r.ok&&(fault.failNextRead||fault.failReads)){fault.failNextRead=false;r={ok:false,code:300,error:'disclosed one-shot readback failure'};}
   if(method==='readText'&&r.ok&&fault.strictLength){const g=await(await fetch('/__fs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'get',args:{uri:args.uri}})})).json();if(g.ok&&args.length>g.value.length)r={ok:false,code:300,error:'disclosed strict read length > file length hypothesis'};}
-  log.result=r.ok?'ok':'fail_'+r.code;if(r.ok){o.success&&o.success(r.value)}else{o.fail&&o.fail(r.error,r.code)};o.complete&&o.complete();
+  const deliver=()=>{log.result=r.ok?'ok':'fail_'+r.code;log.callback='delivered';if(r.ok){o.success&&o.success(r.value)}else{o.fail&&o.fail(r.error,r.code)};o.complete&&o.complete();};
+  if(method==='mkdir'&&fault.holdInit){fault.holdInit=false;log.callback='held';fault.held.push(deliver)}else deliver();
  }).catch(e=>{o.fail&&o.fail(String(e),300);reporter.exception(e,{method,args:{uri:args.uri}})});
 };
 mocks.device={getInfo:o=>setTimeout(()=>o.success({windowWidth:412,windowHeight:484,screenShape:'rect'}),0)};

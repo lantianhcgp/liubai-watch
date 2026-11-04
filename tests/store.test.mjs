@@ -70,6 +70,79 @@ test('all required callback interfaces exist; source stays ES5 + static export',
   assert.ok([...source].every(c => c.charCodeAt(0) < 128), 'product JS must use escaped static Chinese');
 });
 
+test('concurrent initialization callers share delayed disk startup instead of receiving IO_BUSY', async t => {
+  const host = createDiskHost(); t.after(() => host.close());
+  host.inject('mkdir', () => true, 'hold');
+  const store = factory()(host.api);
+  const first = outcome(store, 'init');
+  const second = outcome(store, 'init');
+  assert.equal(host.held.length, 1, 'startup is deliberately paused at the real disk boundary');
+  host.release();
+  const results = await Promise.all([first, second]);
+  assert.deepEqual(results.map(x => x.err), [null, null], 'all callers observe the one actual initialization result');
+  const saved = await ok(store, 'save', null, 'synthetic joined initialization body');
+  assert.equal((await ok(store, 'read', saved.id)).text, saved.text);
+  assert.equal(host.calls.filter(x => x.method === 'mkdir').length, 1, 'joining never starts overlapping initialization I/O');
+});
+
+test('pending initialization admits at most eight callers and reports excess without more I/O', async t => {
+  const host = createDiskHost(); t.after(() => host.close());
+  host.inject('mkdir', () => true, 'hold'); const store = factory()(host.api);
+  const pending = Array.from({length:8}, () => outcome(store, 'init'));
+  let excess; store.init((err) => {excess=err;});
+  const observed=excess; host.release(); const settled=await Promise.all(pending);
+  assert.equal(observed, 'INIT_WAIT_LIMIT', 'bounded subscription rejects only the excess caller');
+  assert.ok(settled.every(x=>x.err===null));
+  assert.equal(host.calls.filter(x=>x.method==='mkdir').length,1);
+});
+
+test('one initialization subscriber throwing cannot strand another subscriber', async t => {
+  const host=createDiskHost(); t.after(()=>host.close());
+  const api=Object.create(host.api);let complete;const marker=new Error('synthetic subscriber failure');
+  api.mkdir=o=>{complete=()=>o.fail('synthetic actual init failure',300);};
+  api.access=o=>o.fail('synthetic inaccessible app directory',300);
+  const store=factory()(api);let observed,throws;
+  store.init(()=>{throw marker;});store.init(err=>{observed=err;});
+  try{complete();}catch(e){throws=e;}
+  assert.equal(observed,'IO_300','other observer must receive actual initialization error despite first observer failure');
+  assert.equal(throws,undefined,'observer failure must not masquerade as a file API failure');
+});
+
+test('disposing during a held startup completes callers as DISPOSED and never starts later I/O', async t => {
+  const host=createDiskHost();t.after(()=>host.close());host.inject('mkdir',()=>true,'hold');
+  const store=factory()(host.api),first=outcome(store,'init'),second=outcome(store,'init');
+  store.dispose();host.release();const settled=await Promise.all([first,second]);
+  assert.deepEqual(settled.map(x=>x.err),['DISPOSED','DISPOSED']);
+  assert.equal(host.calls.length,1,'no follow-up file request may begin after store disposal');
+  assert.equal((await outcome(store,'init')).err,'DISPOSED');
+});
+
+test('joined initialization reports an actual disk failure to every caller and remains retryable', async t => {
+  const host=createDiskHost();t.after(()=>host.close());host.inject('mkdir',()=>true,'hold');
+  host.inject('readText',rootCall,'fail');const store=factory()(host.api);
+  const first=outcome(store,'init'),second=outcome(store,'init');host.release();
+  const failures=await Promise.all([first,second]);assert.deepEqual(failures.map(x=>x.err),['IO_300','IO_300']);
+  await ok(store,'init');assert.equal((await ok(store,'list',{},0,8)).total,0);
+  const saved=await ok(store,'save',null,'synthetic retry remains functional');
+  assert.equal((await ok(store,'read',saved.id)).text,saved.text);
+});
+
+test('duplicate initialization file callbacks notify each joined caller once', async t => {
+  const host=createDiskHost();t.after(()=>host.close());host.inject('mkdir',()=>true,'hold');
+  host.inject('writeText',()=>true,'duplicate',8);host.inject('readText',()=>true,'duplicate',8);
+  const store=factory()(host.api),counts=[0,0];
+  const pending=counts.map((_,i)=>new Promise(resolve=>store.init((err,value)=>{counts[i]++;resolve({err,value});})));
+  host.release();assert.ok((await Promise.all(pending)).every(x=>x.err===null));await waitTurn();
+  assert.deepEqual(counts,[1,1]);assert.equal((await ok(store,'list',{},0,8)).total,0);
+});
+
+test('disposing after one valid root was read cannot publish successful initialization from that root', async t => {
+  const host=createDiskHost();t.after(()=>host.close());const warm=factory()(host.api);await ok(warm,'init');await ok(warm,'save',null,'synthetic previously committed record');warm.dispose();
+  host.inject('readText',o=>o.uri.endsWith('/b.json'),'hold');const store=factory()(host.api);
+  const first=outcome(store,'init'),second=outcome(store,'init');await waitHeld(host);store.dispose();host.release();
+  const settled=await Promise.all([first,second]);assert.deepEqual(settled.map(x=>x.err),['DISPOSED','DISPOSED']);
+});
+
 test('real disk first init creates two checked short roots and no seeded records', async t => {
   const { host, store } = await fixture(t);
   assert.deepEqual(await ok(store, 'list', {}, 0, 8), { rows: [], more: false, total: 0 });
