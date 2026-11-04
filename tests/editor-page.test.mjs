@@ -70,6 +70,38 @@ test('twenty fixed slots survive full selection, residual pinyin and overbudget 
   }finally{page.onDestroy();}
 });
 
+test('draft cleanup throwing after a committed save unlocks and opens that exact saved record once',()=>{
+  const {page,state,sent}=load(null,true);let saves=0,clears=0;const logs=[],previousError=console.error;
+  state.store.save=(id,text,cb)=>{saves++;cb(null,{id:'n1',text,version:1});};
+  state.store.clearDraft=()=>{clears++;throw new Error('cleanup API unavailable');};
+  try{console.error=(...args)=>logs.push(args.join(' '));page.onInit();page.insert('committed body must remain one record');page.save();
+    assert.equal(saves,1);assert.equal(clears,1);assert.equal(page.saving,false);assert.equal(page.original,'committed body must remain one record');
+    assert.equal(sent.length,1);assert.equal(sent[0].uri,'pages/read/read');assert.equal(sent[0].args.id,'n1');assert.equal(state.editor,null);
+    assert.ok(logs.some(x=>x.includes('LB2 DRAFT clear fail STORE_EXCEPTION')));
+  }finally{console.error=previousError;page.onDestroy();}
+});
+test('duplicate init callbacks and rapid save taps cannot create a second stored body',()=>{
+  const {page,state,sent}=load(null,true);let ready=false,inits=0,saves=0,ack;
+  state.store.init=cb=>{inits++;ack=cb;};state.store.save=(id,text,cb)=>{saves++;cb(ready?null:'STORE_NOT_READY',ready?{id:'n1',text,version:1}:null);};
+  page.onInit();page.insert('single saved identity');page.save();page.save();assert.equal(inits,1);assert.equal(saves,1);assert.equal(page.saving,true);
+  ready=true;ack(null,true);ack(null,true);assert.equal(saves,2);assert.equal(sent.length,1);assert.equal(page.saving,false);
+});
+test('an unready store is initialized once and the same input is saved without a second tap',()=>{
+  const {page,state,sent}=load(null,true);let initialized=false,inits=0,saves=0;
+  state.store.init=cb=>{inits++;initialized=true;cb(null,true)};
+  state.store.save=(_id,s,cb)=>{saves++;if(!initialized)cb('STORE_NOT_READY');else cb(null,{id:'n1',text:s,version:1})};
+  try{page.onInit();page.insert('recover retained input');page.save();assert.equal(inits,1);assert.equal(saves,2);assert.equal(page.text,'recover retained input');assert.equal(page.saving,false);assert.equal(sent.length,1);assert.equal(sent[0].uri,'pages/read/read');}finally{page.onDestroy();}
+});
+test('failed store initialization remains bounded, retains input, and publishes the actual error code',()=>{
+  const {page,state,sent}=load(null,true);let inits=0,saves=0;
+  state.store.init=cb=>{inits++;cb('ROOT_DATA_IO_300')};
+  state.store.save=(_id,_s,cb)=>{saves++;cb('STORE_NOT_READY')};
+  try{page.onInit();page.insert('never discard this');page.save();assert.equal(inits,1);assert.equal(saves,1);assert.equal(state.editor.text,'never discard this');assert.equal(page.saving,false);assert.equal(sent[0].args.error,'ROOT_DATA_IO_300');assert.equal(sent[0].args.kind,'save');}finally{page.onDestroy();}
+});
+test('save callback failures publish their exact code without exposing user text in routing',()=>{
+  const {page,state,sent}=load(null,true);state.store.save=(_id,_s,cb)=>cb('IO_302');
+  try{page.onInit();page.insert('private retained body');page.save();assert.equal(sent[0].args.error,'IO_302');assert.equal(sent[0].args.kind,'save');assert.equal(JSON.stringify(sent[0].args).includes('private retained body'),false);assert.equal(state.editor.text,'private retained body');}finally{page.onDestroy();}
+});
 test('empty save retains input and rejection message, sends nothing and logs its negative semantic marker',()=>{
   const {page,state,sent}=load(null,true),logs=[],originalInfo=console.info;
   let saves=0,clears=0;

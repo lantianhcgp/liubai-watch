@@ -316,6 +316,7 @@ test('draft and storage failures never fabricate a new note or a successful list
   assert.equal(init.routerCalls[0].uri,'pages/menu/menu');
   assert.equal(init.routerCalls[0].args.mode,'error');
   assert.equal(init.routerCalls[0].args.kind,'read');
+  assert.equal(init.routerCalls[0].args.error,'E_IO','first read failure must not discard its exact diagnostic code');
   const env=harness({draftError:'E_DRAFT'}), page=env.page('index');page.onInit();page.newNote();
   assert.equal(env.routerCalls.length,0);
   assert.equal(page.busy,false);

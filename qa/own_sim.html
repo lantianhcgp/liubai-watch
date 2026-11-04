@@ -1,0 +1,32 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>留白 · 自研 lite-sim 保存诊断</title><style>html,body{margin:0;background:#13171a;color:#e9e9e5;font-family:sans-serif}#screen{position:relative;width:412px;height:484px;margin:20px;border-radius:103px;overflow:hidden;background:#10140f;box-sizing:border-box}#screen *{box-sizing:border-box}#scope{padding:12px;font-size:14px}#status{padding:12px;white-space:pre-wrap}text{display:block;white-space:pre-wrap}stack{position:relative;display:block}image{display:block}</style><div id="scope">自研 lite-sim Page + ModuleLoader；真实隔离磁盘适配；设备信息为 FIT3 测试输入，不是真机证明。</div><div id="screen"></div><pre id="status"></pre><script type="module">
+import {Page,createSysMocks} from '/runtime/engine.js';
+import {ModuleLoader} from '/runtime/moduleloader.js';
+const source=await(await fetch('/__source')).json(),entries=[],scenario=new URL(location.href).searchParams.get('scenario')||'';
+const reporter={push:o=>entries.push(o),api:(api,args,state,detail)=>entries.push({kind:'api',api,args,state,detail}),event:(event,detail)=>entries.push({kind:'event',event,...detail}),exception:(e,detail)=>entries.push({kind:'exception',message:String(e),stack:e.stack,...detail}),lifecycle:(page,event,detail)=>entries.push({kind:'lifecycle',page,event,detail}),dataChange:()=>{}};
+let sim,loader,current=null,pending=null,fsCalls=[],fault={strictLength:false,failNextRead:scenario==='init-fail',failReads:false};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const mocks=createSysMocks(reporter,{onNavigate:uri=>{pending=uri;setTimeout(()=>{if(pending===uri){pending=null;mount(uri)}},10)}});
+for(const method of ['readText','writeText','get','access','mkdir','delete','list'])mocks.file[method]=function(o){const args={};for(const k in o)if(typeof o[k]!=='function')args[k]=o[k];const log={method,args:method==='writeText'?{...args,text:undefined,bytes:new TextEncoder().encode(args.text||'').length}:args};fsCalls.push(log);
+ fetch('/__fs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method,args})}).then(r=>r.json()).then(async r=>{
+  if(method==='readText'&&r.ok&&(fault.failNextRead||fault.failReads)){fault.failNextRead=false;r={ok:false,code:300,error:'disclosed one-shot readback failure'};}
+  if(method==='readText'&&r.ok&&fault.strictLength){const g=await(await fetch('/__fs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'get',args:{uri:args.uri}})})).json();if(g.ok&&args.length>g.value.length)r={ok:false,code:300,error:'disclosed strict read length > file length hypothesis'};}
+  log.result=r.ok?'ok':'fail_'+r.code;if(r.ok){o.success&&o.success(r.value)}else{o.fail&&o.fail(r.error,r.code)};o.complete&&o.complete();
+ }).catch(e=>{o.fail&&o.fail(String(e),300);reporter.exception(e,{method,args:{uri:args.uri}})});
+};
+mocks.device={getInfo:o=>setTimeout(()=>o.success({windowWidth:412,windowHeight:484,screenShape:'rect'}),0)};
+loader=new ModuleLoader(source.files,{mocks,reporter});
+const app=loader.loadEntry('app.js');globalThis.$app=app;app.onCreate();
+// Disclosed browser layout bridge only: Lite numeric lengths are px and stack offsets are absolute.
+// Source Page execution and product code remain unchanged; not a firmware/layout fidelity claim.
+class DiagnosticPage extends Page{
+ _applyAttrs(node,el,scope){super._applyAttrs(node,el,scope);let value=el.getAttribute('style')||'';
+  value=value.replace(/((?:^|;)\s*(?:width|height|left|top|right|bottom|font-size|border-radius|margin(?:-\w+)?|padding(?:-\w+)?)\s*:)\s*(-?\d+(?:\.\d+)?)\s*(?=;|$)/g,'$1$2px');
+  if(node.tag==='stack')value+=';display:block;position:relative';
+  if(/(?:^|;)\s*(?:left|top)\s*:/.test(value))value+=';position:absolute';
+  el.setAttribute('style',value);
+ }
+}
+function mount(uri,params){if(params)app.getState().params={uri,...params};if(current)current.destroy();current=new DiagnosticPage(loader.loadEntry(uri+'.js'),{name:uri,hml:source.files[uri+'.hml'],css:source.files[uri+'.css'].replace(/}\s*(?=\.)/g,'}\n'),mocks,reporter});current.mount(document.getElementById('screen'));document.getElementById('status').textContent=uri;}
+sim=window.sim={get page(){return current},get shared(){return app.getState()},source,entries,fsCalls,fault,mocks,loader,mount,state:()=>({page:current?.name,ready:current?.ready,message:current?.message,id:current?.id,text:current?.record?.text??current?.text,saving:current?.saving,store:app.getState().store?'present':'absent',errors:entries.filter(e=>e.kind==='exception')}),wait:async(pred,timeout=7000)=>{const until=Date.now()+timeout;while(Date.now()<until){if(pred())return;await sleep(20)}throw Error('state wait timeout '+JSON.stringify(sim.state()))},sleep};
+mount('pages/index/index');
+</script></html>

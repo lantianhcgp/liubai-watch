@@ -13,7 +13,7 @@ function activate(page,mode,create,File){life.start(page,function(gen){
   if((mode==='day'&&!validDate(page.day,false))||(mode==='history'&&!validDate(page.month,true))){page.message='\u65e5\u671f\u65e0\u6548';page.error=true;return;}
   if(mode==='index'){
     if(!state.store)state.store=create(File);page.store=state.store;
-    state.store.init(function(err){if(!life.alive(page,gen))return;if(err){console.error('LB2 STORE init fail '+err);page.error=true;page.message='\u8bfb\u53d6\u5931\u8d25';route(page,'pages/menu/menu',{mode:'error',kind:'read'});return;}query(page);});
+    state.store.init(function(err){if(!life.alive(page,gen))return;if(err){console.error('LB2 STORE init fail '+err);page.error=true;page.message='\u8bfb\u53d6\u5931\u8d25';route(page,'pages/menu/menu',{mode:'error',kind:'read',error:err});return;}query(page);});
   }else{page.store=state.store;if(!page.store){page.error=true;page.message='\u8bb0\u5f55\u4ed3\u672a\u5c31\u7eea';return;}query(page);}
 });}
 function query(page){var gen=page.generation,token=++page.query;page.message='';page.error=false;var filter={deleted:page.viewMode==='trash'};if(page.pinnedOnly)filter.pinned=true;if(page.viewMode==='day')filter.day=page.day;

@@ -57,5 +57,36 @@ export default {
   tools:function(){if(this.saving)return;this.snapshot();nav('pages/menu/menu',{mode:'tools',id:this.id});},
   cancel:function(){if(this.saving)return;this.snapshot();if(this.text===this.original&&!this.pinyin){nav(this.id?'pages/read/read':'pages/index/index',{id:this.id,source:this.source,day:this.day,month:this.month,anchor:this.anchor});return;}nav('pages/menu/menu',{mode:'exit',id:this.id});},
   save:function(){if(this.saving||!this.ready)return;if(!content(this.text)&&!this.pinyin){this.message='\u7a7a\u8bb0\u5f55\u4e0d\u4fdd\u5b58';console.info('LB2 SAVE empty chars=0 pinyin=');return;}if(!this.flushPinyin())return;if(this.draftTimer){clearTimeout(this.draftTimer);this.draftTimer=null;}this.saving=true;this.doneLabel='\u4fdd\u5b58\u4e2d';this.reflow(false);if(this.draftBusy){this.savePending=true;return;}this.commit();},
-  commit:function(){var self=this,store=context.state().store,saveDone=false,clearDone=false;this.snapshot();console.info('LB2 SAVE begin id='+(this.id||'new')+' bytes='+text.bytes(this.text));store.save(this.id,this.text,function(err,r){if(saveDone)return;saveDone=true;if(err||!r){self.saving=false;self.doneLabel='\u5b8c\u6210';self._resumeError=err||'SAVE_EMPTY';if(!self._destroyed&&life.alive(self,self.generation)){self.message='\u6ca1\u5b58\u4e0a\uff0c\u4e0d\u4e22\u6587\u5b57';self.snapshot();nav('pages/menu/menu',{mode:'error',id:self.id});}console.error('LB2 SAVE fail '+err);return;}self.id=r.id;self.original=r.text;self.originalVersion=r.version;if(self._resumeSnapshot){self._resumeSnapshot.id=r.id;self._resumeSnapshot.original=r.text;self._resumeSnapshot.originalVersion=r.version;}console.info('LB2 SAVE ok id='+r.id+' version='+r.version+' chars='+r.text.length);store.clearDraft(function(clearErr){if(clearDone)return;clearDone=true;self.saving=false;self.doneLabel='\u5b8c\u6210';var readParams={id:r.id,anchor:self.cursor,source:self.source,day:self.day,month:self.month};if(!self._destroyed&&life.alive(self,self.generation)){context.state().editor=null;nav('pages/read/read',readParams);}else if(!self._destroyed){self._resumeRead=readParams;}if(clearErr)console.error('LB2 DRAFT clear fail '+clearErr);});});}
+  commit:function(){
+    var self=this,store=context.state().store,saveDone=false,clearDone=false,retried=false;
+    this.snapshot();console.info('LB2 SAVE begin id='+(this.id||'new')+' bytes='+text.bytes(this.text));
+    function result(err,r){
+      if(saveDone)return;saveDone=true;
+      if(err||!r){self.saving=false;self.doneLabel='\u5b8c\u6210';self._resumeError=err||'SAVE_EMPTY';
+        if(!self._destroyed&&life.alive(self,self.generation)){self.message='\u6ca1\u5b58\u4e0a\uff0c\u4e0d\u4e22\u6587\u5b57';self.snapshot();nav('pages/menu/menu',{mode:'error',kind:'save',error:self._resumeError,id:self.id});}
+        console.error('LB2 SAVE fail '+self._resumeError);return;
+      }
+      self.id=r.id;self.original=r.text;self.originalVersion=r.version;
+      if(self._resumeSnapshot){self._resumeSnapshot.id=r.id;self._resumeSnapshot.original=r.text;self._resumeSnapshot.originalVersion=r.version;}
+      console.info('LB2 SAVE ok id='+r.id+' version='+r.version+' chars='+r.text.length);
+      function cleared(clearErr){if(clearDone)return;clearDone=true;self.saving=false;self.doneLabel='\u5b8c\u6210';
+        var readParams={id:r.id,anchor:self.cursor,source:self.source,day:self.day,month:self.month};
+        if(!self._destroyed&&life.alive(self,self.generation)){context.state().editor=null;nav('pages/read/read',readParams);}else if(!self._destroyed){self._resumeRead=readParams;}
+        if(clearErr)console.error('LB2 DRAFT clear fail '+clearErr);
+      }
+      try{store.clearDraft(cleared);}catch(e){if(clearDone)throw e;cleared('STORE_EXCEPTION');}
+    }
+    function saveOnce(){var called=false;
+      try{store.save(self.id,self.text,function(err,r){if(called||saveDone)return;called=true;
+        if(err==='STORE_NOT_READY'&&!retried&&!self._destroyed&&typeof store.init==='function'){
+          retried=true;var initDone=false;console.info('LB2 SAVE reinit');
+          try{store.init(function(e){if(initDone||saveDone)return;initDone=true;if(e){result(e);return;}if(self._destroyed){result('DISPOSED');return;}saveOnce();});}catch(e){if(saveDone)throw e;result('STORE_EXCEPTION');}
+          return;
+        }
+        result(err,r);
+      });}catch(e){if(saveDone)throw e;result('STORE_EXCEPTION');}
+    }
+    if(!store||typeof store.save!=='function'){result('STORE_UNAVAILABLE');return;}
+    saveOnce();
+  }
 };
