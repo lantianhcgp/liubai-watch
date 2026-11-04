@@ -398,6 +398,22 @@ test('initialization observer and deadline are released once on hide and destroy
   assert.equal(env.calls.list.length,1);
 });
 
+test('read continuation diagnostic: initialization deadline preserves exact bounded post-read phase tokens', () => {
+  for(const phase of ['RD_A_TEXT','RD_B_TEXT_OK','RD_A_JSON','RD_A_SUM','RD_B_JSON_OK','RD_A_ROOT','RD_PAGE_SUM','RD_TXN_JSON']){
+    const env=harness({deferInit:true,initPhase:phase}),page=env.page('index');page.onInit();env.flushTimers();
+    assert.equal(env.routerCalls.length,1);
+    assert.equal(env.routerCalls[0].args.error,'INIT_WAIT_'+phase,'the genuine post-read stage must not degrade to UNKNOWN');
+    assert.equal(env.calls.init,1);assert.equal(env.calls.list.length,0);assert.equal(env.calls.cancel,1);
+    assert.equal(env.timers.size,0);
+  }
+});
+test('read continuation diagnostic: post-read tokens are permitted only for RD and never leak arbitrary suffixes',()=>{
+  for(const phase of ['AC_A_JSON','RD_A_JSON_PRIVATE','RD_A_TEXT_OK_PRIVATE','RD_A_','RD_A_TEXT__OK','RD_PRIVATE_TEXT']){
+    const env=harness({deferInit:true,initPhase:phase}),page=env.page('index');page.onInit();env.flushTimers();
+    assert.equal(env.routerCalls[0].args.error,'INIT_WAIT_UNKNOWN');
+  }
+});
+
 test('initialization deadline encodes only whitelisted phase tokens and never arbitrary private text', () => {
   const privateText='synthetic test only private note';
   const env=harness({deferInit:true,initPhase:privateText}),page=env.page('index');page.onInit();env.flushTimers();

@@ -672,6 +672,13 @@ test('error dialogs expose the exact read or save code on a bounded, visible exi
     try{assert.equal(h.page.dialogHint2,'ROOT_DATA_IO_300');assert.ok(h.page.dialogHint2.length<=32);assert.equal(h.page.title,kind==='read'?'读取失败':'保存失败');if(kind==='read'){assert.equal(h.page.dockLeftLabel,'返回随记');assert.equal(h.page.dockRightLabel,'重新读取');h.page.action(h.page.dockRightAction);assert.equal(lastRoute(h).uri,'pages/index/index');assert.equal(h.state.editor,null);}else{h.page.action('retry-save');assertEditorRoute(h,true);assert.deepEqual(copy(h.state.editor),snapshot);}}finally{h.page.onDestroy();}
   }
 });
+test('read continuation diagnostic: all new root errors and post-read stage codes fit the existing dialog hint without truncation',()=>{
+  for(const code of ['ROOT_DATA_READ_TEXT_THROW','INIT_CB_RD_A_ROOT','INIT_WAIT_RD_A_TEXT_OK','INIT_WAIT_RD_A_JSON_OK','INIT_WAIT_RD_PAGE_JSON_OK']){
+    const h=open({params:{mode:'error',kind:'read',error:code,id:null}});
+    try{assert.equal(h.page.dialogHint2,code);assert.ok(code.length<=26);assert.equal(h.page.title,'读取失败');assert.equal(h.page.dialogText,'原记录保留');assert.equal(h.page.dialogHint1,'未清理或重建本地数据');}finally{h.page.onDestroy();}
+  }
+});
+
 test('missing store and synchronous store exceptions are visible, retryable errors rather than unhandled crashes', () => {
   const none = open({ params: { mode: 'record' }, noStore: true }); assertVisibleMessage(none); none.page.onDestroy();
   const h = open({ params: { mode: 'exit' }, editor: snapshot, store: { saveDraft() { throw new Error('disk'); } } });
