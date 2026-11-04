@@ -3,7 +3,10 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
 
-const base = new URL('../entry/src/main/js/MainAbility/', import.meta.url);
+// Read-only baseline differential run preserves RED evidence without touching the working tree.
+const base = process.env.LB_SOURCE_BASE
+  ? new URL('file://' + process.env.LB_SOURCE_BASE.replace(/\/$/,'') + '/')
+  : new URL('../entry/src/main/js/MainAbility/', import.meta.url);
 const approved = fs.readFileSync(new URL('../docs/approved-v3/approved.html',import.meta.url), 'utf8');
 const windows = [
   ['fit3', {windowWidth:412, windowHeight:484, screenShape:'rect'}],
@@ -123,7 +126,7 @@ function harness(options={}) {
       if (dep==='@system.device') deps[alias]=systemDevice;
       else if (dep==='@system.file') deps[alias]=systemFile;
       else if (dep==='@system.router') deps[alias]=systemRouter;
-      else if (dep==='@system.storage') deps[alias]={get(o){if(o.success)o.success(o.default)},set(o){if(o.success)o.success()}};
+      else if (dep==='@system.storage') deps[alias]={get(o){if(options.storageThrow)throw new Error('deliberate optional font API exception');if(o.success)o.success(o.default)},set(o){if(o.success)o.success()}};
       else if (dep.endsWith('/store.js') || dep==='./store.js') deps[alias]=function(fileApi) {
         assert.equal(fileApi,systemFile,'only index creates the store from the real file API import');
         seam.calls.factories=(seam.calls.factories || 0)+1;
@@ -624,4 +627,104 @@ test('all four complete native list pages wire gestures, image sizes, safe text 
       assert.ok(hml.includes('width:{{writeW}};height:{{writeH}}'));
     }
   }
+});
+
+test('startup retains visible loading after asynchronous device success while native init is pending', () => {
+  const env=harness({deferDevice:true,deferInit:true}), page=env.page('index');
+  page.onInit();
+  env.deviceCalls[0].success(windows[0][1]);
+  assert.equal(page.ready,false);
+  assert.ok(page.message.length>0,'native wait must not erase the only visible text');
+  assert.equal(env.calls.init,1);
+});
+
+test('optional persisted font API exception cannot abort asynchronous startup', () => {
+  const env=harness({deferDevice:true,storageThrow:true}), page=env.page('index');
+  page.onInit();
+  assert.doesNotThrow(()=>env.deviceCalls[0].success(windows[0][1]));
+  assert.equal(env.calls.init,1,'optional setting failure must still initialize real records');
+  assert.equal(page.ready,true);
+});
+
+test('post-device page preparation exception is visible instead of escaping SDK callback', () => {
+  const env=harness({deferDevice:true}), page=env.page('index');
+  const life=env.load('common/life.js');
+  life.start(page,()=>{throw new Error('deliberate page preparation failure')});
+  assert.doesNotThrow(()=>env.deviceCalls[0].success(windows[0][1]));
+  assert.equal(page.ready,false);
+  assert.match(page.message,/BOOT_PREPARE/);
+  assert.ok(!page.message.includes('deliberate'),'raw exceptions must not be shown');
+  assert.equal(env.timers.size,0);
+});
+
+test('initial list callback stall has a visible deadline after init has succeeded', () => {
+  const env=harness({deferDevice:true,deferList:true}), page=env.page('index');
+  page.onInit();env.deviceCalls[0].success(windows[0][1]);
+  assert.equal(env.calls.init,1);
+  assert.equal(env.calls.list.length,1);
+  assert.equal(page.ready,false);
+  assert.ok(page.message.length>0,'list wait must retain visible loading');
+  assert.ok(env.timers.size>0,'init deadline cannot end before first list is protected');
+  env.flushTimers();
+  assert.equal(page.error,true,'stalled list must enter a visible retryable error');
+  assert.equal(page.ready,false);
+  assert.ok(page.message.length>0);
+  assert.match(page.message,/LIST_WAIT/);
+  assert.equal(page.queryTimer,null);
+  env.pending.list.shift()();
+  assert.equal(page.ready,false,'late answer must not erase a latched timeout');
+});
+
+test('list observation timers are removed on hide and delayed callback cannot publish success', () => {
+  const env=harness({deferList:true}), page=env.page('index');
+  page.onInit();assert.ok(env.timers.size>0);
+  page.onHide();assert.equal(env.timers.size,0);
+  env.pending.list.shift()();assert.equal(page.ready,false);
+});
+
+test('query timer is declared for all native list pages and successful callbacks clear it',()=>{
+  for(const mode of ['index','history','day','trash']){
+    const env=harness({existingStore:mode!=='index'}),page=env.page(mode);
+    assert.equal(Object.prototype.hasOwnProperty.call(page.data,'queryTimer'),true);
+    page.onInit();assert.equal(page.queryTimer,null);assert.equal(page.message,'');
+    page.onHide();assert.equal(env.timers.size,0);
+  }
+});
+
+test('asynchronous malformed row processing reports LIST_RENDER and does not escape SDK callback',()=>{
+  const env=harness({deferDevice:true,deferList:true}),page=env.page('index');
+  env.records[0].date=null;page.onInit();env.deviceCalls[0].success(windows[0][1]);
+  assert.doesNotThrow(()=>env.pending.list.shift()());
+  assert.equal(page.ready,false);assert.equal(page.error,true);assert.match(page.message,/LIST_RENDER/);
+  assert.equal(page.queryTimer,null);assert.equal(env.timers.size,0);
+});
+
+test('history day-index stall is bounded and rejects its late callback',()=>{
+  const env=harness({existingStore:true,deferDays:true}),page=env.page('history');page.onInit();
+  assert.ok(page.message);assert.ok(env.timers.size>0);env.flushTimers();
+  assert.equal(page.error,true);assert.match(page.message,/LIST_WAIT/);assert.equal(page.queryTimer,null);
+  env.pending.days.shift()();assert.equal(page.ready,false);assert.equal(page.rows.length,0);
+});
+
+test('changing requested filter cancels old query deadline without cancelling new one',()=>{
+  const env=harness({deferList:true}),page=env.page('index');page.onInit();
+  const first=page.queryTimer;page.togglePinned();const last=page.queryTimer;
+  assert.notEqual(last,first);assert.equal(env.timers.has(first),false);assert.equal(env.timers.has(last),true);
+  env.pending.list.shift()();assert.equal(env.timers.has(last),true,'obsolete callback must not clear current observer');
+  env.pending.list.shift()();assert.equal(page.ready,true);assert.equal(page.queryTimer,null);
+  env.flushTimers();assert.equal(page.error,false);assert.equal(page.rows.length,1);
+});
+
+test('late filter result cannot erase a newer failed draft operation or re-enable its page',()=>{
+  const env=harness({existingStore:true,count:1}),page=env.page('index');
+  page.onInit();assert.equal(page.ready,true);
+  let filterAnswer;
+  page.store.list=(_f,_o,_n,cb)=>{filterAnswer=cb;};
+  page.togglePinned();assert.ok(page.queryTimer!==null);
+  page.store.loadDraft=cb=>cb('DRAFT_CORRUPT');page.newNote();
+  assert.equal(page.ready,false);assert.equal(page.error,true);const message=page.message;
+  filterAnswer(null,{rows:fixtures(1),total:1,more:false});
+  assert.equal(page.ready,false,'obsolete list result must not turn failed draft into ready state');
+  assert.equal(page.message,message);assert.equal(page.error,true);assert.equal(page.queryTimer,null);
+  env.flushTimers();assert.equal(page.message,message);assert.equal(page.ready,false);assert.equal(env.routerCalls.length,0);
 });
