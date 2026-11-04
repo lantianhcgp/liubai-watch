@@ -668,6 +668,79 @@ test('native empty-read 202: nonempty missing or corrupt parts and arbitrary 202
   }
 });
 
+test('initialization diagnostic reports the exact held mkdir without creating another I/O chain', async t => {
+  const host = createDiskHost(); t.after(() => host.close());
+  host.inject('mkdir', () => true, 'hold');
+  const store = factory()(host.api), pending = outcome(store, 'init');
+  assert.equal(typeof store.initState, 'function', 'initialization phase snapshot is missing');
+  assert.deepEqual(plain(store.initState()), {pending:true, phase:'MK_DIR_CALL', waiters:1});
+  const copy = store.initState(); copy.phase = 'altered'; copy.waiters = 900;
+  assert.equal(store.initState().phase, 'MK_DIR_CALL', 'snapshot must not mutate live state');
+  assert.equal(host.calls.filter(c => c.method === 'mkdir').length, 1);
+  host.release(); assert.equal((await pending).err, null);
+  assert.deepEqual(plain(store.initState()), {pending:false, phase:'DONE', waiters:0});
+});
+
+test('initialization diagnostic distinguishes held transaction access and held root read on real disk', async t => {
+  const {host,create} = await fixture(t);
+  for (const [method,uri,phase] of [['access',ROOT+'txn.json','AC_TXN_CALL'],
+    ['access',ROOT+'a.json','AC_A_CALL'], ['readText',ROOT+'a.json','RD_A_CALL']]) {
+    const store = create(host.api);
+    host.inject(method, o => o.uri === uri, 'hold');
+    const pending = outcome(store, 'init'); await waitHeld(host);
+    assert.equal(typeof store.initState, 'function', 'initialization phase snapshot is missing');
+    assert.equal(store.initState().phase, phase);
+    assert.equal(store.initState().pending, true);
+    assert.equal(JSON.stringify(store.initState()).includes('internal://'), false, 'diagnostic must not expose URIs');
+    host.release(); assert.equal((await pending).err, null);
+    assert.equal(store.initState().pending, false);
+  }
+});
+
+test('initialization diagnostic ignores duplicate callbacks from an earlier operation while a later native call is held', async t => {
+  const host=createDiskHost();t.after(()=>host.close());
+  host.inject('mkdir',()=>true,'lateDuplicate');
+  host.inject('access',o=>o.uri===ROOT+'txn.json','hold');
+  const store=factory()(host.api),pending=outcome(store,'init');await waitHeld(host);
+  assert.equal(store.initState().phase,'AC_TXN_CALL');
+  host.deliverLate();
+  assert.equal(store.initState().phase,'AC_TXN_CALL','an old duplicate must not overwrite the last pending operation');
+  assert.equal(host.calls.filter(c=>c.method==='mkdir').length,1);
+  host.release();assert.equal((await pending).err,null);
+});
+
+test('initialization subscription cancellation frees stale slots but never clears the native busy lock', async t => {
+  const host = createDiskHost(); t.after(() => host.close());
+  host.inject('mkdir', () => true, 'hold');
+  const store = factory()(host.api), cancelled = [], cancel = [];
+  for (let i=0;i<8;i++) cancel.push(store.init(error => cancelled.push(error)));
+  assert.ok(cancel.every(fn => typeof fn === 'function'), 'init must return each observer cancellation handle');
+  for (const stop of cancel) {stop();stop();}
+  assert.deepEqual(plain(store.initState()), {pending:true, phase:'MK_DIR_CALL', waiters:0});
+  const survivor = outcome(store, 'init');
+  assert.equal(store.initState().waiters, 1, 'cancelled pages must not exhaust the eight observer limit');
+  assert.equal(host.calls.length, 1, 'observer cancellation must not resume or restart underlying I/O');
+  assert.equal((await outcome(store, 'save', null, 'synthetic test only')).err, 'STORE_NOT_READY');
+  host.release(); assert.equal((await survivor).err, null);
+  assert.deepEqual(cancelled, [], 'cancelled observers must not receive a late callback');
+  assert.equal(store.initState().waiters, 0);
+  assert.equal(host.calls.filter(c => c.method === 'mkdir').length, 1);
+});
+
+test('initialization subscription cancellation after completion cannot remove a new retry observer', async t => {
+  const host = createDiskHost(); t.after(() => host.close());
+  host.inject('mkdir', () => true, 'fail');
+  host.inject('access', o => o.uri === 'internal://app/lb2', 'fail');
+  const store = factory()(host.api); let first;
+  const completed = new Promise(resolve => { first = store.init(error => resolve(error)); });
+  assert.equal(await completed, 'IO_300');
+  assert.equal(typeof first, 'function', 'completed observer cancellation handle is missing');
+  host.inject('mkdir', () => true, 'hold');
+  const retry = outcome(store, 'init'); first(); first();
+  assert.equal(store.initState().waiters, 1);
+  host.release(); assert.equal((await retry).err, null);
+});
+
 test('native empty-read 202: zero byte counts require the exact empty checksum and numeric zero', async t => {
   const { host, store } = await nativeDraftFixture(t);
   const snapshot = { schema: 1, text: 'synthetic test only body', original: 'synthetic test only original' };

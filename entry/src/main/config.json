@@ -1,5 +1,5 @@
 {
-  "app":{"bundleName":"com.hcbiu.liubai","vendor":"hcbiu","version":{"code":4,"name":"0.2.2"}},
+  "app":{"bundleName":"com.hcbiu.liubai","vendor":"hcbiu","version":{"code":5,"name":"0.2.3"}},
   "deviceConfig":{},
   "module":{
     "deviceType":["liteWearable"],

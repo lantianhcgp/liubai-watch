@@ -36,8 +36,18 @@ function focus(page,name) {
     if (ref && ref.rotation) { ref.rotation({focus:true}); }
   },32);
 }
+function cancelInit(page) {
+  if (page.initTimer !== null && page.initTimer !== undefined) { clearTimeout(page.initTimer); }
+  page.initTimer = null;
+  var cancel = page.initCancel;
+  page.initCancel = null;
+  if (typeof cancel === 'function') {
+    try { cancel(); } catch(e) { console.error('LB2 INIT cancel exception'); }
+  }
+}
 function stop(page) {
   page.active = false;
+  cancelInit(page);
   page.generation = (page.generation || 0) + 1;
   if (page.focusTimer) { clearTimeout(page.focusTimer); page.focusTimer=null; }
   if (page.draftTimer) { clearTimeout(page.draftTimer); page.draftTimer=null; }
@@ -45,4 +55,4 @@ function stop(page) {
   if (ref && ref.rotation) { ref.rotation({focus:false}); }
 }
 function retry(page,ready) { stop(page); start(page,ready); }
-export default {start:start,alive:alive,apply:apply,focus:focus,stop:stop,retry:retry};
+export default {start:start,alive:alive,apply:apply,focus:focus,cancelInit:cancelInit,stop:stop,retry:retry};

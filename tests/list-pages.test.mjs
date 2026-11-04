@@ -42,13 +42,15 @@ function fixtures(count=7) {
 }
 function fixtureStore(options={}) {
   const records = fixtures(options.count);
-  const calls = {init:0, list:[], days:[], read:[], flag:[], draft:0};
+  const calls = {init:0, cancel:0, list:[], days:[], read:[], flag:[], draft:0};
   const pending = {init:[], list:[], days:[], read:[], flag:[], draft:[]};
   const store = {
     init(cb) {
       calls.init++;
       if (options.deferInit) pending.init.push(cb); else cb(options.initError || null);
+      return () => {calls.cancel++;};
     },
+    initState() { return {pending:options.deferInit===true, phase:options.initPhase || 'MK_DIR_CALL', waiters:options.deferInit?1:0}; },
     list(filter, offset, limit, cb) {
       calls.list.push({filter:plain(filter), offset, limit});
       const answer = () => {
@@ -338,6 +340,68 @@ test('all delayed index device/init/list/draft callbacks are inert after hide or
     assert.equal(env.timers.size,0,kind+' stale crown focus');
     if (kind==='Draft') assert.equal(env.app.getState().editor,null);
   }
+});
+
+test('initialization lifetime handles are declared fields on each real list page', () => {
+  for(const mode of ['index','history','day','trash']){
+    const data=harness().load('common/list-view.js').data(mode);
+    assert.equal(Object.prototype.hasOwnProperty.call(data,'initTimer'),true,'native lifetime timer must be declared');
+    assert.equal(Object.prototype.hasOwnProperty.call(data,'initCancel'),true,'native observer handle must be declared');
+    assert.equal(data.initTimer,null);assert.equal(data.initCancel,null);
+  }
+});
+
+test('initialization deadline shows the exact stage and ignores late success without another init or list', () => {
+  const env=harness({deferInit:true,initPhase:'AC_TXN_CALL'}),page=env.page('index');page.onInit();
+  assert.equal(env.timers.size,1,'held initialization must have one observation deadline');
+  env.flushTimers();
+  assert.equal(env.routerCalls.length,1,'deadline must reach the existing recovery page');
+  assert.equal(env.routerCalls[0].uri,'pages/menu/menu');
+  assert.equal(env.routerCalls[0].args.error,'INIT_WAIT_AC_TXN_CALL');
+  assert.equal(env.routerCalls[0].args.kind,'read');
+  assert.equal(env.calls.cancel,1,'deadline cancels only this page observer');
+  assert.equal(env.calls.init,1,'deadline must not start another native initialization');
+  assert.equal(env.calls.list.length,0);
+  env.pending.init[0](null);env.pending.init[0]('IO_300');
+  assert.equal(env.calls.list.length,0,'late completion must not update the expired page');
+  assert.equal(env.routerCalls.length,1);
+  assert.equal(env.timers.size,0);
+});
+
+test('initialization deadline is cancelled by success with no false error on the later focus timer', () => {
+  const env=harness({deferInit:true}),page=env.page('index');page.onInit();
+  assert.equal(env.timers.size,1);
+  env.pending.init.shift()(null);
+  assert.equal(page.ready,true);
+  assert.equal(page.initTimer,null);
+  assert.equal(page.initCancel,null);
+  assert.equal(env.timers.size,1,'only the existing crown focus timer may remain');
+  env.flushTimers();
+  assert.equal(env.routerCalls.length,0);
+  assert.equal(env.calls.list.length,1);
+  assert.equal(env.timers.size,0);
+});
+
+test('initialization observer and deadline are released once on hide and destroy before a new activation', () => {
+  const env=harness({deferInit:true}),page=env.page('index');page.onInit();
+  const old=env.pending.init[0];page.onHide();page.onDestroy();
+  assert.equal(env.timers.size,0,'hidden pages must not keep initialization timers');
+  assert.equal(env.calls.cancel,1,'hide plus destroy must not cancel twice');
+  assert.equal(page.initCancel,null);
+  page.onShow();assert.equal(env.calls.init,2);
+  assert.equal(env.timers.size,1);
+  old(null);assert.equal(env.calls.list.length,0);
+  env.pending.init[1](null);assert.equal(page.ready,true);
+  assert.equal(env.calls.list.length,1);
+});
+
+test('initialization deadline encodes only whitelisted phase tokens and never arbitrary private text', () => {
+  const privateText='synthetic test only private note';
+  const env=harness({deferInit:true,initPhase:privateText}),page=env.page('index');page.onInit();env.flushTimers();
+  assert.equal(env.routerCalls.length,1);
+  assert.equal(env.routerCalls[0].args.error,'INIT_WAIT_UNKNOWN');
+  assert.equal(JSON.stringify(env.routerCalls).includes(privateText),false);
+  assert.equal(JSON.stringify(env.logs).includes(privateText),false);
 });
 
 test('history starts with the real clock month, sorts days descending and uses calendar year rollover', () => {

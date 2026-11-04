@@ -6,7 +6,7 @@ class VerifierTests(unittest.TestCase):
   p=Path(__file__).parents[1]/'scripts/verify_app.py';self.assertTrue(p.is_file(),'artifact verifier missing')
   s=importlib.util.spec_from_file_location('verify_app',p);assert s and s.loader;m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
  def records(self):
-  c={'app':{'bundleName':'com.hcbiu.liubai','version':{'code':4,'name':'0.2.2'},'apiVersion':{'compatible':40000010,'target':60101024}},'deviceConfig':{},'module':{'package':'com.hcbiu.liubai','js':[{'pages':['pages/'+p+'/'+p for p in ['index','read','edit','menu','history','day','trash']]}]}}
+  c={'app':{'bundleName':'com.hcbiu.liubai','version':{'code':5,'name':'0.2.3'},'apiVersion':{'compatible':40000010,'target':60101024}},'deviceConfig':{},'module':{'package':'com.hcbiu.liubai','js':[{'pages':['pages/'+p+'/'+p for p in ['index','read','edit','menu','history','day','trash']]}]}}
   d={'config.json':json.dumps(c).encode(),'assets/js/MainAbility/manifest.json':json.dumps({'pages':c['module']['js'][0]['pages']}).encode(),'assets/js/MainAbility/app.js':b'function a(){}'}
   for p in c['module']['js'][0]['pages']:d['assets/js/MainAbility/'+p+'.js']=b'LB2 new ViewModel({render:function(){}})'
   return d

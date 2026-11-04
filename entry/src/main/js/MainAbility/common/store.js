@@ -1,14 +1,15 @@
 /* Bounded callback record journal. App-private two checked roots, paged metadata,
  * immutable versioned bodies, verified writes. No bundled notes or global body cache. */
 function createStore(fileApi) {
-  var ROOT='internal://app/lb2/', current=null, active='a', busy=false, dead=false, poisoned=false, initWaiters=null;
+  var ROOT='internal://app/lb2/', current=null, active='a', busy=false, dead=false, poisoned=false, initWaiters=null, initPhase='IDLE';
   function checksum(s){var h=5381;for(var i=0;i<s.length;i++)h=(h*33^s.charCodeAt(i))>>>0;return h;}
   function utf(s){var n=0;for(var i=0;i<s.length;i++){var c=s.charCodeAt(i);if(c<128)n++;else if(c<2048)n+=2;else if(c>=55296&&c<=56319){var t=s.charCodeAt(++i);if(!(t>=56320&&t<=57343))return -1;n+=4;}else if(c>=56320&&c<=57343)return -1;else n+=3;}return n;}
   function enc(data){var text=JSON.stringify(data);return JSON.stringify({data:data,c:checksum(text)});}
   function dec(s){var e=JSON.parse(s);if(!e||e.c!==checksum(JSON.stringify(e.data)))throw new Error('CHECKSUM');return e.data;}
   function clone(o){return JSON.parse(JSON.stringify(o));}
   function once(cb){var done=false;return function(e,v){if(done)return;done=true;if(cb)cb(e||null,v);};}
-  function call(method,args,cb){var finish=once(cb);if(dead){finish('DISPOSED');return;}args.success=function(v){finish(dead?'DISPOSED':null,v);};args.fail=function(d,c){finish(dead?'DISPOSED':'IO_'+c);};try{fileApi[method](args);}catch(e){finish('IO_THROW');}}
+  function phaseFor(method,uri){var op=method==='mkdir'?'MK':method==='access'?'AC':method==='readText'?'RD':method==='writeText'?'WR':'IO',kind=uri==='internal://app/lb2'?'DIR':uri===ROOT+'txn.json'?'TXN':uri===ROOT+'a.json'?'A':uri===ROOT+'b.json'?'B':'PAGE';return op+'_'+kind;}
+  function call(method,args,cb){var finish=once(cb),settled=false,phase=initWaiters!==null?phaseFor(method,args.uri):null;function mark(part){if(phase&&initWaiters!==null)initPhase=phase+'_'+part;}function deliver(part,e,v){if(settled)return;settled=true;mark(part);finish(e,v);}if(dead){deliver('DISPOSED','DISPOSED');return;}mark('CALL');args.success=function(v){deliver('OK',dead?'DISPOSED':null,v);};args.fail=function(d,c){deliver('FAIL',dead?'DISPOSED':'IO_'+c);};try{fileApi[method](args);}catch(e){deliver('THROW','IO_THROW');}}
   function readFile(name,cb){call('readText',{uri:ROOT+name,position:0,length:4096,encoding:'UTF-8'},function(e,d){if(e)cb(e);else if(!d||typeof d.text!=='string')cb('INVALID_TEXT');else cb(null,d.text);});}
   function writeFile(name,text,cb){if(utf(text)<0||utf(text)>4096){cb('FILE_LIMIT');return;}call('writeText',{uri:ROOT+name,text:text,append:false,encoding:'UTF-8'},function(err){if(err){cb(err);return;}readFile(name,function(e,s){cb(e||(s!==text?'VERIFY_WRITE':null),true);});});}
   function readJson(name,cb){readFile(name,function(e,s){if(e){cb(e);return;}try{cb(null,dec(s));}catch(x){cb('INVALID_DATA');}});}
@@ -19,11 +20,13 @@ function createStore(fileApi) {
   function readPage(root,index,cb){if(index>=root.p.length){cb(null,{r:[]});return;}readJson(pageName(index,root.p[index]),function(e,p){if(e||!p||!p.r||p.r.length!==Math.min(8,root.n-index*8)){cb(e||'INVALID_PAGE');return;}for(var i=0;i<p.r.length;i++)if(!rowValid(p.r[i])){cb('INVALID_ROW');return;}cb(null,p);});}
   function validate(root,cb){if(!rootValid(root)){cb('INVALID_ROOT');return;}var i=0;function step(){if(i>=root.p.length){cb(null);return;}readPage(root,i++,function(e){if(e)cb(e);else step();});}step();}
   function loadRoot(slot,cb){call('access',{uri:ROOT+slot+'.json'},function(e){if(e){cb(e);return;}readJson(slot+'.json',function(err,r){if(err){cb('ROOT_DATA_'+err);return;}validate(r,function(fail){cb(fail?'ROOT_CONTENT_'+fail:null,r);});});});}
-  function init(cb){var observer=cb;cb=once(function(e,v){try{if(observer)observer(e,v);}catch(x){console.error('LB2 STORE init callback exception');}});if(dead){cb('DISPOSED');return;}if(current){cb(null,true);return;}if(busy){if(!initWaiters||initWaiters.length>=8){cb('INIT_WAIT_LIMIT');return;}initWaiters.push(cb);return;}busy=true;initWaiters=[cb];function done(e){busy=false;var waiting=initWaiters;initWaiters=null;for(var i=0;i<waiting.length;i++)waiting[i](dead?'DISPOSED':e,true);}
+  function init(cb){var observer=cb,wrapped=once(function(e,v){var notify=observer;observer=null;try{if(notify)notify(e,v);}catch(x){console.error('LB2 STORE init callback exception');}});function cancel(){observer=null;if(initWaiters)for(var i=0;i<initWaiters.length;i++)if(initWaiters[i]===wrapped){initWaiters.splice(i,1);break;}}if(dead){wrapped('DISPOSED');return cancel;}if(current){wrapped(null,true);return cancel;}if(busy){if(!initWaiters||initWaiters.length>=8){wrapped('INIT_WAIT_LIMIT');return cancel;}initWaiters.push(wrapped);return cancel;}busy=true;initPhase='START';initWaiters=[wrapped];function done(e){busy=false;initPhase=dead?'DISPOSED':e?'FAILED':'DONE';var waiting=initWaiters;initWaiters=null;for(var i=0;i<waiting.length;i++)waiting[i](dead?'DISPOSED':e,true);}
     function roots(){loadRoot('a',function(ea,a){loadRoot('b',function(eb,b){if(!ea||!eb){if(!eb&&(ea||b.q>a.q)){current=b;active='b';}else{current=a;active='a';}done(null);return;}if(ea!=='IO_301'||eb!=='IO_301'){done(ea==='IO_301'?eb:ea);return;}var r={q:0,n:0,p:[],d:0};writeJson('a.json',r,function(e){if(e){done(e);return;}writeJson('b.json',r,function(f){if(!f){current=r;active='a';}done(f);});});});});}
     function checkIntent(){call('access',{uri:ROOT+'txn.json'},function(e){if(e==='IO_301'){roots();return;}if(e){done(e);return;}readJson('txn.json',function(err,t){if(err||!t){done(err||'RECOVERY_JOURNAL_INVALID');return;}if(!t.pending){roots();return;}if(!rootValid(t.root)||(t.slot!=='a'&&t.slot!=='b')){done('RECOVERY_JOURNAL_INVALID');return;}validate(t.root,function(bad){if(bad){done('RECOVERY_CONTENT_'+bad);return;}var target=t.slot==='a'?'b':'a';writeJson(target+'.json',t.root,function(f){if(f){done('RECOVERY_FAILED_'+f);return;}writeJson('txn.json',{pending:false},function(g){if(g){done('RECOVERY_FAILED_'+g);return;}current=t.root;active=t.slot;poisoned=false;done(null);});});});});});}
     call('mkdir',{uri:'internal://app/lb2',recursive:false},function(e){if(!e){checkIntent();return;}call('access',{uri:'internal://app/lb2'},function(f){if(f)done(f);else checkIntent();});});
+    return cancel;
   }
+  function initState(){return{pending:initWaiters!==null,phase:initPhase,waiters:initWaiters?initWaiters.length:0};}
   function ready(cb){if(dead){cb('DISPOSED');return false;}if(!current){cb('STORE_NOT_READY');return false;}return true;}
   function all(root,cb){var result=[],i=0;function step(){if(i>=root.p.length){cb(null,result);return;}readPage(root,i++,function(e,p){if(e){cb(e);return;}for(var j=0;j<p.r.length;j++)result.push(p.r[j]);step();});}step();}
   function find(root,id,cb){var i=0;function step(){if(i>=root.p.length){cb('NOT_FOUND');return;}var pi=i++;readPage(root,pi,function(e,p){if(e){cb(e);return;}for(var j=0;j<p.r.length;j++)if(p.r[j][0]===id){cb(null,{page:pi,index:j,row:p.r[j],rows:p.r});return;}step();});}step();}
@@ -65,6 +68,6 @@ function createStore(fileApi) {
     readPart('dt'+g+'.txt',d.b,d.t,function(e,s){if(e||checksum(s)!==d.t||utf(s)!==d.b){cb(e||'DRAFT_CORRUPT');return;}readPart('do'+g+'.txt',d.a,d.o,function(e,o){if(e||checksum(o)!==d.o||utf(o)!==d.a){cb(e||'DRAFT_CORRUPT');return;}var r=d.head;r.text=s;if(Object.prototype.hasOwnProperty.call(d.head,'schema')||d.a>0)r.original=o;cb(null,r);});});});}
   function clearDraft(cb){cb=once(cb);if(!begin(cb))return;if(!current.d){busy=false;cb(null,true);return;}var root=clone(current);root.q++;root.d=0;commit(root,function(e){busy=false;cb(e,true);});}
   function dispose(){dead=true;}
-  return{init:init,list:list,days:days,read:read,save:save,setFlag:setFlag,saveDraft:saveDraft,loadDraft:loadDraft,clearDraft:clearDraft,dispose:dispose};
+  return{init:init,initState:initState,list:list,days:days,read:read,save:save,setFlag:setFlag,saveDraft:saveDraft,loadDraft:loadDraft,clearDraft:clearDraft,dispose:dispose};
 }
 export default createStore;
