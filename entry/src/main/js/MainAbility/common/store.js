@@ -26,7 +26,7 @@ function createStore(fileApi) {
     call('mkdir',{uri:'internal://app/lb2',recursive:false},function(e){if(!e){checkIntent();return;}call('access',{uri:'internal://app/lb2'},function(f){if(f)done(f);else checkIntent();});});
     return cancel;
   }
-  function initState(){return{pending:initWaiters!==null,phase:initPhase,waiters:initWaiters?initWaiters.length:0};}
+  function initState(){return{pending:initWaiters!==null,phase:dead?'DISPOSED':initPhase,waiters:initWaiters?initWaiters.length:0};}
   function ready(cb){if(dead){cb('DISPOSED');return false;}if(!current){cb('STORE_NOT_READY');return false;}return true;}
   function all(root,cb){var result=[],i=0;function step(){if(i>=root.p.length){cb(null,result);return;}readPage(root,i++,function(e,p){if(e){cb(e);return;}for(var j=0;j<p.r.length;j++)result.push(p.r[j]);step();});}step();}
   function find(root,id,cb){var i=0;function step(){if(i>=root.p.length){cb('NOT_FOUND');return;}var pi=i++;readPage(root,pi,function(e,p){if(e){cb(e);return;}for(var j=0;j<p.r.length;j++)if(p.r[j][0]===id){cb(null,{page:pi,index:j,row:p.r[j],rows:p.r});return;}step();});}step();}

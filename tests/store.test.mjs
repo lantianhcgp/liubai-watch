@@ -668,6 +668,25 @@ test('native empty-read 202: nonempty missing or corrupt parts and arbitrary 202
   }
 });
 
+test('initialization diagnostic is DISPOSED even when disposed before any startup', async t => {
+  const host=createDiskHost();t.after(()=>host.close());const store=factory()(host.api);
+  store.dispose();let calls=0;store.init(e=>{calls++;assert.equal(e,'DISPOSED');});
+  assert.equal(calls,1);assert.deepEqual(plain(store.initState()),{pending:false,phase:'DISPOSED',waiters:0});assert.equal(host.calls.length,0);
+});
+
+test('initialization diagnostic remains DISPOSED after a held native callback returns', async t => {
+  const host=createDiskHost();t.after(()=>host.close());host.inject('mkdir',()=>true,'hold');
+  const store=factory()(host.api),pending=outcome(store,'init');await waitHeld(host);store.dispose();
+  assert.equal(store.initState().phase,'DISPOSED');host.release();assert.equal((await pending).err,'DISPOSED');
+  assert.deepEqual(plain(store.initState()),{pending:false,phase:'DISPOSED',waiters:0});assert.equal(host.calls.length,1);
+});
+
+test('initialization diagnostic is DISPOSED after a ready store is disposed', async t => {
+  const host=createDiskHost();t.after(()=>host.close());const store=factory()(host.api);await ok(store,'init');
+  const calls=host.calls.length;store.dispose();assert.equal(store.initState().phase,'DISPOSED');
+  assert.equal((await outcome(store,'init')).err,'DISPOSED');assert.equal(host.calls.length,calls);
+});
+
 test('initialization diagnostic reports the exact held mkdir without creating another I/O chain', async t => {
   const host = createDiskHost(); t.after(() => host.close());
   host.inject('mkdir', () => true, 'hold');

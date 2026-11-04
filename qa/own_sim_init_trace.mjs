@@ -18,10 +18,10 @@ try{
  check('24 hide/show cycles keep exactly one active observer and one native chain',await evaluate("sim.shared.store.initState().waiters===1&&sim.fsCalls.filter(x=>x.method==='mkdir').length===1&&!sim.page.error"));
  await shot('00-pending-phase');
  await wait("sim.page.name==='pages/menu/menu'&&sim.page.ready&&sim.page.isError",18000);
- check('real 15 second observation deadline routes exact phase',await evaluate("sim.page.dialogHint2==='错误码 INIT_WAIT_MK_DIR_CALL'"));
+ check('real 15 second observation deadline routes exact phase',await evaluate("sim.page.dialogHint2==='INIT_WAIT_MK_DIR_CALL'"));
  check('deadline releases observer but not underlying busy I/O',await evaluate("sim.shared.store.initState().pending&&sim.shared.store.initState().waiters===0&&sim.fsCalls.filter(x=>x.method==='mkdir').length===1"));
  await shot('01-mkdir-call-timeout');
- await evaluate('window.previousErrorPage=sim.page');await click('#screen .dock-control:last-child');
+ await evaluate('void(window.previousErrorPage=sim.page)');await click('#screen .dock-control:last-child');
  await wait("sim.page!==window.previousErrorPage&&sim.page.name==='pages/index/index'&&sim.shared.store.initState().waiters===1");
  check('retry joins original chain without new native calls',await evaluate("sim.fault.held.length===1&&sim.fsCalls.filter(x=>x.method==='mkdir').length===1"));
  await evaluate('sim.fault.held.shift()()');await wait("sim.page.name==='pages/index/index'&&sim.page.ready");
