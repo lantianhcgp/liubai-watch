@@ -408,7 +408,7 @@ test('read continuation diagnostic: initialization deadline preserves exact boun
   }
 });
 test('read continuation diagnostic: post-read tokens are permitted only for RD and never leak arbitrary suffixes',()=>{
-  for(const phase of ['AC_A_JSON','RD_A_JSON_PRIVATE','RD_A_TEXT_OK_PRIVATE','RD_A_','RD_A_TEXT__OK','RD_PRIVATE_TEXT']){
+  for(const phase of ['AC_A_JSON','RD_DIR_TEXT','RD_DIR_JSON','RD_DIR_SUM','RD_DIR_ROOT','RD_DIR_TEXT_OK','RD_DIR_JSON_OK','RD_A_JSON_PRIVATE','RD_A_TEXT_OK_PRIVATE','RD_A_','RD_A_TEXT__OK','RD_PRIVATE_TEXT']){
     const env=harness({deferInit:true,initPhase:phase}),page=env.page('index');page.onInit();env.flushTimers();
     assert.equal(env.routerCalls[0].args.error,'INIT_WAIT_UNKNOWN');
   }

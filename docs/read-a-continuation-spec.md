@@ -7,7 +7,7 @@
 源码及签后实际编译factory的14组显式故障注入确认：readText结果text取值抛错导致init订阅悬空；原readJson把下游cb放dec的try内，校验异常误归INVALID_DATA。正常/坏JSON对照可结束。
 
 实现验收
-1. readFile对text属性只读取一次并做局部错误处理；异常为READ_TEXT_THROW，调用者保留既有ROOT_DATA_等前缀；不接受异常结果作为不存在、不继续初始化写根、不输出异常/正文。
+1. readFile对text属性只读取一次并做局部错误处理；异常为TXT_THROW（既有ROOT/RECOVERY前缀后最长26字符），调用者保留既有ROOT_DATA_等前缀；不接受异常结果作为不存在、不继续初始化写根、不输出异常/正文。
 2. readJson仅包dec(s)，下游cb不在parse try。初始化内部续回调异常只一次结束所有有效观察者，错误INIT_CB_<最后短阶段>；复用现有完成和once策略。用户订阅回调隔离、取消、队列8上限、dead和native单次返回守卫仍有效。
 3. 初始化I/O永久不回仍由已有页面15s观察超时处理；新增callback保险不能把超时当原生返回、不能强行释放pending API busy。
 4. 提供有限短标记：RD_<A/B/PAGE/TXN>_TEXT、TEXT_OK、JSON、SUM、JSON_OK、ROOT；更新list-view.js严格白名单使这些阶段不会变UNKNOWN。其他任意阶段/内容仍UNKNOWN，原UI不变，错误码必须适合既有26字符提示行。

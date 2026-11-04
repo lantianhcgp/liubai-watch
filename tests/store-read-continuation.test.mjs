@@ -44,7 +44,7 @@ for(const async of [false,true]){
     const original=[...h.files];let calls=0,error;
     s.init(e=>{calls++;error=e;});h.drain();
     assert.equal(calls,1,'init must terminate rather than stay at RD_A_OK');
-    assert.equal(error,'ROOT_DATA_READ_TEXT_THROW');
+    assert.equal(error,'ROOT_DATA_TXT_THROW');
     assert.deepEqual(plain(s.initState()),{pending:false,phase:'FAILED',waiters:0});
     assert.equal(h.calls.some(x=>x.method==='writeText'),false);
     assert.deepEqual([...h.files],original,'read failure must preserve exact root bytes');
@@ -98,6 +98,27 @@ test('read continuation: stages truthfully bracket JSON parse, checksum stringif
   assert.deepEqual(markers,[['parse','RD_A_JSON'],['sum','RD_A_SUM'],['root','RD_A_ROOT'],['parse','RD_B_JSON'],['sum','RD_B_SUM'],['root','RD_B_ROOT']]);
   assert.equal(s.initState().phase,'DONE');
 });
+test('read continuation: root metadata page response faults keep exact bounded code and preserve files',()=>{
+  const h=host({faults:{'p0_1.json':'getter-throw'},duplicate:true});
+  const r={q:1,n:1,p:[1],d:0};h.files.set(ROOT+'a.json',envelope(r));h.files.set(ROOT+'b.json',envelope(r));h.files.set(ROOT+'p0_1.json',envelope({r:[]}));
+  const before=[...h.files],s=load().createStore(h.api);h.bind(s);let calls=0,error;s.init(e=>{calls++;error=e;});
+  assert.equal(calls,1);assert.equal(error,'ROOT_CONTENT_TXT_THROW');assert.ok(error.length<=26);
+  assert.equal(s.initState().pending,false);assert.deepEqual([...h.files],before);assert.equal(h.calls.some(x=>x.method==='writeText'),false);
+});
+test('read continuation: pending recovery page response faults keep exact bounded code with no writes',()=>{
+  const h=host({faults:{'p0_1.json':'getter-throw'}});h.files.set(ROOT+'txn.json',envelope({pending:true,root:{q:1,n:1,p:[1],d:0},slot:'a'}));h.files.set(ROOT+'p0_1.json',envelope({r:[]}));
+  const before=[...h.files],s=load().createStore(h.api);h.bind(s);let calls=0,error;s.init(e=>{calls++;error=e;});
+  assert.equal(calls,1);assert.equal(error,'RECOVERY_CONTENT_TXT_THROW');assert.ok(error.length<=26);
+  assert.equal(s.initState().pending,false);assert.deepEqual([...h.files],before);assert.equal(h.calls.some(x=>x.method==='writeText'),false);
+});
+test('read continuation: existing recovery write-verification fault keeps bounded code, retained journal and identical old root',()=>{
+  const h=host({faults:{'b.json':'getter-throw'}});h.files.set(ROOT+'a.json',envelope(root(1)));h.files.set(ROOT+'b.json',envelope(root(1)));h.files.set(ROOT+'txn.json',envelope({pending:true,root:root(1),slot:'a'}));
+  const before=[...h.files],s=load().createStore(h.api);h.bind(s);let calls=0,error;s.init(e=>{calls++;error=e;});
+  assert.equal(calls,1);assert.equal(error,'RECOVERY_FAILED_TXT_THROW');assert.ok(error.length<=26);
+  assert.equal(s.initState().pending,false);assert.deepEqual([...h.files],before);
+  assert.deepEqual(h.calls.filter(x=>x.method==='writeText').map(x=>x.uri),[ROOT+'b.json'],'only existing recovery rewrites its target old root, never clears pending journal');
+});
+
 test('read continuation: real disk roots are byte-identical after response-property faults on both slots',async t=>{
   const disk=createDiskHost();t.after(()=>disk.close());
   await disk.write(ROOT+'a.json',envelope(root(1)));await disk.write(ROOT+'b.json',envelope(root(2)));
@@ -106,7 +127,7 @@ test('read continuation: real disk roots are byte-identical after response-prope
   const s=load().createStore(api);
   const result=await Promise.race([new Promise(resolve=>s.init(e=>resolve({e}))),new Promise(resolve=>{const timer=setTimeout(()=>resolve({unsettled:true}),300);timer.unref();})]);
   assert.equal(result.unsettled,undefined,'real disk callback must not hang');
-  assert.equal(result.e,'ROOT_DATA_READ_TEXT_THROW');
+  assert.equal(result.e,'ROOT_DATA_TXT_THROW');
   assert.deepEqual(await disk.files(),names);assert.deepEqual(await Promise.all(names.map(n=>disk.read(ROOT+n))),before);
   assert.equal(disk.calls.some(x=>x.method==='writeText'),false);
 });

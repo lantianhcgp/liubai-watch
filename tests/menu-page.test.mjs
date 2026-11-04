@@ -673,7 +673,7 @@ test('error dialogs expose the exact read or save code on a bounded, visible exi
   }
 });
 test('read continuation diagnostic: all new root errors and post-read stage codes fit the existing dialog hint without truncation',()=>{
-  for(const code of ['ROOT_DATA_READ_TEXT_THROW','INIT_CB_RD_A_ROOT','INIT_WAIT_RD_A_TEXT_OK','INIT_WAIT_RD_A_JSON_OK','INIT_WAIT_RD_PAGE_JSON_OK']){
+  for(const code of ['ROOT_DATA_TXT_THROW','ROOT_CONTENT_TXT_THROW','RECOVERY_CONTENT_TXT_THROW','RECOVERY_FAILED_TXT_THROW','INIT_CB_RD_A_ROOT','INIT_WAIT_RD_A_TEXT_OK','INIT_WAIT_RD_A_JSON_OK','INIT_WAIT_RD_PAGE_JSON_OK']){
     const h=open({params:{mode:'error',kind:'read',error:code,id:null}});
     try{assert.equal(h.page.dialogHint2,code);assert.ok(code.length<=26);assert.equal(h.page.title,'读取失败');assert.equal(h.page.dialogText,'原记录保留');assert.equal(h.page.dialogHint1,'未清理或重建本地数据');}finally{h.page.onDestroy();}
   }
