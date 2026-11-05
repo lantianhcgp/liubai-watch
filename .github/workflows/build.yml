@@ -26,6 +26,12 @@ jobs:
           if [ -d "$HOME/ohos-sdk/command-line-tools/sdk" ]; then
             printf '%s\n' "HOS_SDK_HOME=$HOME/ohos-sdk/command-line-tools/sdk" >> "$GITHUB_ENV"
           fi
+      - name: Checkout pinned read-only keyboard reference for parity tests
+        run: |
+          ref_dir="$GITHUB_WORKSPACE/../crabKeyboard"
+          git init "$ref_dir"
+          git -C "$ref_dir" fetch --depth=1 https://github.com/crabPangXie/crabKeyboard.git 656f8ad842a8692bc3b2b975d6b648880232c592
+          git -C "$ref_dir" checkout --detach FETCH_HEAD
       - name: Generate credential-free logger config
         run: |
           python3 scripts/prepare-logsink.py
