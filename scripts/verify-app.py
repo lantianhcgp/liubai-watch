@@ -61,6 +61,7 @@ def verify(data):
                     assert matches, 'Missing compiled page: ' + p
                     for m in matches:
                         size = len(hap.read(m))
+                        print(json.dumps({'compiled_page': m, 'bytes': size, 'limit': 49152}), flush=True)
                         assert 0 < size <= 49152, 'Empty/over-budget compiled page: ' + m
                         pages.append({'path': m, 'bytes': size})
                 assert any(n.endswith('/app.js') or n == 'app.js' for n in names), 'Missing application lifecycle'
