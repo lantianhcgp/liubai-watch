@@ -55,6 +55,12 @@ def verify(data):
                 assert 'appEnvironments' not in cfg['app']
                 assert not {'compileSdkVersion', 'compileSdkType'} & set(cfg['app'].get('apiVersion', {}))
                 names = hap.namelist()
+                js_members = [m for m in names if m.startswith('assets/js/') and m.endswith('.js')]
+                test_calls = {m: hap.read(m).count(b'.test(') for m in js_members}
+                hits = [m + ' (' + str(n) + ')' for m, n in sorted(test_calls.items()) if n]
+                assert not hits, 'Install-34: forbidden .test( in packaged JS: ' + ', '.join(hits)
+                js_scan = {'members': len(js_members), 'test_call_count': sum(test_calls.values())}
+                print(json.dumps({'hap': name, 'js_scan': js_scan}), flush=True)
                 pages = []
                 for p in EXPECTED:
                     matches = [n for n in names if n.endswith('/' + p + '.js') or n == p + '.js']
@@ -65,7 +71,7 @@ def verify(data):
                         assert 0 < size <= 49152, 'Empty/over-budget compiled page: ' + m
                         pages.append({'path': m, 'bytes': size})
                 assert any(n.endswith('/app.js') or n == 'app.js' for n in names), 'Missing application lifecycle'
-                reports.append({'hap': name, 'pages': pages, 'bundle': cfg['app']['bundleName']})
+                reports.append({'hap': name, 'pages': pages, 'bundle': cfg['app']['bundleName'], 'js_scan': js_scan})
     return reports
 
 def main():

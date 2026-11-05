@@ -114,7 +114,7 @@ export default {
   function failed(e){p.busy=false;if(e)p.message=String(e);return !!e;}
   if(this.mode==='tool'||this.mode==='exit'||this.mode==='clipboard'){
    var s=session.get();if(!s||s.id!==this.id){this.message='\u7f16\u8f91\u72b6\u6001\u4e0d\u53ef\u7528';return;}
-   if(a.indexOf('paste:')===0){var ix=a.slice(6);if(!/^[0-7]$/.test(ix)||!session.clipboardGet(parseInt(ix,10))){this.message='\u526a\u5207\u677f\u5185\u5bb9\u4e0d\u53ef\u7528';return;}}
+   if(a.indexOf('paste:')===0){var ix=a.slice(6);if(ix.length!==1||ix.charCodeAt(0)<48||ix.charCodeAt(0)>55||!session.clipboardGet(parseInt(ix,10))){this.message='\u526a\u5207\u677f\u5185\u5bb9\u4e0d\u53ef\u7528';return;}}
    shell.nav(this,'edit',{id:this.id,action:a==='continue'?'':a});return;
   }
   if(a==='reader-start')shell.nav(this,'read',{id:this.id,font:this.font,anchor:0,fromStart:true});

@@ -3,8 +3,9 @@ import shell from './shell';
 import layout from './layout';
 
 function two(n) { return n < 10 ? '0' + n : '' + n; }
-function validMonth(s) { if (typeof s !== 'string' || !/^\d{4}-\d{2}$/.test(s) || +s.slice(5) < 1 || +s.slice(5) > 12 || +s.slice(0,4) < 1) throw new Error('Invalid month'); return s; }
-function validDay(s) { if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) throw new Error('Invalid day'); validMonth(s.slice(0,7)); var y=+s.slice(0,4),m=+s.slice(5,7),d=+s.slice(8),max=m===2?((y%4===0&&y%100!==0)||y%400===0?29:28):([4,6,9,11].indexOf(m)>=0?30:31); if(d<1||d>max)throw new Error('Invalid day'); return s; }
+function dateShape(s,n) { if(s.length!==n||s.charAt(4)!=='-'||(n===10&&s.charAt(7)!=='-'))return false;for(var i=0,c;i<n;i++){if(i===4||(n===10&&i===7))continue;c=s.charCodeAt(i);if(c<48||c>57)return false;}return true; }
+function validMonth(s) { if (typeof s !== 'string' || !dateShape(s,7) || +s.slice(5) < 1 || +s.slice(5) > 12 || +s.slice(0,4) < 1) throw new Error('Invalid month'); return s; }
+function validDay(s) { if (typeof s !== 'string' || !dateShape(s,10)) throw new Error('Invalid day'); validMonth(s.slice(0,7)); var y=+s.slice(0,4),m=+s.slice(5,7),d=+s.slice(8),max=m===2?((y%4===0&&y%100!==0)||y%400===0?29:28):([4,6,9,11].indexOf(m)>=0?30:31); if(d<1||d>max)throw new Error('Invalid day'); return s; }
 function shiftMonth(s,delta) { validMonth(s); if(delta!==1&&delta!==-1)throw new Error('Invalid month delta'); var y=+s.slice(0,4),m=+s.slice(5)+delta;if(m===13){m=1;y++;}if(m===0){m=12;y--;}return validMonth(('0000'+y).slice(-4)+'-'+two(m)); }
 function today() { var d=new Date();return d.getFullYear()+'-'+two(d.getMonth()+1)+'-'+two(d.getDate()); }
 function geometry(p,info,kind) {
