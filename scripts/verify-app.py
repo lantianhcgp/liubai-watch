@@ -55,6 +55,8 @@ def verify(data):
                 assert 'appEnvironments' not in cfg['app']
                 assert not {'compileSdkVersion', 'compileSdkType'} & set(cfg['app'].get('apiVersion', {}))
                 names = hap.namelist()
+                bytecodes = sorted(n for n in names if n.endswith('.bc'))
+                assert not bytecodes, 'JS-only compiler output contains forbidden bytecode: ' + ', '.join(bytecodes)
                 js_members = [m for m in names if m.startswith('assets/js/') and m.endswith('.js')]
                 test_calls = {m: hap.read(m).count(b'.test(') for m in js_members}
                 hits = [m + ' (' + str(n) + ')' for m, n in sorted(test_calls.items()) if n]
