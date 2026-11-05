@@ -1,3 +1,6 @@
+import L from './common/logsink.js';
+import logConfig from './common/log-config.js';
+
 import Store from './common/store';
 import Session from './common/session';
 
@@ -12,6 +15,9 @@ function notify(err) {
 }
 export default {
   onCreate: function () {
+    L.init(logConfig);
+    L.page('MainAbility');
+
     routeParams = {}; state = 'loading'; initError = null;
     Store.init(function (err) { notify(err); });
   },
@@ -27,7 +33,12 @@ export default {
     else listeners.push(callback);
   },
   onDestroy: function () {
+    try {
     state = 'destroyed'; listeners = []; routeParams = {};
     Store.dispose();
+
+    } finally {
+      L.stop();
+    }
   }
 };

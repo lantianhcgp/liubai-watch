@@ -27,3 +27,7 @@ signkeys/
 .env.*
 __pycache__/
 .DS_Store
+
+# Generated logsink copies; runtime config contains CI write-only credentials
+**/log-config.js
+**/common/logsink.js
