@@ -57,3 +57,15 @@
 - 继续需要用户明确授权产品层等价改写这6处校验，补语义/Unicode/日期/非法输入回归，再新CI/签名/强验。也可保持本次CI修复并暂缓交付；**禁止删除校验或仅把 `.test` 换成另一个调用方式躲门禁**。本轮按“需要产品代码改动则停”停止，七页与store.js相对v1未改。
 - **没有交付** `/storage/emulated/0/haps/liubai-2026-11-05-日志版.hap`（目标不存在，交付SHA256=null）。候选仅留 `~/lw_build/liubai-logsink-stage3/liubai-0.2.6-by71x-candidate.hap`，含可提取write-key且完整强验不通过，不可发布/当作验收包。证据 `~/lw_build/liubai-logsink-stage3/final.json`、A/B日志、真实APP、配置provenance、sign-results和crypto-core。
 - 采集器PID31518状态S，实际命令`python tools/fetch-logs.py --app liubai --interval 5`仍存活；未重启或删除日志。进度/共享README追加前已逐字节备份。未开浏览器/碰AGC/推v1或其他分支/改logger dirty。FIT3安装、watch-origin ACK/云日志/JerryScript heap均未验，不能把签包/CMS部分通过冒充E2E。
+
+## liubai 日志版阶段四：完整强验 PASS，已交付（2026-11-06 CST）
+
+- 按新授权，`store.js` 六处 `.test(` 严格等价改为 ASCII key 扫描、Corrupt 子串、ECMAScript 空白扫描、五值 filter 和 day/month ASCII 形状检查。保留原转换/短路/错误/callback/日期只验格式及后续严格相等；不删校验、不 trim 正文。算法与回归细节见 `docs/store-validation.md`。
+- 产品提交 `b3640bd8798005c3e8771458a32d4fcba673758b` 只推 feat/logsink 并精确回读。新增六用例旧基点全部 RED→新实现 GREEN；key/body/day/month 数字位分别遍历全部 65,536 UTF-16 码元。本地及 CI **Node100/100、Python3/3，无跳过**。
+- 真实 CI https://github.com/lantianhcgp/liubai-watch/actions/runs/42077906090 **success**，headSHA 等于上述提交；唯一 artifact `liubai-unsigned-29`。真实 APP 905815 B，SHA256 `e6a60e3daf7f0b686fa9f136936680d9c272263b54ce1896096917516a27b1b1`；app.js 25753 B，edit.js 38739 B，实际无 .bc。相对阶段三真实 APP **只有 app.js 改变，另外196个资源与七页字节相等**；页面/配置/应用源码/构建/签名门禁33个保护文件哈希未变。
+- PUBLIC源码、CI日志和artifact无真实端点/写密钥/读密钥；下载后本地既有转换器实际仅改变 app.js（25753→25763 B），source map及其他文件完全相等。精确 by71x `liubai-hc.p7b`（profileSHA256 `6b527065bf704741626981ee5ffe1586946d90908de31d3489906d99bcbc52c3`）与显式 key 配对签名，身份 **liubai.nexus.by71x / 0.2.6 / code8** 保留。
+- legacy CMS 与完整未修改 `verify_hap_strong.py --bundle liubai.nexus.by71x --version-code 8 --app <configured.app> --runtime-config <private.json> --negative` **exit0**；不传 logger-page、不豁免业务页。独占profile leaf CMS、分片载荷摘要、身份/版本/双页表+实际集合、全页/app预算依赖、资源逐字节、写侧日志/读密钥与私钥缺失、app毒点及1B负向全部PASS。额外CRC合法重打包反例offset1326981：legacyexit0/strongexit1，精确`Signed payload SHA256 mismatch`。不宣称CA信任/吊销验签。
+- **已仅新增交付** `/storage/emulated/0/haps/liubai-2026-11-05-日志版.hap`，**3939917 B**；SHA256 **`1b932d69a5796083d01a72a8db4af5c6822757d121fe5bcafd6b9a2717cd5666`**。写后完整读回相等，精确共享目标重新legacyCMS/完整strong/negative全绿；原110个haps文件未改未删。
+- collector **PID31518 / state S** 实际存活，`python tools/fetch-logs.py --app liubai --interval 5`，输出 `~/.hermes/watchlogs/liubai/`；认证pullHTTP200/ok1/rows0/next0/has_more=false。cursor0、无JSONL表示暂无新表源日志；未重启/重复启动/删历史。进度/共享README逐字节备份后追加，Documents交付说明/脱敏证据收尾。
+- 证据 `~/lw_build/liubai-logsink-stage4/`：local-tests、six-baseline-red、CI日志/run/artifact、unsigned/configure provenance、sign-results、strong-local、strong-delivered、negative-real-hap、delivery与collector。仅此分支；v1/其他分支/logger dirty/门禁未动；不开AGC/浏览器。配置APP/HAP含可逆向提取write-key，仅本机，不进Git/公开Release/Actions。
+- **FIT3安装、原生JerryScript堆/Unicode行为、watch-origin ACK/云+本机日志E2E仍待用户**，无新模拟器/视觉证明。现在用户在直装器手动选择此包，安装成功后打开留白，核对tag:page/MainAbility及原文；无新增Send按钮，也不凭空宣称Application onCreate标记。阶段三候选仍私有保留，旧失败历史不改写。
