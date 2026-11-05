@@ -27,7 +27,14 @@ function recordRoots(state) {
 function draftRoots(state) { return gcBlobs({blobs: state.data.value ? [state.data.value.blob] : []}); }
 function error(text) { return new Error(text); }
 function deliver(cb, e, v) { if (typeof cb === 'function') cb(e || null, v); }
-function validKey(s) { return typeof s === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(s); }
+function validKey(s) {
+  if (typeof s !== 'string' || s.length < 1 || s.length > 40) return false;
+  for (var i = 0; i < s.length; i++) {
+    var c = s.charCodeAt(i);
+    if (!(c === 45 || c === 95 || (c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122))) return false;
+  }
+  return true;
+}
 function hash(s) {
   var h = 2166136261, i;
   for (i = 0; i < s.length; i++) h = ((h ^ s.charCodeAt(i)) * 16777619) >>> 0;
@@ -109,7 +116,7 @@ function pair(base, empty, cb, rootsOf) {
   var best = null, bestSlot = -1, found = false, roots = [], left = 2, failure = null;
   function part(slot) {
     read(base + slot + '.json', function (e, text) {
-      if (e && e.code !== 301 && !/Corrupt/.test(e.message) && !failure) failure = e;
+      if (e && e.code !== 301 && String(e.message).indexOf('Corrupt') < 0 && !failure) failure = e;
       if (!e || (e && e.code !== 301)) found = true;
       if (!e) {
         var x = unpack(text), descriptors;
@@ -381,10 +388,18 @@ function checkFlags(x) {
   if (x.deleted !== undefined && typeof x.deleted !== 'boolean') return false;
   return true;
 }
+function hasText(s) {
+  // ECMAScript WhiteSpace + LineTerminator, not Unicode's broader White_Space.
+  for (var i = 0; i < s.length; i++) {
+    var c = s.charCodeAt(i);
+    if (!((c >= 9 && c <= 13) || c === 32 || c === 160 || c === 5760 || (c >= 8192 && c <= 8202) || c === 8232 || c === 8233 || c === 8239 || c === 8287 || c === 12288 || c === 65279)) return true;
+  }
+  return false;
+}
 function save(input, cb) {
   try{input=clone(input);}catch(e){return deliver(cb,error('Invalid record serialization'));}
   task(cb, function (done) {
-    if (!input || typeof input.body !== 'string' || !U.valid(input.body) || !/\S/.test(input.body) || (input.id !== undefined && input.id !== '' && !validKey(input.id)) || !checkFlags(input)) return done(error('Invalid or empty record'));
+    if (!input || typeof input.body !== 'string' || !U.valid(input.body) || !hasText(input.body) || (input.id !== undefined && input.id !== '' && !validKey(input.id)) || !checkFlags(input)) return done(error('Invalid or empty record'));
     var size = U.bytes(input.body), id = input.id || ('n' + token());
     if (size > MAX_BODY) return done(error('Body safe-load budget exceeded; no truncation'));
     catalog(function (e, c) {
@@ -471,11 +486,26 @@ function compare(a, b) {
   if (a.created !== b.created) return a.created > b.created ? -1 : 1;
   return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 }
+function validFilter(value) {
+  var s = String(value);
+  return s === 'all' || s === 'pinned' || s === 'trash' || s === 'day' || s === 'month';
+}
+function dateShape(value, length) {
+  // Preserve RegExp ToString and shape-only validation; do not normalize q.
+  var s = String(value);
+  if (s.length !== length) return false;
+  for (var i = 0; i < length; i++) {
+    var c = s.charCodeAt(i);
+    if (i === 4 || i === 7) { if (c !== 45) return false; }
+    else if (c < 48 || c > 57) return false;
+  }
+  return true;
+}
 function list(q, cb) {
   try{q=clone(q||{});}catch(e){return deliver(cb,error('Invalid query'));}
   task(cb, function (done) {
     q = q || {}; var filter = q.filter || 'all', offset = q.offset === undefined ? 0 : q.offset, limit = q.limit === undefined ? 6 : q.limit;
-    if (typeof offset !== 'number' || offset < 0 || offset % 1 || typeof limit !== 'number' || limit < 1 || limit > 12 || limit % 1 || !/^(all|pinned|trash|day|month)$/.test(filter) || (filter === 'day' && !/^\d{4}-\d{2}-\d{2}$/.test(q.day || '')) || (filter === 'month' && !/^\d{4}-\d{2}$/.test(q.month || ''))) return done(error('Invalid list query (limit 1..12)'));
+    if (typeof offset !== 'number' || offset < 0 || offset % 1 || typeof limit !== 'number' || limit < 1 || limit > 12 || limit % 1 || !validFilter(filter) || (filter === 'day' && !dateShape(q.day || '', 10)) || (filter === 'month' && !dateShape(q.month || '', 7))) return done(error('Invalid list query (limit 1..12)'));
     catalog(function (e, c) {
       if (e) return done(e);
       var queryKey = filter + '|' + (q.day || '') + '|' + (q.month || '') + '|' + c.seq;
