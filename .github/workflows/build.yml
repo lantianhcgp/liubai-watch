@@ -35,7 +35,7 @@ jobs:
       - name: Generate credential-free logger config
         run: |
           python3 scripts/prepare-logsink.py
-          python3 -m unittest discover -s tests -p test_logsink_build.py -v
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
           node --experimental-vm-modules --test tests/*.test.mjs
       - name: Compile and verify unsigned app
         run: bash scripts/build.sh

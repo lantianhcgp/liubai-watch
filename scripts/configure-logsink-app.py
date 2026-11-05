@@ -45,7 +45,7 @@ def main():
         names = [n for n in outer if n.endswith('.hap')]
         assert len(names) == 1, 'Exactly one compiler HAP required'
         name = names[0]; before = files(outer[name])
-        assert not any(n.endswith('.bc') for n in before), 'Bytecode cannot be patched locally; use debug compiler output'
+        assert not any(n.endswith('.bc') for n in before), 'Bytecode cannot be patched locally; require inspected JS-only compiler output'
         cfg = json.loads(before['config.json'])
         assert cfg['app']['bundleName'] == 'liubai.nexus.by71x'
         assert cfg['app']['version'] == {'code':8,'name':'0.2.6'}
