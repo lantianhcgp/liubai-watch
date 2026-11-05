@@ -69,3 +69,25 @@
 - collector **PID31518 / state S** 实际存活，`python tools/fetch-logs.py --app liubai --interval 5`，输出 `~/.hermes/watchlogs/liubai/`；认证pullHTTP200/ok1/rows0/next0/has_more=false。cursor0、无JSONL表示暂无新表源日志；未重启/重复启动/删历史。进度/共享README逐字节备份后追加，Documents交付说明/脱敏证据收尾。
 - 证据 `~/lw_build/liubai-logsink-stage4/`：local-tests、six-baseline-red、CI日志/run/artifact、unsigned/configure provenance、sign-results、strong-local、strong-delivered、negative-real-hap、delivery与collector。仅此分支；v1/其他分支/logger dirty/门禁未动；不开AGC/浏览器。配置APP/HAP含可逆向提取write-key，仅本机，不进Git/公开Release/Actions。
 - **FIT3安装、原生JerryScript堆/Unicode行为、watch-origin ACK/云+本机日志E2E仍待用户**，无新模拟器/视觉证明。现在用户在直装器手动选择此包，安装成功后打开留白，核对tag:page/MainAbility及原文；无新增Send按钮，也不凭空宣称Application onCreate标记。阶段三候选仍私有保留，旧失败历史不改写。
+
+## liubai 日志版阶段五：全包清理本地 PASS，GitHub push 两次拒绝 STOP（2026-11-06 CST）
+
+- 用户回填阶段四包在 FIT3 安装错误 34。历史完整 strong 只检查 app.js 的毒点，不能替代设备全包扫描；不能继续将阶段四签名通过视为安装问题已解决。
+- 当前 `5a57630` 三个文件实际源调用 **10（list-page 2 / reader 7 / menu 1）**，任务交接 12 的计数不符；旧编译包重复后为已知 23。本轮实际源码全量清为 0，不虚报改写 12。仅三个产品文件与 verify-app.py 改动，其他 179 个原跟踪文件不变。
+- 日期采用长度/固定连字符/ASCII charCode，原 typeof、月份年份范围及闰年/月天数不变；reader 保留完整 ECMAScript 空白集合（U+2000–U+200A 全段），拉丁字符、末尾 CR/LF、标题与分页算法不变；menu 保留长度 1 / 0–7、原短路与 action。冻结旧源码 oracle 为测试 .txt，不进入表端。
+- 新测试先 RED 后 GREEN；**Node105/105、Python7/7、logger10/10，零跳过**。日期各位置全 UTF-16、reader 分类全 UTF-16、menu 全 UTF-16与空白/CRLF/标题/连写/非字符串/非法索引覆盖。原 reader 测试一行未改、全绿；首次日期测试诊断标签错误地 String 化禁止转换对象，仅修测试标签，未改算法。
+- 新 `verify-app.py` 对 .app 内每个 .hap 的所有 `assets/js/**/*.js` 原字节扫描 `.test(`，命中硬拒并列出全部 member + 次数；所有旧 ZIP/身份/0.2.6-code8/页表/0<size<=49152/app 存在断言保留。门禁深层 JS、其他 Ability、七页、每个内 HAP及合法其他正则/map正负向通过；source门/语法/diff检查通过。
+- 本地代码提交 **`b884715ef6131ff98e238a2eaf8593db118dbfc7`**，仅 feat/logsink；599 个唯一历史 blob 审计与 10 个提交路径真实 endpoint/写密钥/读密钥扫描均零命中。精确 by71x Profile 与显式 key 公钥匹配通过，未碰 AGC/浏览器或采集器。
+- **两次 `git push origin HEAD:refs/heads/feat/logsink` 都被远端 `fatal error in commit_refs` / `remote rejected (failure)` 拒绝**。按同点两次停止，无第三次、无 force push或替代分支。API精确读回远端仍 `5a57630411ba03a81045447fa6b0cb78f9a40342`；新提交匹配 CI total=0。没有新 CI URL/artifact，不拿旧 APP 冒充。
+- **本轮未签名/完整强验/独立新包复扫，也未交付** `/storage/emulated/0/haps/liubai-2026-11-06-日志版v2.hap`，目标不存在，SHA256=null。旧 `liubai-2026-11-05-日志版.hap` SHA256仍 `1b932d69a5796083d01a72a8db4af5c6822757d121fe5bcafd6b9a2717cd5666`，未改未删。PID31518/state S仍存活，未重启/删除日志。
+- 证据：`~/lw_build/liubai-logsink-stage5/final.json`、node-green、python-green、各RED日志、scope/源调用计数/profile配对/CI回读。详见 `docs/regexp-validation.md`。进度追加前逐字节备份 `docs/progress.md.before-stage5-20261105T232333Z.bak`。恢复需先解决远端推送，再新CI→真实artifact→本地配置→签名/强验/独立零扫描→交付；未执行项不得宣称通过。
+
+## liubai 日志版阶段六：新 CI GREEN / 全包扫描 PASS；配置注入遇 bytecode 硬阻塞 STOP（2026-11-06 CST）
+
+- 阶段五远端 `commit_refs` 瞬时故障已由上一阶段恢复，`b884715ef6131ff98e238a2eaf8593db118dbfc7` 实际触发 push CI；不再以阶段五“新 CI=0”作为当前状态。本轮只读核对并后台 `gh run watch --exit-status` 等待，真实 https://github.com/lantianhcgp/liubai-watch/actions/runs/42129400696 **completed/success**。
+- **CI 中新全包扫描断言确实执行通过**：`Compile and verify unsigned app` 日志两次打印 `entry-default.hap / js_scan.members=8 / test_call_count=0`，最终 verified 同样为0；真实 CLT `BUILD SUCCESSFUL`。CI **Node105/105、Python7/7，无跳过**；logger10/10沿用阶段五真实结果，未冒充本轮 CI 执行。七页JS最大 edit.js=39038 B，保持49152 B硬门限。
+- 唯一 artifact **liubai-unsigned-30 / id13462144127** 已下载到 `~/lw_build/liubai-logsink-stage6/artifact/liubai-watch-default-unsigned.app`。真实 APP **984764 B**，SHA256 **`a1cb8918d7eba03fadaecfad0801dc5a50ec5a757347b24ed991839343ef4c1d`**；ZIP CRC、by71x、0.2.6/code8与本地 verify-app 全包JS扫描=0通过。此 SHA 仅属于未配置 APP，不是交付 HAP。
+- **配置注入硬拒，exit1**：实际包内含 **6个非空 `.bc`**：pages/read、trash、menu、index、history、day；无 `.map`、无 app.js.map。`scripts/configure-logsink-app.py` 保留原断言 `Bytecode cannot be patched locally; require inspected JS-only compiler output`，未写 configured.app。runtime字段与写侧值形状、公开占位符均合法；未回显任何真实端点/密钥。这不是凭据或AGC故障。只读诊断确认真实bytecode，未重复重跑同一失败配置命令。
+- `scripts/build.sh` 仍为 release；本轮未改源码/构建/签名/配置转换器/strong门禁，未删除 `.bc`、未把JS与bytecode混包、未复用旧APP。**签名、legacyCMS、完整strong、最终signed.bin独立扫描均 NOT RUN；未交付** `/storage/emulated/0/haps/liubai-2026-11-06-日志版v2.hap`，**HAP bytes/SHA256=null**，不能以8个JS零扫描替代完整可运行包验收。恢复需另授权解决真实编译输出的JS-only形态并重新CI取包，不可放宽配置门。
+- `/storage/emulated/0/haps/` 原 **111个文件逐字节/哈希均未变**，旧 `liubai-2026-11-05-日志版.hap` 保留作错误34对照，SHA256仍 `1b932d69a5796083d01a72a8db4af5c6822757d121fe5bcafd6b9a2717cd5666`。采集器 **PID31518/state S**，实际 `python tools/fetch-logs.py --app liubai --interval 5` 存活，未重启/删除日志；不开AGC/浏览器。
+- 脱敏证据 `~/lw_build/liubai-logsink-stage6/`：`ci-run.json`、`ci.log`、`ci-summary.txt`、`ci-artifacts.json`、`verify-unsigned.txt`、`artifact-blocker.json`、`haps-before.json`、`final.json`。进度追加前备份到该目录 `progress-before-stage6.md`。仅提交阶段五剩余进度与本段，commit带 `[skip ci]`、只推feat/logsink，并以精确远端HEAD/进度文件回读确认。**无新HAP可直装；FIT3安装、原生JerryScript、表源ACK/E2E仍待后续合格交付及用户回填**。
