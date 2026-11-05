@@ -1,10 +1,10 @@
 {
   "app": {
-    "bundleName": "com.hcbiu.liubai",
+    "bundleName": "liubai.nexus.by71x",
     "vendor": "hcbiu",
     "version": {
-      "code": 1,
-      "name": "0.1.0"
+      "code": 8,
+      "name": "0.2.6"
     }
   },
   "deviceConfig": {},

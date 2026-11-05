@@ -48,8 +48,8 @@ def verify(data):
                 raw = hap.read('config.json')
                 assert not raw.startswith(b'\xef\xbb\xbf'), 'BOM in packaged config'
                 cfg = json.loads(raw)
-                assert cfg['app']['bundleName'] == 'com.hcbiu.liubai', 'Wrong bundle identity'
-                assert cfg['app']['version'] == {'code': 1, 'name': '0.1.0'}, 'Wrong version'
+                assert cfg['app']['bundleName'] == 'liubai.nexus.by71x', 'Wrong bundle identity'
+                assert cfg['app']['version'] == {'code': 8, 'name': '0.2.6'}, 'Wrong version'
                 assert cfg['module']['deviceType'] == ['liteWearable']
                 assert cfg['module']['js'][0]['pages'] == EXPECTED
                 assert 'appEnvironments' not in cfg['app']

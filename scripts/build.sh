@@ -6,5 +6,5 @@ for tool in ohpm hvigorw python3; do
 done
 python3 scripts/verify-source.py
 ohpm install --all
-hvigorw assembleApp --mode project -p product=default -p buildMode=release --no-daemon --accept-license
+hvigorw assembleApp --mode project -p product=default -p buildMode=debug --no-daemon --accept-license
 python3 scripts/verify-app.py --sanitize build/outputs/default/*.app

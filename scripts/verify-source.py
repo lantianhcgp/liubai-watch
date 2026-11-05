@@ -10,8 +10,8 @@ def load(name):
     return json.loads((ROOT / name).read_text(encoding='utf-8-sig'))
 
 config = load('entry/src/main/config.json')
-assert config['app']['bundleName'] == 'com.hcbiu.liubai'
-assert config['app']['version'] == {'code': 1, 'name': '0.1.0'}
+assert config['app']['bundleName'] == 'liubai.nexus.by71x'
+assert config['app']['version'] == {'code': 8, 'name': '0.2.6'}
 assert config['module']['deviceType'] == ['liteWearable']
 expected = ['pages/' + p + '/' + p for p in ['index', 'read', 'edit', 'menu', 'history', 'day', 'trash']]
 assert config['module']['js'][0]['pages'] == expected

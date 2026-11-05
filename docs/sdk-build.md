@@ -36,4 +36,15 @@ proot-distro login alpine -- /usr/bin/node "$HOME/liubai-watch/qa/cdp.mjs" init 
 ```
 
 verify-app 拒绝缺失产物/无 HAP/无页面/身份版本不符；sanitize 仅移除 Lite 不兼容构建注入字段并读回验证，不会编造 app。模拟器使用独立 `~/liubai-watch-sim` 副本，http 8791 与 CDP 9247 仅 127.0.0.1，独立 profile。
-**尚未执行真实编译、未产生真实 .app；CI 由父任务创建仓库后触发。** hmlwsim/V8 的离线 callback 文件宿主不是目标真机文件系统、JerryScript heap 或签名安装证明。
+**上述为初始基线记录，不代表日志分支当前交付状态。** hmlwsim/V8 的离线 callback 文件宿主不是目标真机文件系统、JerryScript heap 或签名安装证明。
+
+## 日志分支出包规则（2026-11-05 阶段二）
+
+- 仅 `feat/logsink`，源码/SDK/签后身份固定 `liubai.nexus.by71x`，版本 `0.2.6 / code 8`，严格高于 read-a 基线 `0.2.5 / code 7`。
+- `vendor/logsink.js` 为本机 canonical 模块固定快照（2921 B，SHA256 `6810b5f9ff34fe4dd6cf4655f75a89172c248dd01bb40ade94937e567cefbe77`）；公共构建以 `scripts/prepare-logsink.py` 生成 ignored 模块与**公开占位配置**。不向此 PUBLIC 仓库、CI、artifact 提供真实日志端点/写密钥/读密钥/私钥。
+- 仓根显式 `type:commonjs`；CLT `6.1.1.280`，compile/target `6.1.1(24)`、compatible `4.0.0(10)` 保持不变。日志车道使用 SDK debug 输出并清洗注入字段，避免只修改 JS 却遗留旧 `.bc`；没有 bytecode 的真实 debug APP 才允许本地配置转换。
+- workflow `build.yml` 在 push 自动触发；只在编译和门禁成功后上传 `liubai-unsigned-<run_number>`，保留 1 天，绝不上传配置后的 APP 或签名 HAP。
+- 下载后：`python scripts/configure-logsink-app.py <ci.app> <local.app> --runtime-config <private-runtime.json> --report <private-evidence.json>`。转换仅改变实际 SDK `assets/js/MainAbility/app.js` 的公开占位字符串与对应 source map；七个业务页面、资源、config、pack.info 及全部其他文件字节相等。转换测试覆盖真实 ZIP、多层封装、凭据零输出、已有配置拒绝与 `.bc` 拒绝。
+- 签名在本地，精确使用 `liubai-hc.p7b`（by71x）与显式配对 key；绝不用弃用 84dll profile。签后既验 CMS，也验独占 profile development leaf、4096 B 分片载荷摘要、身份/非零版本、实际七页及 manifest 版本、全页/app 48 KiB、未打包依赖、app 级日志接入、读密钥/私钥缺失和单字节负向。强验用 `--runtime-config`、不传 `--logger-page`，不豁免业务页。
+- 本地配置后的 HAP 含可被逆向提取的写密钥，仅授权交付用户手机 `haps/`，不进公开 Git/Release/Actions。
+- 真实 CI URL、SHA256、签名和最终门禁结果见 `docs/progress.md` 阶段二回填；真机安装、JerryScript heap 与 FIT3 表源日志仍需用户装机回执。

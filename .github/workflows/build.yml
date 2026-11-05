@@ -26,11 +26,17 @@ jobs:
           if [ -d "$HOME/ohos-sdk/command-line-tools/sdk" ]; then
             printf '%s\n' "HOS_SDK_HOME=$HOME/ohos-sdk/command-line-tools/sdk" >> "$GITHUB_ENV"
           fi
+      - name: Generate credential-free logger config
+        run: |
+          python3 scripts/prepare-logsink.py
+          python3 -m unittest discover -s tests -p test_logsink_build.py -v
+          node --experimental-vm-modules --test tests/*.test.mjs
       - name: Compile and verify unsigned app
         run: bash scripts/build.sh
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
           name: liubai-unsigned-${{ github.run_number }}
           path: build/outputs/default/*.app
           if-no-files-found: error
+          retention-days: 1
