@@ -45,7 +45,7 @@ console.log(JSON.stringify({ mode: config.mode, devtool: config.devtool,
   plugins: config.plugins.map(p => p.constructor.name) }));
 `;
 
-function compile(enabled, changed = false) {
+function compile(enabled, changed = false, report = false) {
   const dir = mkdtempSync(join(tmpdir(), 'liubai-webpack-'));
   try {
     const loader = join(dir, 'sdk/default/openharmony/js/build-tools/ace-loader/webpack.lite.config.js');
@@ -54,15 +54,17 @@ function compile(enabled, changed = false) {
     const env = { ...process.env, LIUBAI_JS_ONLY: enabled ? '1' : '0' };
     delete env.NODE_OPTIONS;
     delete env.LIUBAI_JS_ONLY_REPORT;
+    if (report) env.LIUBAI_JS_ONLY_REPORT = join(dir, 'cleaned-build/compiler.jsonl');
     const result = spawnSync(process.execPath, ['-e', runner, preload, loader, dir], { env, encoding: 'utf8' });
     if (result.status === 0) result.config = JSON.parse(result.stdout.trim().split('\n').at(-1));
+    if (report && result.status === 0) result.report = JSON.parse(readFileSync(env.LIUBAI_JS_ONLY_REPORT, 'utf8'));
     return result;
   } finally { rmSync(dir, { recursive: true, force: true }); }
 }
 
 test('JS-only preserves the actual pinned SDK release config except SnapshotPlugin', () => {
   const baseline = compile(false);
-  const current = compile(true);
+  const current = compile(true, false, true);
   assert.equal(baseline.status, 0, baseline.stderr);
   assert.equal(current.status, 0, current.stderr);
   assert.ok(baseline.config.plugins.includes('SnapshotPlugin'));
@@ -70,6 +72,8 @@ test('JS-only preserves the actual pinned SDK release config except SnapshotPlug
     plugins: baseline.config.plugins.filter(name => name !== 'SnapshotPlugin') };
   assert.deepEqual(current.config, expected);
   assert.equal(current.config.mode, 'production');
+  assert.equal(current.report.snapshot_plugins_removed, 1);
+  assert.equal(current.report.buildMode, 'release');
   assert.equal(current.config.optimization.minimize, true);
   assert.equal(current.config.optimization.minimizer[0].options.terserOptions.compress, false);
   assert.equal(current.config.optimization.minimizer[0].options.terserOptions.mangle, true);

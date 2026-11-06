@@ -29,6 +29,7 @@ if (process.env.LIUBAI_JS_ONLY === '1') {
       if (count !== 1) throw new Error('Expected exactly one SDK SnapshotPlugin');
       config.plugins = config.plugins.filter(plugin => !(plugin instanceof SnapshotPlugin));
       if (process.env.LIUBAI_JS_ONLY_REPORT) {
+        fs.mkdirSync(path.dirname(process.env.LIUBAI_JS_ONLY_REPORT), { recursive: true });
         fs.appendFileSync(process.env.LIUBAI_JS_ONLY_REPORT, JSON.stringify({
           loader_sha256: digest, buildMode: env.buildMode, mode: config.mode,
           minimize: config.optimization.minimize === true,
