@@ -34,6 +34,7 @@ jobs:
           git -C "$ref_dir" checkout --detach FETCH_HEAD
       - name: Generate credential-free logger config
         run: |
+          npm ci --prefix scripts --no-audit --no-fund
           python3 scripts/prepare-logsink.py
           python3 -m unittest discover -s tests -p 'test_*.py' -v
           node --experimental-vm-modules --test tests/*.test.mjs

@@ -1,0 +1,9 @@
+{
+  "name": "liubai-build-gates",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "acorn": "8.19.0"
+  }
+}

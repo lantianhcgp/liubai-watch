@@ -5,10 +5,52 @@ import io
 import json
 import os
 from pathlib import Path
+import subprocess
 import tempfile
 import zipfile
 
 EXPECTED = ['pages/' + p + '/' + p for p in ['index', 'read', 'edit', 'menu', 'history', 'day', 'trash']]
+SCANNER = Path(__file__).with_name('scan-regexp.cjs')
+
+def scan_js_members(files):
+    """Fail closed on every packaged .js, including other abilities/rawfile.
+
+    Acorn ES5 AST handles regexp-vs-division context, escapes, strings/comments;
+    a text needle alone cannot guarantee zero actual regexp literals.
+    """
+    sources = {}
+    for name, data in sorted(files.items()):
+        if name.endswith('.js'):
+            try:
+                sources[name] = data.decode('utf-8')
+            except UnicodeDecodeError:
+                raise AssertionError('Invalid UTF-8 packaged JS: ' + name) from None
+    try:
+        proc = subprocess.run(['node', str(SCANNER)], input=json.dumps(sources),
+                              text=True, capture_output=True, timeout=60, check=False)
+        assert proc.returncode == 0, 'Zero-regexp parser unavailable/failed (source suppressed)'
+        result = json.loads(proc.stdout)
+        assert result['parser'] == 'acorn@8.19.0/es5', 'Unexpected zero-regexp parser'
+        rows = result['rows']
+        assert len(rows) == len(sources) and {r['file'] for r in rows} == set(sources), 'Incomplete zero-regexp parser result'
+    except (OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired):
+        raise AssertionError('Zero-regexp parser unavailable/invalid result (source suppressed)') from None
+    parse_errors = [r['file'] + ' at ' + str(r['parse_error']['line']) + ':' + str(r['parse_error']['column'])
+                    for r in rows if 'parse_error' in r]
+    assert not parse_errors, 'Non-ES5/invalid packaged JS: ' + ', '.join(parse_errors)
+    test_calls = {name: files[name].count(b'.test(') for name in sources}
+    report = {'members': len(sources), 'test_call_count': sum(test_calls.values()),
+              'regexp_literal_count': sum(len(r['regexp_literals']) for r in rows),
+              'regexp_reference_count': sum(len(r['regexp_references']) for r in rows),
+              'parser': result['parser']}
+    failures = [name + ' (' + str(n) + ')' for name, n in test_calls.items() if n]
+    for row in rows:
+        for kind in ('regexp_literals', 'regexp_references'):
+            if row[kind]:
+                positions = ','.join(str(p['line']) + ':' + str(p['column']) for p in row[kind])
+                failures.append(row['file'] + ' (' + kind + '=' + str(len(row[kind])) + ' at ' + positions + ')')
+    assert not failures, 'Install-34: forbidden regexp/.test( in packaged JS: ' + '; '.join(failures)
+    return report
 
 def rewrite(data, transform):
     out = io.BytesIO()
@@ -39,11 +81,16 @@ def verify(data):
     reports = []
     with zipfile.ZipFile(io.BytesIO(data)) as outer:
         assert outer.testzip() is None
+        assert len(outer.namelist()) == len(set(outer.namelist())), 'Duplicate APP paths'
+        outer_js = {n: outer.read(n) for n in outer.namelist() if n.endswith('.js')}
+        if outer_js:
+            scan_js_members(outer_js)
         haps = [n for n in outer.namelist() if n.endswith('.hap')]
         assert haps, 'No HAP in APP'
         for name in haps:
             with zipfile.ZipFile(io.BytesIO(outer.read(name))) as hap:
                 assert hap.testzip() is None
+                assert len(hap.namelist()) == len(set(hap.namelist())), 'Duplicate HAP paths'
                 assert 'config.json' in hap.namelist(), 'No root Lite config.json'
                 raw = hap.read('config.json')
                 assert not raw.startswith(b'\xef\xbb\xbf'), 'BOM in packaged config'
@@ -57,12 +104,6 @@ def verify(data):
                 names = hap.namelist()
                 bytecodes = sorted(n for n in names if n.endswith('.bc'))
                 assert not bytecodes, 'JS-only compiler output contains forbidden bytecode: ' + ', '.join(bytecodes)
-                js_members = [m for m in names if m.startswith('assets/js/') and m.endswith('.js')]
-                test_calls = {m: hap.read(m).count(b'.test(') for m in js_members}
-                hits = [m + ' (' + str(n) + ')' for m, n in sorted(test_calls.items()) if n]
-                assert not hits, 'Install-34: forbidden .test( in packaged JS: ' + ', '.join(hits)
-                js_scan = {'members': len(js_members), 'test_call_count': sum(test_calls.values())}
-                print(json.dumps({'hap': name, 'js_scan': js_scan}), flush=True)
                 pages = []
                 for p in EXPECTED:
                     matches = [n for n in names if n.endswith('/' + p + '.js') or n == p + '.js']
@@ -73,6 +114,8 @@ def verify(data):
                         assert 0 < size <= 49152, 'Empty/over-budget compiled page: ' + m
                         pages.append({'path': m, 'bytes': size})
                 assert any(n.endswith('/app.js') or n == 'app.js' for n in names), 'Missing application lifecycle'
+                js_scan = scan_js_members({m: hap.read(m) for m in names if m.endswith('.js')})
+                print(json.dumps({'hap': name, 'js_scan': js_scan}), flush=True)
                 reports.append({'hap': name, 'pages': pages, 'bundle': cfg['app']['bundleName'], 'js_scan': js_scan})
     return reports
 
