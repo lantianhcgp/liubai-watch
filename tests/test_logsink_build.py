@@ -42,7 +42,7 @@ class LogsinkBuildTest(unittest.TestCase):
             self.assertIn('0.2.6', stub)
             second = subprocess.run([sys.executable, str(prepare), '--project', str(base/'project')], capture_output=True)
             self.assertNotEqual(second.returncode, 0, 'Must refuse existing runtime config')
-            app_js = ('var cfg=' + json.dumps({'endpoint':ENDPOINT, 'write_key':WRITE_KEY, 'app':'liubai', 'ver':'0.2.6'}) + ';\nconsole.info("business");').encode()
+            app_js = ('var cfg=' + json.dumps({'endpoint':ENDPOINT, 'key':WRITE_KEY, 'app':'liubai', 'ver':'0.2.6'}) + ';\nconsole.info("business");').encode()
             mapping = json.dumps({'sources':['common/log-config.js'], 'sourcesContent':[stub]}).encode()
             files = {'config.json':json.dumps(cfg).encode(), 'assets/js/MainAbility/app.js':app_js,
                      'assets/js/MainAbility/app.js.map':mapping, 'assets/js/MainAbility/pages/index/index.js':b'console.info("unchanged");',
