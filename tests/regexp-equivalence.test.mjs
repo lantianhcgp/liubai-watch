@@ -69,7 +69,7 @@ test('reader classifications match ECMAScript over all UTF16 code units includin
 function menuRunner(source,ban){
   const calls=[];
   const session={get(){return {id:'note'};},clipboardGet(ix){calls.push(['get',ix]);return ix>=0&&ix<=7?'body':'';}};
-  const shell={nav(p,name,params){calls.push(['nav',name,params]);}};
+  const shell={nav(p,name,params){calls.push(['nav',name,params]);},markVisible(){}};
   const p=load(source,{'../../common/session':session,'../../common/shell':shell},ban).result;
   return action=>{
     calls.length=0;
