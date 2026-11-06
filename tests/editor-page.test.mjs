@@ -8,7 +8,9 @@ const prefix='../../common/';const mocks={};let saves=[],navs=[],session=null;
 mocks[prefix+'shell']={focus(){},clear(){},nav(p,n,q){navs.push({n,q});},params(){return{};}};
 mocks[prefix+'store-page']={save(input,cb){saves.push({input,cb});},draftClear(cb){cb(null);}};
 mocks[prefix+'session']={get(){return session;},set(s){session=s;},clear(){session=null;},clipboardPut(){},clipboardGet(){return'';}};
-mocks[prefix+'utf8']={bytes(s){return Buffer.byteLength(s);}};
+const utf8Context={result:null};
+vm.runInNewContext(fs.readFileSync(new URL('common/utf8.js',root),'utf8').replace('export default','result='),utf8Context);
+mocks[prefix+'utf8']=utf8Context.result;
 function editor(){let p=page('edit',mocks);p.alive=true;p.text='complete full text';p.id='same-id';p.created=123;p.kb={snapshot(){return{text:p.text,cursor:3,type:0,pinyin:''};}};return p;}
 test('double completion is a single real callback save',()=>{saves=[];const p=editor();p.save();p.save();assert.equal(saves.length,1);assert.equal(saves[0].input.id,'same-id');assert.equal(saves[0].input.body,p.text);assert.equal(saves[0].input.created,123);});
 test('I/O failure preserves text/id and leaves retry reachable',()=>{saves=[];const p=editor();p.save();saves[0].cb(new Error('disk full'));assert.equal(p.saving,false);assert.equal(p.text,'complete full text');assert.equal(p.id,'same-id');assert.match(p.message,/disk full/);p.save();assert.equal(saves.length,2);});

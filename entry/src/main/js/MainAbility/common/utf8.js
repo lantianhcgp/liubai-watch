@@ -40,6 +40,35 @@ function endBytes(s, start, max) {
   return i;
 }
 function sliceBytes(s, max) { return s.slice(0, endBytes(s, 0, max)); }
+// ECMAScript WhiteSpace + LineTerminator (not Unicode White_Space).
+function whitespace(c) {
+  return (c >= 9 && c <= 13) || c === 32 || c === 160 || c === 5760 ||
+    (c >= 8192 && c <= 8202) || c === 8232 || c === 8233 || c === 8239 ||
+    c === 8287 || c === 12288 || c === 65279;
+}
+function hasText(s) {
+  for (var i = 0; i < s.length; i++) if (!whitespace(s.charCodeAt(i))) return true;
+  return false;
+}
+function trimWhitespace(s) {
+  var start = 0, end = s.length;
+  while (start < end && whitespace(s.charCodeAt(start))) start++;
+  while (end > start && whitespace(s.charCodeAt(end - 1))) end--;
+  return s.slice(start, end);
+}
+function compactWhitespace(s) {
+  var out = '', i = 0, end = s.length, start;
+  while (i < end && whitespace(s.charCodeAt(i))) i++;
+  start = i;
+  while (i < end) {
+    if (!whitespace(s.charCodeAt(i))) { i++; continue; }
+    out += s.slice(start, i);
+    while (i < end && whitespace(s.charCodeAt(i))) i++;
+    if (i < end) out += ' ';
+    start = i;
+  }
+  return out + s.slice(start, end);
+}
 function valid(s) {
   var i, c;
   for (i = 0; i < s.length; i++) {
@@ -50,4 +79,5 @@ function valid(s) {
   return true;
 }
 export default {bytes: bytes, prev: prev, next: next, bound: bound,
-  sliceBytes: sliceBytes, endBytes: endBytes, valid: valid};
+  sliceBytes: sliceBytes, endBytes: endBytes, valid: valid,
+  hasText: hasText, trimWhitespace: trimWhitespace, compactWhitespace: compactWhitespace};

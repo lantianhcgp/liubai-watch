@@ -373,13 +373,13 @@ function metadata(id, body, created, revision, pinned, deleted) {
   var date = new Date(created), title = '', pos = 0, end, line;
   while (pos < body.length) {
     end = body.indexOf('\n', pos); if (end < 0) end = body.length;
-    line = body.slice(pos, end).replace(/^\s+|\s+$/g, '');
+    line = U.trimWhitespace(body.slice(pos, end));
     if (line) { title = U.sliceBytes(line, 72); break; }
     pos = end + 1;
   }
   return {id: id, created: created, date: date.getFullYear() + '-' + two(date.getMonth() + 1) + '-' + two(date.getDate()),
     time: two(date.getHours()) + ':' + two(date.getMinutes()), title: title,
-    preview: U.sliceBytes(body.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''), 96),
+    preview: U.sliceBytes(U.compactWhitespace(body), 96),
     pinned: pinned, deleted: deleted, revision: revision, bytes: U.bytes(body)};
 }
 function checkFlags(x) {
@@ -388,18 +388,10 @@ function checkFlags(x) {
   if (x.deleted !== undefined && typeof x.deleted !== 'boolean') return false;
   return true;
 }
-function hasText(s) {
-  // ECMAScript WhiteSpace + LineTerminator, not Unicode's broader White_Space.
-  for (var i = 0; i < s.length; i++) {
-    var c = s.charCodeAt(i);
-    if (!((c >= 9 && c <= 13) || c === 32 || c === 160 || c === 5760 || (c >= 8192 && c <= 8202) || c === 8232 || c === 8233 || c === 8239 || c === 8287 || c === 12288 || c === 65279)) return true;
-  }
-  return false;
-}
 function save(input, cb) {
   try{input=clone(input);}catch(e){return deliver(cb,error('Invalid record serialization'));}
   task(cb, function (done) {
-    if (!input || typeof input.body !== 'string' || !U.valid(input.body) || !hasText(input.body) || (input.id !== undefined && input.id !== '' && !validKey(input.id)) || !checkFlags(input)) return done(error('Invalid or empty record'));
+    if (!input || typeof input.body !== 'string' || !U.valid(input.body) || !U.hasText(input.body) || (input.id !== undefined && input.id !== '' && !validKey(input.id)) || !checkFlags(input)) return done(error('Invalid or empty record'));
     var size = U.bytes(input.body), id = input.id || ('n' + token());
     if (size > MAX_BODY) return done(error('Body safe-load budget exceeded; no truncation'));
     catalog(function (e, c) {
