@@ -1,5 +1,17 @@
 # 留白日志接入进度
 
+## 当前：实验K已交付强验候选，真机全黑根因尚未唯一定罪（2026-11-06 CST）
+
+- J真实configured APP 在 hmlwsim原始Sandbox/AppLifecycle的V8+linkedom宿主中无fatal，Store ready；首页callback错误 `App store readiness unavailable` 栈到shell.ensure。全局$app存在而page.$vm缺失，旧隔离host曾人工注入掩盖。按栈仅修应用访问链，不merge独立根read-a，不做debug理论重写。
+- 另外实际J的应用配置字段write_key与canonical logger读取key不符，L.init静默return，证明零日志不能推断“死于首条日志之前”。只修公共生成器的应用端字段key，私有runtime/既有configure/sharedstrong/canonical2921B logger不动。
+- 实现ae32f4a1944aa7f3f7650cb6dd8a7d310a6d2667只推feat/logsink精确回读；CI https://github.com/lantianhcgp/liubai-watch/actions/runs/42168019348 completed/success，唯一liubai-unsigned-35/id13479309317/headSHA匹配。Node116/Python18，logger源和产物10+10，零跳过，新增5回归旧RED→新GREEN。
+- 新真实APP差分探针：J exit1/allowed=false；K exit0/Store ready/allowed=true/empty=true/旧callback错误0，原fetch stub可达（非HTTPS/原生/ACK）。主114×114+small32×32从read-a逐字节移植，PNG及SDK完整BGRA像素/manifest引用一致。
+- 版本仍0.2.6/code8/by71x；197真实文件/8JS，零正则AST literal/reference/test、零BC/JRRY，最大39799B严格<49152。真实JS-only adapter/CLT门PASS；配置仅改实际app.js，完整shared strong本地和精确共享目标带app/runtime-config/bundle/version8/negative全PASS，不传logger-page。legacyCMS、profile leaf/载荷/资源同源、真实CRC合法1B反例legacy0/strong1（Signed payload SHA256 mismatch）PASS。
+- 交付 `/storage/emulated/0/haps/实验K-应用入口与日志key修复候选-114图标.hap`，3997091B，SHA256 `be8a87a1fda7904a005e2b5b34129cbd192feb55e22f1e7dacc42ffc31ba3786`。独立Acorn ES5复扫literal/reference/test=0、全部文件BC/JRRY0；原131个haps文件hash未改，仅新增K，J仍在根目录。
+- 脱敏报告 `/storage/emulated/0/Documents/留白-实验K-启动取证与修复候选/README.md` +16证据，私有完整取证/流水线 `~/lw_build/liubai-logsink-stage12/`，源码链见docs/experiment-k-startup.md。PUBLIC工作区/历史审计无凭据；不开浏览器/AGC，不自动装机/卸载/清数据，不改采集器。
+- **边界**：J在V8显示可读错误DOM而非全黑，本轮没有FIT3致命栈，不能宣称全黑已唯一定位/修好。手动同版安装K受code8覆盖策略约束，拒绝时先回报，不自作主张清数据。若仍黑，下一步用最早期onCreate/page-onInit原生落盘+可见阶段诊断和目标固件异常栈，不再以cursor0推断死亡点；JerryScript堆/原生文件与通信/图片池/真机ACK仍待实测。
+
+
 ## 2026-11-05：隔离接入PASS，签包交付BLOCKED
 
 ### 已验证结果
