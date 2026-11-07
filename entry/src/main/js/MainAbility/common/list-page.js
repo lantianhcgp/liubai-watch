@@ -69,7 +69,14 @@ function init(p,kind) {
     trace(p,'L/probe.o.g6a.ok');
     try{p.sectionTitle='\u6700\u8fd1\u8bb0\u5f55';}catch(e){trace(p,'L/probe.o.g6b.throw',e);throw e;}
     trace(p,'L/probe.o.g6b.ok');
-    try{p.dateLabel=todayStr.slice(5).replace('-',' / ');}catch(e){trace(p,'L/probe.o.g6c.throw',e);throw e;}
+    try{
+      var dateTail,dateText;
+      try{dateTail=todayStr.slice(5);}catch(e){trace(p,'L/probe.q.g6c.slice.throw',e);throw e;}
+      try{trace(p,'L/probe.q.g6c.slice.ok t='+typeof dateTail);}catch(ignored){}
+      try{dateText=dateTail.replace('-',' / ');}catch(e){trace(p,'L/probe.q.g6c.replace.throw',e);throw e;}
+      try{trace(p,'L/probe.q.g6c.replace.ok t='+typeof dateText);}catch(ignored){}
+      try{p.dateLabel=dateText;}catch(e){trace(p,'L/probe.q.g6c.set.throw',e);throw e;}
+    }catch(e){trace(p,'L/probe.o.g6c.throw',e);throw e;}
     trace(p,'L/probe.o.g6c.ok');
     try{p.emptyText=kind==='history'?'\u8fd9\u6708\u8fd8\u6ca1\u6709\u8bb0\u5f55':kind==='trash'?'\u6ca1\u6709\u5220\u6389\u7684\u8bb0\u5f55':kind==='day'?'\u8fd9\u5929\u8fd8\u6ca1\u6709\u8bb0\u5f55':'\u4eca\u5929\u60f3\u7559\u4e0b\u4ec0\u4e48\uff1f';}catch(e){trace(p,'L/probe.o.g6d.throw',e);throw e;}
     trace(p,'L/probe.o.g6d.ok');
