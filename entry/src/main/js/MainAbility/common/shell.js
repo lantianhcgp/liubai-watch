@@ -10,8 +10,8 @@ var visibilityHook = null;
 function setVisibilityHook(fn) { visibilityHook = typeof fn === 'function' ? fn : null; }
 function markVisible(v) { pageVisible = v === true; if (visibilityHook) { try { visibilityHook(pageVisible); } catch (ignored) {} return; } try { var a = appRoot(); if (a && typeof a.diagVisibility === 'function') a.diagVisibility(pageVisible); } catch (ignored) {} }
 function isVisible() { return pageVisible; }
-function app(p){var a=typeof $app==='undefined'?null:$app;a=a&&a.$def?a.$def:a;return a&&typeof a.whenLiubaiReady==='function'&&typeof a.getStore==='function'&&typeof a.getSession==='function'?a:null;}
-function params(p){var a=app(p);if(a&&typeof a.getLiubaiParams==='function')return a.getLiubaiParams()||{};return {};}
+function app(p){try{var a=typeof $app==='undefined'?null:$app;a=a&&a.$def?a.$def:a;return a&&typeof a.whenLiubaiReady==='function'&&typeof a.getStore==='function'&&typeof a.getSession==='function'?a:null;}catch(e){trace(p,'L/app.resolve.throw',e);return null;}}
+function params(p){try{var a=app(p);if(a&&typeof a.getLiubaiParams==='function')return a.getLiubaiParams()||{};}catch(e){trace(p,'L/params.call.throw',e);}return {};}
 function nav(p,page,values){if(Date.now()-lastNav<200)return;lastNav=Date.now();var a=app(p);if(a&&typeof a.setLiubaiParams==='function')a.setLiubaiParams(values||{});Router.replace({uri:'pages/'+page+'/'+page,params:values||{}});}
 function appRoot(){try{var a=typeof $app==='undefined'?null:$app;if(a){var o=a;while(o){var d=Object.getOwnPropertyDescriptor(o,'$def');if(d){if(d.get||d.set)return null;break;}o=Object.getPrototypeOf(o);}var v=a.$def;if(v)a=v;}return a;}catch(ignored){return null;}}
 function trace(p,stage,err){try{var a=appRoot();if(!a)return;if(arguments.length>2&&typeof a.errorLiubai==='function'){a.errorLiubai(stage,err);return;}if(typeof a.traceLiubai==='function')a.traceLiubai(stage,p);}catch(ignored){}}

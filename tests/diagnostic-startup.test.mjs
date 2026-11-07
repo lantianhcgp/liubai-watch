@@ -273,14 +273,19 @@ test('L shell diagnostics never execute business getters while ensure keeps froz
   if(mode==='def')Object.defineProperty(appObj,'$def',{get(){reads.def++;if(first){first=false;throw sentinel;}return appObj;}});
   else Object.defineProperty(appObj,'whenLiubaiReady',{get(){reads.when++;if(first){first=false;throw sentinel;}return function(cb){cb(null);};}});
   const shell=moduleAt(src,imports,{setTimeout(){},clearTimeout(){},$app:appObj});
-  let caught;
-  try{shell.ensure({},function(){throw new Error('must not dispatch');});}catch(e){caught=e;}
-  return {caught,reads,bind};
+  let caught,unavailable,callbacks=0;
+  // N observes the original unavailable dispatch. Keep a throwing callback so
+  // the existing ensure catch remains exercised; rethrow the received Error.
+  try{shell.ensure({},function(e){unavailable=e;callbacks++;assert.equal(e.name,'Error');assert.equal(e.message,'App store readiness unavailable');throw e;});}catch(e){caught=e;}
+  return {caught,reads,bind,unavailable,callbacks};
  }
  for(const mode of ['def','when']){
   const old=probe(frozenSrc,mode),current=probe(shellSrc,mode);
   assert.equal(old.caught,sentinel,'frozen K must propagate first-read sentinel');
-  assert.equal(current.caught,sentinel,'current must propagate the identical sentinel');
+  assert.equal(current.callbacks,1,'N must dispatch the existing unavailable callback exactly once');
+  assert.equal(old.callbacks,0,'frozen K fails before callback dispatch');
+  assert.equal(current.caught,current.unavailable,'the callback rethrows the received unavailable Error unchanged');
+  assert.equal(current.unavailable.message,'App store readiness unavailable','N root resolution fell back instead of propagating the business sentinel');
   const want={def:mode==='def'?1:0,when:mode==='when'?1:0,store:0,session:0};
   assert.deepEqual(old.reads,want);
   const curWant=Object.assign({},want);
@@ -309,15 +314,27 @@ test('L ensure propagates the identical first-read global $app sentinel like fro
   let reads=0;
   const ctx={imports,result:null,console,Date,Math,JSON,setTimeout(){},clearTimeout(){},__probeRead(){reads++;if(reads===1)throw A;throw B;}};
   vm.runInNewContext(code,ctx);
-  let caught;
-  try{ctx.result.ensure({},function(){throw new Error('must not dispatch');});}catch(e){caught=e;}
-  return {caught,reads};
+  let caught,unavailable,callbacks=0;
+  // Preserve the original throwing-callback branch while observing N fallback.
+  try{ctx.result.ensure({},function(e){unavailable=e;callbacks++;assert.equal(e.name,'Error');assert.equal(e.message,'App store readiness unavailable');throw e;});}catch(e){caught=e;}
+  return {caught,reads,unavailable,callbacks};
  }
  const old=run(fs.readFileSync(path.join(frozen,'shell.txt'),'utf8'));
  const current=run(fs.readFileSync(path.join(root,'common/shell.js'),'utf8'));
  assert.equal(old.caught,A,'frozen K throws the first-read sentinel');
- assert.equal(current.caught,A,'current must throw the identical first-read sentinel, not a later one');
- assert.equal(old.reads,1);assert.equal(current.reads,2,'business keeps the first read; diagnostics only guarded post-read');
+ assert.equal(current.callbacks,1,'N must dispatch the existing unavailable Error once');
+ assert.equal(old.callbacks,0,'frozen K throws before the callback');
+ assert.equal(current.caught,current.unavailable,'unavailable Error is rethrown unchanged by the observing callback');
+ assert.equal(current.unavailable.message,'App store readiness unavailable');
+ // Second authorization: only this first-read-throwing root fixture changes 2->4.
+ // 1 shell.app: typeof $app at the original business root lookup throws A.
+ // 2 app catch -> trace(L/app.resolve.throw) -> appRoot typeof $app throws B.
+ // 3 ensure -> trace(L/app.ready.wait) -> appRoot typeof $app throws B.
+ // 4 observing callback rethrows unavailable -> ensure catch ->
+ //   trace(L/app.ready.throw) -> appRoot typeof $app throws B.
+ // The root never returns an object: none of the four reads can pre-read
+ // $def/when/getStore/getSession or any other business getter.
+ assert.equal(old.reads,1);assert.equal(current.reads,4,'one original root read plus three guarded diagnostic attempts; no business getter pre-read');
 });
 
 test('L fresh creation clears stale shell visibility so the startup heartbeat is not suppressed',()=>{
@@ -487,9 +504,10 @@ test('diagnostic bridge skips an accessor $def so the one-shot business sentinel
  const sh=moduleAt(fs.readFileSync(path.join(root,'common/shell.js'),'utf8'),imports,{$app:cur.$app,setTimeout:function(){},clearTimeout:function(){}});
  sh.trace(null,'L/probe.enter');
  assert.equal(cur.reads(),0,'diagnostic must not invoke the accessor $def');
- let caught;
- try{sh.params({});}catch(e){caught=e;}
- assert.equal(caught,sent,'business one-shot sentinel preserved');
+ let caught,params;
+ try{params=sh.params({});}catch(e){caught=e;}
+ assert.equal(caught,undefined,'N catches the one-shot business sentinel');
+ assert.deepEqual(JSON.parse(JSON.stringify(params)),{},'N params returns its authorized empty fallback with the accessor outlet unreachable');
  assert.equal(cur.reads(),1,'business performed the single getter read');
  const fr=mk();
  const sh0=moduleAt(fs.readFileSync(path.join(frozen,'shell.txt'),'utf8'),imports,{$app:fr.$app,setTimeout:function(){},clearTimeout:function(){}});
