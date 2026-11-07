@@ -54,11 +54,27 @@ function init(p,kind) {
   var q;
   try{q=shell.params(p);}catch(e){trace(p,'L/probe.o.g4.throw',e);throw e;}
   try{trace(p,'L/probe.o.g4.ok t='+typeof q);}catch(ignored){}
+  try{trace(p,'L/probe.p.qm t='+typeof q.month);}catch(ignored){}
+  var todayValue0;
+  try{todayValue0=p.today;try{trace(p,'L/probe.p.today0 t='+probeValue(todayValue0));}catch(ignored){}}catch(e){trace(p,'L/probe.p.today0.read.throw',e);}
   var monthValue;
-  try{p.today=today();p.day=q.day||'';p.month=monthValue=q.month||p.today.slice(0,7);p.filter=kind==='trash'?'trash':kind==='day'?'day':kind==='history'?'month':'all';}catch(e){trace(p,'L/probe.o.g5.throw',e);throw e;}
+  var todayStr, dayStr;
+  try{p.today=todayStr=today();p.day=dayStr=q.day||'';p.month=monthValue=q.month||todayStr.slice(0,7);p.filter=kind==='trash'?'trash':kind==='day'?'day':kind==='history'?'month':'all';}catch(e){trace(p,'L/probe.o.g5.throw',e);throw e;}
   try{trace(p,'L/probe.o.g5.ok t='+typeof monthValue);}catch(ignored){}
+  var todayValue;
+  try{todayValue=p.today;try{trace(p,'L/probe.p.today t='+probeValue(todayValue));}catch(ignored){}}catch(e){trace(p,'L/probe.p.today.read.throw',e);}
   try{if(kind==='day')validDay(p.day);validMonth(p.month);}catch(e){trace(p,'L/list.params.error',e);p.ready=false;p.message='\u65e5\u671f\u53c2\u6570\u65e0\u6548';return;}
-  try{p.headerTitle=kind==='history'?'\u6309\u65e5\u56de\u770b':kind==='day'?p.day.slice(5,7)+' \u6708 '+p.day.slice(8)+' \u65e5':kind==='trash'?'\u56de\u6536\u7ad9':'\u7559\u767d';p.sectionTitle='\u6700\u8fd1\u8bb0\u5f55';p.dateLabel=p.today.slice(5).replace('-',' / ');p.emptyText=kind==='history'?'\u8fd9\u6708\u8fd8\u6ca1\u6709\u8bb0\u5f55':kind==='trash'?'\u6ca1\u6709\u5220\u6389\u7684\u8bb0\u5f55':kind==='day'?'\u8fd9\u5929\u8fd8\u6ca1\u6709\u8bb0\u5f55':'\u4eca\u5929\u60f3\u7559\u4e0b\u4ec0\u4e48\uff1f';p.monthLabel=p.month.replace('-',' \u5e74 ')+' \u6708';
+  try{
+    try{p.headerTitle=kind==='history'?'\u6309\u65e5\u56de\u770b':kind==='day'?dayStr.slice(5,7)+' \u6708 '+dayStr.slice(8)+' \u65e5':kind==='trash'?'\u56de\u6536\u7ad9':'\u7559\u767d';}catch(e){trace(p,'L/probe.o.g6a.throw',e);throw e;}
+    trace(p,'L/probe.o.g6a.ok');
+    try{p.sectionTitle='\u6700\u8fd1\u8bb0\u5f55';}catch(e){trace(p,'L/probe.o.g6b.throw',e);throw e;}
+    trace(p,'L/probe.o.g6b.ok');
+    try{p.dateLabel=todayStr.slice(5).replace('-',' / ');}catch(e){trace(p,'L/probe.o.g6c.throw',e);throw e;}
+    trace(p,'L/probe.o.g6c.ok');
+    try{p.emptyText=kind==='history'?'\u8fd9\u6708\u8fd8\u6ca1\u6709\u8bb0\u5f55':kind==='trash'?'\u6ca1\u6709\u5220\u6389\u7684\u8bb0\u5f55':kind==='day'?'\u8fd9\u5929\u8fd8\u6ca1\u6709\u8bb0\u5f55':'\u4eca\u5929\u60f3\u7559\u4e0b\u4ec0\u4e48\uff1f';}catch(e){trace(p,'L/probe.o.g6d.throw',e);throw e;}
+    trace(p,'L/probe.o.g6d.ok');
+    try{p.monthLabel=monthValue.replace('-',' \u5e74 ')+' \u6708';}catch(e){trace(p,'L/probe.o.g6e.throw',e);throw e;}
+    trace(p,'L/probe.o.g6e.ok');
   }catch(e){trace(p,'L/probe.o.g6.throw',e);throw e;}
   trace(p,'L/probe.o.g6.ok');
   trace(p,'L/list.init.enter');

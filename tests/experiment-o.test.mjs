@@ -41,7 +41,23 @@ function execute(source,options={}){
  return {caught,returned,sentinel,business,records,counts,state,stages:records.filter(r=>r.tag==='stage').map(r=>r.msg.split(' state=')[0]),errorRecords:records.filter(r=>r.tag==='onerror')};
 }
 function stateSnapshot(s){return Object.fromEntries(Object.entries(s).map(([k,v])=>[k,Array.isArray(v)?Array.from(v):v]));}
-function parity(options={}){const sentinel=options.sentinel||new Error('Expected a function.');const n=execute(nSource(),{...options,sentinel}),o=execute(listSource,{...options,sentinel});assert.deepEqual(o.business,n.business,'all original getter/setter/call/coercion events remain exact N order');assert.equal(o.caught,n.caught,'same propagation identity as N');assert.equal(o.returned,n.returned);assert.deepEqual(o.counts,n.counts);assert.deepEqual(stateSnapshot(o.state),stateSnapshot(n.state),'own business state values match across distinct VM realms');return {n,o,sentinel};}
+// Written P decision: CURRENT source remains the input. This expectation-only oracle
+// rebases N's operation sequence by exactly the authorized reads and local RHS fix;
+// N_INIT, nSource, execute, VM/route/page fixtures and all test counts remain unchanged.
+function expectedPSource(){
+ let expected=N_INIT;
+ const changes=[
+  ["var q=shell.params(p);p.today=today();p.day=q.day||'';p.month=q.month||p.today.slice(0,7);p.filter=kind==='trash'?'trash':kind==='day'?'day':kind==='history'?'month':'all';", "var q=shell.params(p);try{q.month;}catch(ignored){}try{p.today;}catch(ignored){}var todayStr,dayStr,monthValue;p.today=todayStr=today();p.day=dayStr=q.day||'';p.month=monthValue=q.month||todayStr.slice(0,7);p.filter=kind==='trash'?'trash':kind==='day'?'day':kind==='history'?'month':'all';try{p.today;}catch(ignored){}"],
+  ["p.day.slice(5,7)","dayStr.slice(5,7)"],
+  ["p.day.slice(8)","dayStr.slice(8)"],
+  ["p.today.slice(5)","todayStr.slice(5)"],
+  ["p.month.replace('-',", "monthValue.replace('-',"]
+ ];
+ for(const [before,after] of changes){assert.equal(expected.split(before).length,2,'each authorized expectation rewrite occurs exactly once');expected=expected.replace(before,after);}
+ const begin=listSource.indexOf('function init(p,kind) {'),end=listSource.indexOf('function next(p)');
+ return listSource.slice(0,begin)+expected+listSource.slice(end);
+}
+function parity(options={}){const sentinel=options.sentinel||new Error('Expected a function.');const n=execute(expectedPSource(),{...options,sentinel}),o=execute(listSource,{...options,sentinel});assert.deepEqual(o.business,n.business,'all getter/setter/call/coercion events match the authorized P expectation sequence');assert.equal(o.caught,n.caught,'same propagation identity as the authorized P sequence');assert.equal(o.returned,n.returned);assert.deepEqual(o.counts,n.counts);assert.deepEqual(stateSnapshot(o.state),stateSnapshot(n.state),'own business state values match across distinct VM realms');return {n,o,sentinel};}
 function groupFailure(group,options){const {n,o,sentinel}=parity(options);assert.equal(n.caught,sentinel);assert.equal(o.caught,sentinel,'must rethrow the original value, not wrap or swallow');const rows=o.errorRecords.filter(r=>r.msg.indexOf('L/probe.o.g'+group+'.throw ')===0);assert.equal(rows.length,1,'exactly one group report reaches unchanged shell.trace/appRoot/errorLiubai');assert.ok(rows[0].msg.includes('message='+sentinel.message),'real Error own message must be in actual onerror record');assert.ok(!o.stages.some(s=>s.indexOf('L/probe.o.g'+group+'.ok')===0));assert.ok(!o.stages.includes('L/list.init.enter'));for(let i=1;i<group;i++)assert.equal(o.stages.filter(s=>s.indexOf('L/probe.o.g'+i+'.ok')===0).length,1);for(let i=group+1;i<=6;i++)assert.ok(!o.stages.some(s=>s.indexOf('L/probe.o.g'+i+'.ok')===0));return o;}
 test('O g1 reports each bare-field setter sentinel through real errorLiubai and rethrows with exact N order',()=>{
  for(const key of ['kind','alive','allowed'])groupFailure(1,{fail:{type:'page-set',key}});
@@ -67,20 +83,32 @@ test('O g5 reports today/day/month/filter failures and retains every N getter an
  groupFailure(5,{fail:{type:'today-new'}});
  for(const key of ['today','day','month','filter'])groupFailure(5,{fail:{type:'page-set',key}});
  for(const key of ['day','month'])groupFailure(5,{fail:{type:'route-get',key}});
- groupFailure(5,{fail:{type:'page-get',key:'today'}});
+ const recovery=parity({fail:{type:'page-get',key:'today'}}).o;
+ assert.equal(recovery.caught,undefined,'P §4.1 removes business today reads; §4.2 observes both failed reads without rethrow');
+ assert.equal(recovery.business.filter(e=>e[0]==='get'&&e[1]==='today').length,2);
+ for(const stage of ['L/probe.p.today0.read.throw','L/probe.p.today.read.throw'])assert.equal(recovery.errorRecords.filter(r=>r.msg.startsWith(stage+' ')).length,1);
+ assert.ok(recovery.stages.includes('L/probe.o.g5.ok t=string'));assert.ok(recovery.stages.includes('L/probe.o.g6.ok'));assert.ok(recovery.stages.includes('L/list.init.enter'));
  const {o}=parity();assert.ok(o.stages.includes('L/probe.o.g5.ok t=string'));
 });
 test('O g6 reports all title and label setters and original formatting reads without suppressing the throw',()=>{
- for(const key of ['headerTitle','sectionTitle','dateLabel','emptyText','monthLabel'])groupFailure(6,{fail:{type:'page-set',key}});
- groupFailure(6,{kind:'day',routeValues:{day:'2026-11-07',month:'2026-11'},fail:{type:'page-get',key:'day',at:2}});
- groupFailure(6,{fail:{type:'page-get',key:'today',at:2}});
- groupFailure(6,{fail:{type:'page-get',key:'month',at:2}});
+ const fields=['headerTitle','sectionTitle','dateLabel','emptyText','monthLabel'];
+ for(let at=0;at<fields.length;at++){
+  const o=groupFailure(6,{fail:{type:'page-set',key:fields[at]}}),sub=['a','b','c','d','e'][at];
+  assert.equal(o.errorRecords.filter(r=>r.msg.startsWith('L/probe.o.g6'+sub+'.throw ')).length,1);
+  for(let i=0;i<fields.length;i++)assert.equal(o.stages.includes('L/probe.o.g6'+['a','b','c','d','e'][i]+'.ok'),i<at,'only preceding assignments reached their own ok');
+ }
+ const day=parity({kind:'day',routeValues:{day:'2026-11-07',month:'2026-11'},fail:{type:'page-get',key:'day',at:2}}).o;
+ assert.equal(day.caught,undefined);assert.equal(day.business.filter(e=>e[0]==='get'&&e[1]==='day').length,1);assert.equal(day.state.headerTitle,'11 月 07 日');assert.ok(day.stages.includes('L/probe.o.g6.ok'));
+ const today=parity({fail:{type:'page-get',key:'today',at:2}}).o;
+ assert.equal(today.caught,undefined);assert.equal(today.errorRecords.filter(r=>r.msg.startsWith('L/probe.p.today.read.throw ')).length,1);assert.equal(today.state.dateLabel,'11 / 07');assert.ok(today.stages.includes('L/probe.o.g6.ok'));
+ const month=parity({fail:{type:'page-get',key:'month',at:2}}).o;
+ assert.equal(month.caught,undefined);assert.equal(month.business.filter(e=>e[0]==='get'&&e[1]==='month').length,1);assert.equal(month.state.monthLabel,'2026 年 11 月');assert.ok(month.stages.includes('L/probe.o.g6.ok'));
 });
 test('O all six ok markers appear in strict order between first and enter in every normal list mode',()=>{
  for(const kind of ['index','trash','history','day']){
   const {o}=parity({kind,routeValues:{day:kind==='day'?'2026-11-07':'',month:'2026-11'}});
   assert.equal(o.caught,undefined);assert.equal(o.errorRecords.length,0);let cursor=-1;
-  for(const prefix of ['L/list.init.first','L/probe.o.g1.ok','L/probe.o.pre.listGen v=','L/probe.o.g2.ok lg=','L/probe.o.g3.ok','L/probe.o.g4.ok t=','L/probe.o.g5.ok t=','L/probe.o.g6.ok','L/list.init.enter','L/list.init.return']){
+  for(const prefix of ['L/list.init.first','L/probe.o.g1.ok','L/probe.o.pre.listGen v=','L/probe.o.g2.ok lg=','L/probe.o.g3.ok','L/probe.o.g4.ok t=','L/probe.p.qm t=','L/probe.p.today0 t=','L/probe.o.g5.ok t=','L/probe.p.today t=','L/probe.o.g6a.ok','L/probe.o.g6b.ok','L/probe.o.g6c.ok','L/probe.o.g6d.ok','L/probe.o.g6e.ok','L/probe.o.g6.ok','L/list.init.enter','L/list.init.return']){
    const at=o.stages.findIndex((s,i)=>i>cursor&&s.indexOf(prefix)===0);assert.ok(at>cursor,prefix);cursor=at;
   }
   assert.equal(o.business.filter(e=>e[0]==='shell.init').length,1);for(const stage of o.stages.filter(s=>s.startsWith('L/probe.o.')))assert.ok(stage.length<=40,stage);
@@ -120,12 +148,12 @@ var nativeProbeSlice=''.slice;
 };
 `;
  const options={initialListGen:'7',routeValues:{day:'',month:'2026-11'}};
- const n=execute(poison+nSource(),options),o=execute(poison+listSource,options);
+ const n=execute(poison+nSource(),options),o=execute(poison+listSource,options),expected=execute(poison+expectedPSource(),options);
  assert.equal(n.caught,undefined,'the frozen N baseline must finish under the identical poison');
  assert.equal(n.state.listGen,'71');assert.ok(n.business.some(e=>e[0]==='shell.params'));
  t.diagnostic(JSON.stringify({N:{caught:n.caught===undefined?null:'unexpected',listGen:n.state.listGen,params_called:n.business.some(e=>e[0]==='shell.params')},O:{caught:o.caught===undefined?null:o.caught.message,listGen:o.state.listGen,params_called:o.business.some(e=>e[0]==='shell.params')}}));
  assert.equal(o.caught,n.caught,'diagnostic object conversion must not escape or become a business-group throw');
- assert.deepEqual(o.business,n.business,'same original reads, writes, calls and numeric coercions as N');
+ assert.deepEqual(o.business,expected.business,'same exact authorized P reads, writes, calls and numeric coercions under the retained poison');
  assert.equal(o.returned,n.returned);assert.deepEqual(o.counts,n.counts);
  assert.deepEqual(stateSnapshot(o.state),stateSnapshot(n.state));
  assert.ok(!o.errorRecords.some(r=>r.msg.indexOf('probe-only')>=0),'a failed probe is not a business error');
@@ -149,9 +177,9 @@ test('O each complete value-stage construction and trace has an independent diag
  for(const prefix of ['L/probe.o.pre.listGen v=','L/probe.o.g2.ok lg=','L/probe.o.g4.ok t=','L/probe.o.g5.ok t=']){
   const seam="var realOTestTrace=trace;trace=function(p,s,e){if(s.indexOf("+JSON.stringify(prefix)+")===0)throw new Error('diagnostic-only');return arguments.length>2?realOTestTrace(p,s,e):realOTestTrace(p,s);};\n";
   const options={initialListGen:7,routeValues:{day:'',month:'2026-11'}};
-  const n=execute(seam+nSource(),options),o=execute(seam+listSource,options);
+  const n=execute(seam+nSource(),options),o=execute(seam+listSource,options),expected=execute(seam+expectedPSource(),options);
   assert.equal(n.caught,undefined);assert.equal(o.caught,undefined,'a diagnostic failure never blocks the next original business operation');
-  assert.deepEqual(o.business,n.business);assert.deepEqual(stateSnapshot(o.state),stateSnapshot(n.state));assert.deepEqual(o.counts,n.counts);assert.equal(o.returned,n.returned);
+  assert.deepEqual(o.business,expected.business);assert.deepEqual(stateSnapshot(o.state),stateSnapshot(n.state));assert.deepEqual(o.counts,n.counts);assert.equal(o.returned,n.returned);
   assert.ok(o.stages.includes('L/list.init.enter'));assert.ok(!o.errorRecords.some(r=>r.msg.includes('diagnostic-only')));
   for(let g=1;g<=6;g++)if(!prefix.startsWith('L/probe.o.g'+g+'.ok'))assert.ok(o.stages.some(s=>s.startsWith('L/probe.o.g'+g+'.ok')));
  }
