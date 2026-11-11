@@ -18,7 +18,7 @@ jobs:
           paths = [Path("/etc/apt/sources.list")]
           paths += sorted(Path("/etc/apt/sources.list.d").glob("*.list"))
           paths += sorted(Path("/etc/apt/sources.list.d").glob("*.sources"))
-          pattern = r"https?://(?:azure\.archive|archive|security)\.ubuntu\.com/ubuntu(?=/|\s|$)"
+          pattern = r"(?:https?://(?:azure\.archive|archive|security)\.ubuntu\.com/ubuntu(?=/|\s|$)|mirror\+file:/etc/apt/apt-mirrors\.txt(?=\s|$))"
           for path in paths:
               if path.is_file():
                   before = path.read_text()
