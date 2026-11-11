@@ -11,7 +11,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: System dependencies
-        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev
+        run: |
+          sudo python3 -c '
+          from pathlib import Path
+          import re
+          paths = [Path("/etc/apt/sources.list")]
+          paths += sorted(Path("/etc/apt/sources.list.d").glob("*.list"))
+          paths += sorted(Path("/etc/apt/sources.list.d").glob("*.sources"))
+          pattern = r"https?://(?:azure\.archive|archive|security)\.ubuntu\.com/ubuntu(?=/|\s|$)"
+          for path in paths:
+              if path.is_file():
+                  before = path.read_text()
+                  after = re.sub(pattern, "https://mirrors.edge.kernel.org/ubuntu", before)
+                  if after != before:
+                      path.write_text(after)
+          '
+          sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev
       - name: Download actual HarmonyOS compiler
         uses: ErBWs/setup-ohos@v2
         with:
