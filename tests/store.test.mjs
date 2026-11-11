@@ -66,7 +66,29 @@ test('settings persist with reading ID/revision/anchor, failed update preserves 
 test('body write, index commit, verification failures keep previous body and retry', async t => {
   const {store:s,host}=await fixture(t);await call(s,'init');await call(s,'save',{id:'x',body:'old'});
   for(const [method,match,mode] of [['writeText',/\/b/, 'partial'],['writeText',/\/i[01]\.json$/, 'partial'],['writeText',/\/i[01]\.json$/, 'corrupt'],['writeText',/\/b/, 'throw']]) {
-    host.inject(method,match,mode);await assert.rejects(call(s,'save',{id:'x',body:'new'}));assert.equal((await call(s,'load','x')).body,'old');
+    // S19: the original throw fixture is A, but its production signal is A/B-equivalent.
+    // Retain only this test's original options so the fixture can explicitly finish A.
+    const originalWrite=host.writeText;let thrownWrite=null;
+    if(mode==='throw')host.writeText=function(options){try{return originalWrite.call(this,options);}catch(error){thrownWrite=options;throw error;}};
+    try {
+      host.inject(method,match,mode);await assert.rejects(call(s,'save',{id:'x',body:'new'}));
+      if(mode==='throw') {
+        assert.ok(thrownWrite);assert.equal(host.pending.length,0,'original A has no retained native completion');
+        await assert.rejects(fs.access(host.local(thrownWrite.uri)),{code:'ENOENT'});
+        const blockedCalls=host.calls.length;
+        await assert.rejects(call(s,'load','x'),{message:'Error: Uncertain native write; wait for rollback'});
+        await assert.rejects(call(s,'save',{id:'x',body:'retry'}),{message:'Error: Uncertain native write; wait for rollback'});
+        assert.equal(host.calls.length,blockedCalls,'unresolved acceptance must not start new I/O');
+        // An explicit fixture failure completion enters the existing rollback path;
+        // only the real on-disk delete/ENOENT callback may release the production fence.
+        thrownWrite.fail('S19 explicit fixture completion: no write accepted',300);
+        await host.idle();
+        const rollback=host.calls.slice(blockedCalls);
+        assert.equal(rollback.length,1);assert.equal(rollback[0].method,'delete');assert.equal(rollback[0].uri,thrownWrite.uri);
+        await assert.rejects(fs.access(host.local(thrownWrite.uri)),{code:'ENOENT'});
+      }
+    } finally {host.writeText=originalWrite;}
+    assert.equal((await call(s,'load','x')).body,'old');
   }
   await call(s,'save',{id:'x',body:'new'});assert.equal((await call(s,'load','x')).body,'new');
 });

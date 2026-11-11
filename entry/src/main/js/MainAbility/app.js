@@ -8,6 +8,7 @@ import shell from './common/shell';
 var routeParams = {};
 // Store operations stay callback-based. Pages remain free to render while init runs.
 var state = 'idle', initError = null, listeners = [];
+var storeGen = 0, lifecycleGen = 0;
 // Diagnostic-only scalars; do not bind these to page data or storage.
 var diagLast = '', diagView = '', diagTimer = 0, diagBeat = 0, diagVisible = false, diagGen = 0, diagCancelFailed = false;
 // Own-data snapshot read: descriptor only, never executes page accessors.
@@ -24,22 +25,18 @@ function ownScalar(p, key) {
   } catch (ignored) {}
   return '';
 }
-// Own-data property extraction only: never invokes getters or custom conversions,
-// so a business error accessor keeps its full read count for the original handler.
+// Diagnostic output is fixed type labels and optional bounded numeric code only.
+// Never export error prose, stack, filenames, or invoke their accessors/conversions.
 function errText(err) {
-  if (err === null || err === undefined) return String(err);
-  if (typeof err !== 'object' && typeof err !== 'function') return String(err).slice(0, 100);
-  var out = '', names = ['message', 'stack', 'code'], i, d;
-  try {
-    for (i = 0; i < names.length; i++) {
-      d = Object.getOwnPropertyDescriptor(err, names[i]);
-      if (d && 'value' in d && (typeof d.value === 'string' || typeof d.value === 'number')) {
-        if (out) out += ' ';
-        out += names[i] + '=' + String(d.value).slice(0, 80);
-      }
-    }
-  } catch (ignored) {}
-  return out || 'error';
+  var type = err === null ? 'null' : typeof err, out = 'type=' + type;
+  if (type === 'number' && isFinite(err) && err % 1 === 0 && err >= -9999 && err <= 9999) return out + ' value=' + err;
+  if (type === 'object' || type === 'function') {
+    try {
+      var d = Object.getOwnPropertyDescriptor(err, 'code');
+      if (d && 'value' in d && typeof d.value === 'number' && isFinite(d.value) && d.value % 1 === 0 && d.value >= -9999 && d.value <= 9999) out += ' code=' + d.value;
+    } catch (ignored) {}
+  }
+  return out;
 }
 function trace(stage) {
   try { diagLast = stage; L.i('stage', (stage + ' state=' + state + diagView).slice(0, 240)); } catch (ignored) {}
@@ -97,15 +94,40 @@ function reportError(stage, err) {
 }
 function onerror(err) { reportError('L/app.onerror', err); }
 function notify(err) {
-  if (state === 'destroyed') return;
+  if (state !== 'loading') return;
   state = err ? 'failed' : 'ready'; initError = err || null;
   trace('L/app.notify.' + state);
-  var waiting = listeners; listeners = [];
+  var waiting = listeners, resultError = initError, notifyGen = lifecycleGen; listeners = [];
+  var thrown = false, first;
   for (var i = 0; i < waiting.length; i++) {
+    if (notifyGen !== lifecycleGen || state === 'destroyed') break;
+    if (typeof waiting[i] !== 'function') continue;
     trace('L/app.dispatch');
-    try { waiting[i](initError); }
-    catch (e) { reportError('L/app.dispatch.throw', e); throw e; }
+    try { waiting[i](resultError); }
+    catch (e) { reportError('L/app.dispatch.throw', e); if (!thrown) { thrown = true; first = e; } }
   }
+  if (thrown) throw first;
+}
+function prepareStore() {
+  var gen = ++storeGen;
+  state = 'loading'; initError = null;
+  trace('L/app.store.init.enter');
+  try {
+    Store.init(function (err) {
+      if (gen !== storeGen || state !== 'loading') return;
+      trace('L/app.store.callback.' + (err ? 'error' : 'ok'));
+      if (err) reportError('L/app.store.callback', err);
+      try { notify(err); }
+      catch (e) { reportError('L/app.notify.throw', e); throw e; }
+    });
+  } catch (e) {
+    reportError('L/app.store.init.throw', e);
+    if (gen === storeGen && state === 'loading') {
+      try { notify(e || new Error('Store initialization failed')); } catch (ignored) {}
+    }
+    throw e;
+  }
+  trace('L/app.store.init.return');
 }
 export default {
   onCreate: function () {
@@ -115,19 +137,12 @@ export default {
     try { L.page('MainAbility'); } catch (e) { reportError('L/app.logger.page', e); throw e; }
     stopHeartbeat(); diagLast = ''; diagView = ''; diagBeat = 0; diagVisible = true;
     trace('L/app.create.enter');
+    trace('S/build.readiness');
 
     routeParams = {}; state = 'loading'; initError = null;
     heartbeat();
-    trace('L/app.store.init.enter');
-    try {
-      Store.init(function (err) {
-        trace('L/app.store.callback.' + (err ? 'error' : 'ok'));
-        if (err) reportError('L/app.store.callback', err);
-        try { notify(err); }
-        catch (e) { reportError('L/app.notify.throw', e); throw e; }
-      });
-    } catch (e) { reportError('L/app.store.init.throw', e); throw e; }
-    trace('L/app.store.init.return');
+    try { if (typeof Store.setTrace === 'function') Store.setTrace(trace); } catch (ignored) {}
+    prepareStore();
     trace('L/app.create.exit');
   },
   getLiubaiParams: function () { return routeParams; },
@@ -135,6 +150,7 @@ export default {
   getStore:function(){return Store;},
   getSession:function(){return Session;},
   getLiubaiStoreState: function () { return state; },
+  retryLiubaiStore: function () { if (state === 'failed') prepareStore(); },
   whenLiubaiReady: function (callback) {
     if (typeof callback !== 'function') return;
     if (state === 'ready' || state === 'failed') {
@@ -147,19 +163,26 @@ export default {
       try { callback(new Error('Application destroyed')); }
       catch (e) { reportError('L/app.ready.destroyed.throw', e); throw e; }
     }
-    else listeners.push(callback);
+    else {
+      var waiting = listeners, slot = waiting.indexOf(null);
+      if (slot < 0) { if (waiting.length >= 8) { callback(new Error('Application readiness capacity reached')); return; } slot = waiting.length; }
+      waiting[slot] = callback;
+      var canceled = false;
+      return function () { if (canceled) return; canceled = true; if (waiting[slot] === callback) waiting[slot] = null; while (waiting.length && waiting[waiting.length - 1] === null) waiting.pop(); };
+    }
   },
   onDestroy: function () {
     try { shell.setVisibilityHook(null); } catch (ignored) {}
     diagVisible = false; stopHeartbeat(); trace('L/app.destroy');
+    var disposingFailed = false;
     try {
-    state = 'destroyed'; listeners = []; routeParams = {};
+    state = 'destroyed'; storeGen++; lifecycleGen++; listeners = []; routeParams = {};
     Store.dispose();
 
     } catch (e) {
-      reportError('L/app.destroy.throw', e); throw e;
+      disposingFailed = true; reportError('L/app.destroy.throw', e); throw e;
     } finally {
-      try { L.stop(); } catch (e) { reportError('L/app.logger.stop', e); throw e; }
+      try { L.stop(); } catch (e) { reportError('L/app.logger.stop', e); if (!disposingFailed) throw e; }
     }
   },
   traceLiubai: tracePage,

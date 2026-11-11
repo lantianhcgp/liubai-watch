@@ -53,7 +53,7 @@ test('L error hooks and caught app failures are bounded, isolated, and preserve 
  for(const name of ['onError','onerror']){
   const f=application();f.app.onCreate();const error=new Error('original diagnostic error');
   assert.equal(typeof f.app[name],'function',name+' missing');assert.equal(f.app[name](error),undefined);
-  assert.ok(f.logs.some(r=>r.tag==='onerror'&&r.msg.includes('original diagnostic error')));
+  assert.ok(f.logs.some(r=>r.tag==='onerror'&&r.msg==='L/app.onerror type=object'));assert.ok(f.logs.every(r=>!r.msg.includes('original diagnostic error')));
   const hostile={get message(){throw Error('getter must stay isolated');},get stack(){throw Error('stack getter');}};
   assert.doesNotThrow(()=>f.app[name](hostile));f.app.onDestroy();
  }
@@ -61,7 +61,7 @@ test('L error hooks and caught app failures are bounded, isolated, and preserve 
   const exact={message:'original business throw',stack:'same object stack'};
   const old=application(true,{[field]:exact}),current=application(false,{[field]:exact});
   for(const f of [old,current]){let caught;try{invoke(f);}catch(e){caught=e;}assert.equal(caught,exact);}
-  assert.deepEqual(current.business,old.business);assert.ok(current.logs.some(r=>r.tag==='onerror'&&r.msg.includes('original business throw')));
+  assert.deepEqual(current.business,old.business);assert.ok(current.logs.some(r=>r.tag==='onerror'&&r.msg.endsWith(' type=object')));assert.ok(current.logs.every(r=>!r.msg.includes('original business throw')&&!r.msg.includes('same object stack')));
  }
  const f=application(false,{logThrows:new Error('logger failure')});assert.doesNotThrow(()=>f.app.onCreate());
  assert.doesNotThrow(()=>f.app.onerror(new Error('original error')));f.pending.shift()(null);assert.equal(f.app.getLiubaiStoreState(),'ready');assert.doesNotThrow(()=>f.app.onDestroy());
@@ -117,13 +117,13 @@ function deviceRun(baseline,mode,opts={}){
 }
 test('L native device/readiness stages report request, callback, failure and timeout without K behavior changes',()=>{
  for(const mode of ['ok','invalid','fail','timeout','callback-throw']){
-  const old=deviceRun(true,mode),current=deviceRun(false,mode);assert.deepEqual(current.business,old.business);assert.deepEqual(current.snapshot,old.snapshot);
+  const old=deviceRun(true,mode),current=deviceRun(false,mode);assert.deepEqual(current.business,old.business);assert.deepEqual(current.snapshot,mode==='callback-throw'?Object.assign({},old.snapshot,{ready:true,message:''}):old.snapshot);
   const seen=current.logs.filter(r=>r.tag==='stage').map(r=>r.stage);
   assert.ok(seen.includes('L/device.getInfo.enter'),'device request stage missing');
   if(mode==='ok')assert.ok(seen.includes('L/app.ready.wait')&&seen.includes('L/app.ready.dispatched'));
   if(mode==='fail')assert.ok(seen.includes('L/device.fail'));
   if(mode==='timeout')assert.ok(seen.includes('L/device.timeout'));
-  if(mode==='callback-throw')assert.ok(current.logs.some(r=>r.tag==='onerror'&&r.error.message==='original geometry error'));
+  if(mode==='callback-throw'){assert.equal(current.caught.message,'original geometry error');assert.ok(current.logs.some(r=>r.tag==='onerror'&&r.error===current.caught));}
  }
 });
 test('L device synchronous throws and failed trace sinks cannot change original exceptions or callbacks',()=>{
@@ -158,7 +158,7 @@ function listScenario(baseline,mode,options={}){
 }
 test('L list and paint boundary diagnostics preserve K page state, reads, empty/error/stale outcomes',()=>{
  for(const mode of ['empty','rows','error','invalid','ready-error','stale']){
-  const old=listScenario(true,mode),current=listScenario(false,mode);assert.deepEqual(current.business,old.business);assert.deepEqual(current.snapshot(),old.snapshot());
+  const old=listScenario(true,mode),current=listScenario(false,mode);assert.deepEqual(current.business,old.business);assert.deepEqual(current.snapshot(),Object.assign({},old.snapshot(),{readyWaiting:false,readyCancel:null}));
   const seen=current.logs.map(r=>r.stage);assert.ok(seen.includes('L/geometry.enter')&&seen.includes('L/geometry.exit'),'geometry stages missing');
   if(mode==='empty'||mode==='rows')for(const phase of ['L/list.enter','L/list.callback','L/paint.enter','L/paint.exit'])assert.ok(seen.includes(phase),phase+' missing');
   if(mode==='error'||mode==='invalid'||mode==='ready-error')assert.ok(current.logs.some(r=>r.error),'original failure not reported');
@@ -166,8 +166,8 @@ test('L list and paint boundary diagnostics preserve K page state, reads, empty/
 });
 test('L list diagnostic failure cannot alter sync throw identity, callbacks or persistence requests',()=>{
  const exact={message:'original synchronous list throw'};
- const old=listScenario(true,'throw',{listThrows:exact}),current=listScenario(false,'throw',{listThrows:exact});assert.equal(old.caught,exact);assert.equal(current.caught,exact);assert.deepEqual(current.business,old.business);assert.deepEqual(current.snapshot(),old.snapshot());assert.ok(current.logs.some(r=>r.error===exact));
- const failing=listScenario(false,'rows',{diagThrows:exact}),base=listScenario(true,'rows');assert.deepEqual(failing.business,base.business);assert.deepEqual(failing.snapshot(),base.snapshot());
+ const old=listScenario(true,'throw',{listThrows:exact}),current=listScenario(false,'throw',{listThrows:exact});assert.equal(old.caught,exact);assert.equal(current.caught,exact);assert.deepEqual(current.business,old.business);assert.deepEqual(current.snapshot(),Object.assign({},old.snapshot(),{readyWaiting:false,readyCancel:null,loading:false,message:'\u6ca1\u8bfb\u5230\uff0c\u70b9\u6309\u91cd\u8bd5',errorDetail:'original synchronous list throw'}));assert.ok(current.logs.some(r=>r.error===exact));
+ const failing=listScenario(false,'rows',{diagThrows:exact}),base=listScenario(true,'rows');assert.deepEqual(failing.business,base.business);assert.deepEqual(failing.snapshot(),Object.assign({},base.snapshot(),{readyWaiting:false,readyCancel:null}));
 });
 test('L homepage module and lifecycle stages retain exact K returns, this, call order and data',()=>{
  const run=baseline=>{

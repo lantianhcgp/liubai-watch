@@ -1,5 +1,12 @@
 <stack class="page" @swipe="bodySwipe">
- <div class="loading" if="{{ !ready }}" @click="retry"><text class="notice">{{ message }}</text></div>
+ <div class="loading" if="{{ !ready && !shellReady }}" @click="retry"><text class="notice">{{ message }}</text></div>
+ <stack class="surface" if="{{ shellReady && !ready }}" style="width: {{ w }}px; height: {{ h }}px;">
+  <div class="wait-message" style="left: {{ statusX }}px; top: {{ statusY }}px; width: {{ statusW }}px; height: {{ statusH }}px;"><text class="notice" style="width: {{ statusW }}px; height: {{ statusH }}px;">{{ message }}</text></div>
+  <div class="wait-nav" style="left: {{ statusNavX }}px; top: {{ statusNavY }}px; width: {{ statusNavW }}px; height: {{ statusHit }}px;">
+   <div class="wait-command" @click="waitingBack" style="width: {{ statusNavW / 2 }}px; height: {{ statusHit }}px;"><text class="cancel">&#x8FD4;&#x56DE;</text></div>
+   <div class="wait-command" @click="retry" style="width: {{ statusNavW / 2 }}px; height: {{ statusHit }}px;"><text class="done">&#x91CD;&#x8BD5;</text></div>
+  </div>
+ </stack>
  <stack class="surface" if="{{ ready }}" style="width: {{ w }}px; height: {{ h }}px;">
   <list class="crown" ref="crown" @scrollend="onScroll" @swipe="bodySwipe" style="width: {{ w }}px; height: {{ h }}px;"><list-item class="sensor" style="width: {{ w }}px; height: {{ h }}px;"></list-item></list>
   <text class="line" for="{{ (i, line) in lines }}" style="left: {{ line.x }}px; top: {{ line.y }}px; width: {{ line.width }}px; height: {{ line.height }}px; font-size: {{ line.font }}px;">{{ line.text }}</text>

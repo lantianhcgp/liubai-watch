@@ -5,6 +5,16 @@ import U from './utf8.js';
 var ROOT = 'internal://app/lb1';
 var PAGE = 6, MAX_PAGES = 256, CHUNK = 2800, MAX_BODY = 32768;
 var TIMEOUT = 10000, ready = false, closed = false, busy = false;
+// Preparation has one owner. A watchdog settles JS, not the native operation.
+var initActive = false, initNative = 0, initWaiters = [], traceHook = null, initOwner = null;
+function setTrace(fn) { traceHook = typeof fn === 'function' ? fn : null; }
+function trace(stage) { try { if (traceHook) traceHook(stage); } catch (ignored) {} }
+function ioStage(method, uri) {
+  if (method === 'mkdir' && uri === ROOT) return 'S/io.mkdir';
+  if (uri === ROOT + '/c0.json') return 'S/io.c0.' + (method === 'readText' ? 'read' : method === 'writeText' ? 'write' : 'other');
+  if (uri === ROOT + '/c1.json') return 'S/io.c1.' + (method === 'readText' ? 'read' : method === 'writeText' ? 'write' : 'other');
+  return '';
+}
 // Only the two independent generation reads may overlap. Public tasks and all
 // writes remain serialized; cancellation handles never grow with record count.
 var pending = [], fence = false, serial = 0, queue=[],savePending=false;
@@ -26,6 +36,8 @@ function recordRoots(state) {
 }
 function draftRoots(state) { return gcBlobs({blobs: state.data.value ? [state.data.value.blob] : []}); }
 function error(text) { return new Error(text); }
+// Called only from catch: error-first callbacks cannot encode a falsy throw.
+function caughtError(value) { if (value) return value; var e = error('File operation threw'); e.cause = value; return e; }
 function deliver(cb, e, v) { if (typeof cb === 'function') cb(e || null, v); }
 function validKey(s) {
   if (typeof s !== 'string' || s.length < 1 || s.length > 40) return false;
@@ -45,8 +57,10 @@ function clone(x) { return JSON.parse(JSON.stringify(x)); }
 function io(method, args, cb) {
   if (closed) return cb(error('Store disposed'));
   if (pending.length >= 2) return cb(error('Native I/O capacity reached'));
-  var done = false, timed = false, timer, cancel;
+  var done = false, timed = false, timer, cancel, nativeDone = false;
+  var initializing = initActive, owner = initializing ? initOwner : null, stage = initializing ? ioStage(method, args.uri) : '';
   var writing = method === 'writeText';
+  function nativeEnd() { if (nativeDone) return; nativeDone = true; if (initializing) initNative--; }
   function rollback() {
     // A late native write may still happen AFTER a watchdog fires. Fence all
     // retries until its actual completion and removal; never reuse this URI.
@@ -56,38 +70,63 @@ function io(method, args, cb) {
     try { File.delete({uri: args.uri, success: end, fail: function (d, c) { if (c === 301) end(); }}); }
     catch (e) { clearTimeout(guard); }
   }
-  function finish(e, value) {
+  function finish(e, value, nativeFailure) {
     if (done) { if (timed && writing) { timed = false; rollback(); } return; }
-    done = true; clearTimeout(timer);
+    done = true;
+    try { clearTimeout(timer); } catch (ignored) {}
     var at = pending.indexOf(cancel);
     if (at >= 0) pending.splice(at, 1);
-    cb(e, value);
+    if (owner && !owner.active) return;
+    try { cb(e, value, nativeFailure === true); }
+    catch (caught) { if (owner && owner.active && owner.fail) { try { owner.fail(caughtError(caught)); } catch (ignored) {} } throw caught; }
   }
   cancel = function () {
     if (writing) { timed = true; fence = true; }
     finish(error('Store disposed'));
   };
+  cancel.owner = owner;
   pending.push(cancel);
-  timer = setTimeout(function () {
+  try { timer = setTimeout(function () {
+    if (done) return;
     if (writing) { timed = true; fence = true; }
-    finish(error('File ' + method + ' timeout'));
-  }, TIMEOUT);
-  args.success = function (v) { finish(null, v); };
-  args.fail = function (d, c) { var e = error('File ' + method + ' failed (' + c + '): ' + String(d)); e.code = Number(c); finish(e); };
-  try { File[method](args); } catch (e) { if (done) throw e; finish(error('File ' + method + ': ' + String(e))); }
+    var e = error('File ' + method + ' timeout'); e.timeout = true;
+    trace(stage ? stage + '.timeout' : 'S/io.timeout');
+    finish(e);
+  }, TIMEOUT); } catch (e) { finish(caughtError(e)); return; }
+  args.success = function (v) { nativeEnd(); if (!done && stage) trace(stage + '.ok'); finish(null, v); };
+  args.fail = function (d, c) {
+    nativeEnd();
+    if (done) { finish(null); return; }
+    var e, nativeFailure = false;
+    try { e = error('File ' + method + ' failed (' + c + '): ' + String(d)); e.code = Number(c); nativeFailure = true; }
+    catch (caught) { e = caughtError(caught); }
+    if (stage) trace(stage + '.fail');
+    finish(e, undefined, nativeFailure);
+  };
+  if (initializing) initNative++;
+  if (stage) trace(stage + '.begin');
+  // A throw can follow native acceptance. Only its real callback ends ownership.
+  try { File[method](args); } catch (e) { if (done) throw e; if (writing) { timed = true; fence = true; } finish(caughtError(e)); }
 }
 function read(uri, cb) {
   // A short bounded byte read reached EOF. Only a full buffer needs stat to
   // distinguish exactly 4096 bytes from a truncated oversized file.
-  io('readText', {uri: uri, encoding: 'UTF-8', position: 0, length: 4096}, function (e, result) {
-    if (e) return cb(e);
-    if (!result || typeof result.text !== 'string' || !U.valid(result.text)) return cb(error('Corrupt file text'));
-    var length = U.bytes(result.text);
-    if (length < 4096) return cb(null, result.text);
+  io('readText', {uri: uri, encoding: 'UTF-8', position: 0, length: 4096}, function (e, result, nativeFailure) {
+    if (e) return cb(e, undefined, nativeFailure);
+    var text, length, decodeError;
+    try {
+      text = result && result.text;
+      if (typeof text !== 'string' || !U.valid(text)) decodeError = error('Corrupt file text');
+      else length = U.bytes(text);
+    } catch (caught) { decodeError = caughtError(caught); }
+    if (decodeError) return cb(decodeError);
+    if (length < 4096) return cb(null, text);
     io('get', {uri: uri, recursive: false}, function (err, info) {
       if (err) return cb(err);
-      if (!info || info.type !== 'file' || info.length > 4096 || info.length !== length) return cb(error('Corrupt or oversized small file'));
-      cb(null, result.text);
+      var checkError;
+      try { if (!info || info.type !== 'file' || info.length > 4096 || info.length !== length) checkError = error('Corrupt or oversized small file'); }
+      catch (caught) { checkError = caughtError(caught); }
+      cb(checkError || null, text);
     });
   });
 }
@@ -101,8 +140,13 @@ function write(uri, text, cb) {
 function mkdir(uri, cb) {
   io('mkdir', {uri: uri, recursive: true}, function (e) {
     if (!e) return cb(null);
+    var timeout = false;
+    try { var d = Object.getOwnPropertyDescriptor(e, 'timeout'); timeout = !!(d && 'value' in d && d.value === true); } catch (ignored) {}
+    if (closed || timeout || initNative) return cb(e);
     io('get', {uri: uri, recursive: false}, function (other, info) {
-      cb(other || (!info || info.type !== 'dir' ? error('Directory unavailable') : null));
+      var failure = other;
+      if (!failure) { try { if (!info || info.type !== 'dir') failure = error('Directory unavailable'); } catch (caught) { failure = caughtError(caught); } }
+      cb(failure || null);
     });
   });
 }
@@ -115,16 +159,27 @@ function unpack(text) {
 function pair(base, empty, cb, rootsOf) {
   var best = null, bestSlot = -1, found = false, roots = [], left = 2, failure = null;
   function part(slot) {
-    read(base + slot + '.json', function (e, text) {
-      if (e && e.code !== 301 && String(e.message).indexOf('Corrupt') < 0 && !failure) failure = e;
-      if (!e || (e && e.code !== 301)) found = true;
+    read(base + slot + '.json', function (e, text, nativeFailure) {
+      var absent = false, corrupt = false;
+      if (e) {
+        try {
+          var code = Object.getOwnPropertyDescriptor(e, 'code'), message = Object.getOwnPropertyDescriptor(e, 'message');
+          absent = !!(nativeFailure && code && 'value' in code && code.value === 301);
+          corrupt = !!(message && 'value' in message && typeof message.value === 'string' && message.value.indexOf('Corrupt') >= 0);
+        } catch (ignored) {}
+      }
+      if (e && !absent && !corrupt && !failure) failure = e;
+      if (!e || !absent) found = true;
       if (!e) {
-        var x = unpack(text), descriptors;
-        if (x && rootsOf) {
-          descriptors = rootsOf(x);
-          if (!descriptors) failure = failure || error('Corrupt GC metadata roots');
-          else roots = gcUnion(roots, descriptors);
-        }
+        var x, descriptors;
+        try {
+          x = unpack(text);
+          if (x && rootsOf) {
+            descriptors = rootsOf(x);
+            if (!descriptors) failure = failure || error('Corrupt GC metadata roots');
+            else roots = gcUnion(roots, descriptors);
+          }
+        } catch (caught) { failure = failure || caughtError(caught); }
         // Equal sequence selection must not depend on native completion order.
         if (x && (!best || x.seq > best.seq || (x.seq === best.seq && slot < bestSlot))) { best = x; bestSlot = slot; }
       }
@@ -190,7 +245,7 @@ function runTask(job){
     if(e) { forgetLocations(); listResume = null; }
     try{deliver(job.cb,e,v);}finally{if(closed||fence){while(queue.length)deliver(queue.shift().cb,error(closed?'Store disposed':'Uncertain native write; wait for rollback'));savePending=false;}else if(!busy&&queue.length)runTask(queue.shift());}
   }
-  try{job.work(end);}catch(e){end(e);}
+  try{job.work(end);}catch(e){if(done)throw e;end(caughtError(e));}
 }
 function locate(c, id, cb) {
   if (idCatalog !== c.seq) forgetLocations();
@@ -263,6 +318,7 @@ function gcUnion(a, b) {
 function gcRoots(dir, kind, cb) {
   if (kind === 'orphan') return cb(null, []);
   pair(dir + (kind === 'draft' ? '/d' : '/i'), kind === 'draft' ? {value: null} : {items: []}, function (e, state, roots) {
+    if (!e && kind === 'index' && state.seq < 0) return cb(error('Corrupt index page'));
     cb(e, e ? undefined : roots);
   }, kind === 'draft' ? draftRoots : recordRoots);
 }
@@ -288,9 +344,19 @@ function gcCollect(dir, kind, cb, context) {
             if (failed) survivors.push(b); else changed = true;
             return next();
           }
-          io('delete', {uri: dir + '/b' + b.token + '_' + n++ + '.txt'}, function (de) {
+          io('delete', {uri: dir + '/b' + b.token + '_' + n++ + '.txt'}, function (de, value, nativeFailure) {
             if (closed) return cb(error('Store disposed'));
-            if (de && de.code !== 301) failed = true;
+            if (initActive && de) {
+              var timeout = false;
+              try { var d = Object.getOwnPropertyDescriptor(de, 'timeout'); timeout = !!(d && 'value' in d && d.value === true); } catch (ignored) {}
+              if (initNative || timeout) return cb(de);
+            }
+            if (de) {
+              var code;
+              try { code = Object.getOwnPropertyDescriptor(de, 'code'); } catch (ignored) {}
+              if (!nativeFailure || !code || !('value' in code)) return cb(de);
+              if (code.value !== 301) failed = true;
+            }
             chunk();
           });
         }
@@ -500,7 +566,7 @@ function list(q, cb) {
     if (typeof offset !== 'number' || offset < 0 || offset % 1 || typeof limit !== 'number' || limit < 1 || limit > 12 || limit % 1 || !validFilter(filter) || (filter === 'day' && !dateShape(q.day || '', 10)) || (filter === 'month' && !dateShape(q.month || '', 7))) return done(error('Invalid list query (limit 1..12)'));
     catalog(function (e, c) {
       if (e) return done(e);
-      var queryKey = filter + '|' + (q.day || '') + '|' + (q.month || '') + '|' + c.seq;
+      var queryKey = filter + '|' + (q.day || '') + '|' + (q.month || '') + '|' + c.seq + '|' + limit;
       var resume = listResume && listResume.key === queryKey && listResume.offset === offset ? listResume : null;
       var cursor = resume ? resume.cursor : null, remaining = resume ? offset-resume.offset : offset, total = resume ? resume.total : 0, first = !resume;
       if(resume&&remaining===0&&resume.buffer&&(resume.buffer.length>=limit||(!resume.more&&resume.buffer.length>0))){var cached=resume.buffer.splice(0,limit);resume.offset+=cached.length;if(!resume.more&&!resume.buffer.length)listResume=null;return done(null,{items:cached,hasMore:resume.more||resume.buffer.length>0,total:total});}
@@ -597,13 +663,44 @@ function draftClear(cb) {
   });
 }
 function init(cb) {
-  task(cb, function (done) {
+  if (closed) return deliver(cb, error('Store disposed'));
+  if (fence) return deliver(cb, error('Uncertain native write; wait for rollback'));
+  if (initActive) {
+    if (initWaiters.length >= 8) return deliver(cb, error('Store readiness capacity reached'));
+    initWaiters.push(cb); return;
+  }
+  if (initNative) return deliver(cb, error('Native preparation still pending; retry after completion'));
+  if (ready) return deliver(cb, null, true);
+  var owner = {active:true,fail:null}; initOwner = owner;
+  initActive = true; initWaiters = [cb];
+  function complete(e, value) {
+    owner.active = false; initActive = false; initOwner = null;
+    if (e) {
+      // Logical cancellation never releases native ownership. Existing late-write
+      // rollback remains fenced; stale preparation callbacks cannot continue.
+      var handles = pending.slice();
+      for (var j = 0; j < handles.length; j++) if (handles[j].owner === owner) handles[j]();
+    }
+    var waiting = initWaiters, thrown = false, first; initWaiters = [];
+    trace(e ? 'S/store.failed' : 'S/store.ready');
+    for (var i = 0; i < waiting.length; i++) {
+      try { deliver(waiting[i], e, value); } catch (caught) { if (!thrown) { thrown = true; first = caught; } }
+    }
+    if (thrown) throw first;
+  }
+  trace('S/store.begin');
+  task(complete, function (done) {
+    owner.fail = done;
     mkdir(ROOT, function (e) {
       if (e) return done(e);
+      if (closed) return done(error('Store disposed'));
+      trace('S/store.catalog');
       catalog(function (ce, c) {
         if (ce) return done(ce);
-        if (c.seq >= 0) return gcRecover(c, function (ge) { if (!ge) ready = true; done(ge, !ge); });
-        commit(ROOT + '/c', c, {pages: 0}, function (we) { if (!we) ready = true; done(we, !we); });
+        if (closed) return done(error('Store disposed'));
+        if (c.seq >= 0) { trace('S/store.recover'); return gcRecover(c, function (ge) { if (closed) ge = ge || error('Store disposed'); if (initNative) ge = ge || error('Native preparation still pending'); if (!ge) ready = true; done(ge, !ge); }); }
+        trace('S/store.first.commit');
+        commit(ROOT + '/c', c, {pages: 0}, function (we) { if (closed) we = we || error('Store disposed'); if (!we) ready = true; done(we, !we); });
       });
     });
   }, true);
@@ -611,4 +708,4 @@ function init(cb) {
 function dispose() { listResume = null; closed = true; ready = false; while (pending.length) pending[0](); while(queue.length)deliver(queue.shift().cb,error('Store disposed')); }
 export default {init: init, list: list, load: load, save: save, flag: flag,
   draftGet: draftGet, draftPut: draftPut, draftClear: draftClear,
-  settingGet: auxiliaryGet, settingPut: auxiliaryPut, dispose: dispose};
+  settingGet: auxiliaryGet, settingPut: auxiliaryPut, dispose: dispose, setTrace: setTrace};

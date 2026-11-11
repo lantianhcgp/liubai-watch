@@ -47,18 +47,19 @@ function stateSnapshot(s){return Object.fromEntries(Object.entries(s).map(([k,v]
 function expectedPSource(){
  let expected=N_INIT;
  const changes=[
-  ["var q=shell.params(p);p.today=today();p.day=q.day||'';p.month=q.month||p.today.slice(0,7);p.filter=kind==='trash'?'trash':kind==='day'?'day':kind==='history'?'month':'all';", "var q=shell.params(p);try{q.month;}catch(ignored){}try{p.today;}catch(ignored){}var todayStr,dayStr,monthValue;p.today=todayStr=today();p.day=dayStr=q.day||'';p.month=monthValue=q.month||todayStr.slice(0,7);p.filter=kind==='trash'?'trash':kind==='day'?'day':kind==='history'?'month':'all';try{p.today;}catch(ignored){}"],
+  ["var q=shell.params(p);p.today=today();p.day=q.day||'';p.month=q.month||p.today.slice(0,7);p.filter=kind==='trash'?'trash':kind==='day'?'day':kind==='history'?'month':'all';", "var q=shell.params(p);try{var qmDescriptor=Object.getOwnPropertyDescriptor(q,'month');if(qmDescriptor&&'value' in qmDescriptor)void qmDescriptor.value;}catch(ignored){}try{p.today;}catch(ignored){}var todayStr,dayStr,monthValue;p.today=todayStr=today();p.day=dayStr=q.day||'';p.month=monthValue=(function(route){try{return route.month;}catch(first){return route.month;}})(q)||todayStr.slice(0,7);p.filter=kind==='trash'?'trash':kind==='day'?'day':kind==='history'?'month':'all';try{p.today;}catch(ignored){}"],
   ["p.day.slice(5,7)","dayStr.slice(5,7)"],
   ["p.day.slice(8)","dayStr.slice(8)"],
   ["p.today.slice(5)","todayStr.slice(5)"],
-  ["p.month.replace('-',", "monthValue.replace('-',"]
+  ["p.month.replace('-',", "monthValue.replace('-',"],
+  ["  try{shell.init(p,function(info)","  if(p.readyCancel){p.readyCancel();p.readyCancel=null;}p.readyWaiting=false;\n  try{shell.init(p,function(info)"]
  ];
  for(const [before,after] of changes){assert.equal(expected.split(before).length,2,'each authorized expectation rewrite occurs exactly once');expected=expected.replace(before,after);}
  const begin=listSource.indexOf('function init(p,kind) {'),end=listSource.indexOf('function next(p)');
  return listSource.slice(0,begin)+expected+listSource.slice(end);
 }
 function parity(options={}){const sentinel=options.sentinel||new Error('Expected a function.');const n=execute(expectedPSource(),{...options,sentinel}),o=execute(listSource,{...options,sentinel});assert.deepEqual(o.business,n.business,'all getter/setter/call/coercion events match the authorized P expectation sequence');assert.equal(o.caught,n.caught,'same propagation identity as the authorized P sequence');assert.equal(o.returned,n.returned);assert.deepEqual(o.counts,n.counts);assert.deepEqual(stateSnapshot(o.state),stateSnapshot(n.state),'own business state values match across distinct VM realms');return {n,o,sentinel};}
-function groupFailure(group,options){const {n,o,sentinel}=parity(options);assert.equal(n.caught,sentinel);assert.equal(o.caught,sentinel,'must rethrow the original value, not wrap or swallow');const rows=o.errorRecords.filter(r=>r.msg.indexOf('L/probe.o.g'+group+'.throw ')===0);assert.equal(rows.length,1,'exactly one group report reaches unchanged shell.trace/appRoot/errorLiubai');assert.ok(rows[0].msg.includes('message='+sentinel.message),'real Error own message must be in actual onerror record');assert.ok(!o.stages.some(s=>s.indexOf('L/probe.o.g'+group+'.ok')===0));assert.ok(!o.stages.includes('L/list.init.enter'));for(let i=1;i<group;i++)assert.equal(o.stages.filter(s=>s.indexOf('L/probe.o.g'+i+'.ok')===0).length,1);for(let i=group+1;i<=6;i++)assert.ok(!o.stages.some(s=>s.indexOf('L/probe.o.g'+i+'.ok')===0));return o;}
+function groupFailure(group,options){const {n,o,sentinel}=parity(options);assert.equal(n.caught,sentinel);assert.equal(o.caught,sentinel,'must rethrow the original value, not wrap or swallow');const rows=o.errorRecords.filter(r=>r.msg.indexOf('L/probe.o.g'+group+'.throw ')===0);assert.equal(rows.length,1,'exactly one group report reaches unchanged shell.trace/appRoot/errorLiubai');assert.equal(rows[0].msg,'L/probe.o.g'+group+'.throw type=object','fixed structured stage/type in the same actual onerror record');assert.ok(!o.stages.some(s=>s.indexOf('L/probe.o.g'+group+'.ok')===0));assert.ok(!o.stages.includes('L/list.init.enter'));for(let i=1;i<group;i++)assert.equal(o.stages.filter(s=>s.indexOf('L/probe.o.g'+i+'.ok')===0).length,1);for(let i=group+1;i<=6;i++)assert.ok(!o.stages.some(s=>s.indexOf('L/probe.o.g'+i+'.ok')===0));return o;}
 test('O g1 reports each bare-field setter sentinel through real errorLiubai and rethrows with exact N order',()=>{
  for(const key of ['kind','alive','allowed'])groupFailure(1,{fail:{type:'page-set',key}});
 });
@@ -70,7 +71,7 @@ test('O g2 exposes first listGen read and setter failures without an additional 
 test('O g2 pre probe never coerces unknown listGen values; original numeric coercion still occurs once',()=>{
  const {o}=parity({coerceListGen:true});assert.equal(o.counts.coercions,1);assert.ok(o.stages.includes('L/probe.o.pre.listGen v=object'));assert.ok(o.stages.includes('L/probe.o.g2.ok lg=8'));
  const sentinel=new Error('numeric coercion sentinel');const n=execute(nSource(),{coerceListGen:true,fail:{type:'listGen-coerce'},sentinel});const cur=execute(listSource,{coerceListGen:true,fail:{type:'listGen-coerce'},sentinel});
- assert.equal(n.caught,sentinel);assert.equal(cur.caught,sentinel);assert.deepEqual(cur.business,n.business);assert.equal(cur.counts.coercions,1);assert.ok(cur.errorRecords.some(r=>r.msg.startsWith('L/probe.o.g2.throw message=numeric coercion sentinel')));
+ assert.equal(n.caught,sentinel);assert.equal(cur.caught,sentinel);assert.deepEqual(cur.business,n.business);assert.equal(cur.counts.coercions,1);assert.ok(cur.errorRecords.some(r=>r.msg==='L/probe.o.g2.throw type=object'));
 });
 test('O g3 reports each reset-field setter without running a later reset or params',()=>{
  for(const key of ['rows','days','offset','hasMore','hasPrev','empty','busy','message'])groupFailure(3,{fail:{type:'page-set',key}});
@@ -125,7 +126,7 @@ test('O diagnostics never consume error accessors or custom conversions and stil
  for(const sentinel of [{},function poisonedError(){}]){
   let reads=0,coercions=0;for(const key of ['message','stack','code'])Object.defineProperty(sentinel,key,{get(){reads++;throw Error('error getter must not run');}});
   sentinel.toString=function(){coercions++;throw Error('error coercion must not run');};
-  const {o}=parity({sentinel,fail:{type:'page-set',key:'rows'}});assert.equal(o.caught,sentinel);assert.equal(reads,0);assert.equal(coercions,0);assert.equal(o.errorRecords[0].msg,'L/probe.o.g3.throw error');
+  const {o}=parity({sentinel,fail:{type:'page-set',key:'rows'}});assert.equal(o.caught,sentinel);assert.equal(reads,0);assert.equal(coercions,0);assert.equal(o.errorRecords[0].msg,'L/probe.o.g3.throw type='+typeof sentinel);
  }
 });
 test('O preserves one-shot page getter values and setter-normalized state while logs use the original RHS',()=>{
@@ -155,7 +156,7 @@ var nativeProbeSlice=''.slice;
  assert.equal(o.caught,n.caught,'diagnostic object conversion must not escape or become a business-group throw');
  assert.deepEqual(o.business,expected.business,'same exact authorized P reads, writes, calls and numeric coercions under the retained poison');
  assert.equal(o.returned,n.returned);assert.deepEqual(o.counts,n.counts);
- assert.deepEqual(stateSnapshot(o.state),stateSnapshot(n.state));
+ assert.deepEqual(stateSnapshot(o.state),stateSnapshot(expected.state));
  assert.ok(!o.errorRecords.some(r=>r.msg.indexOf('probe-only')>=0),'a failed probe is not a business error');
  assert.ok(o.stages.includes('L/list.init.enter'),'later business groups are not blocked by probe construction');
 });
@@ -179,7 +180,7 @@ test('O each complete value-stage construction and trace has an independent diag
   const options={initialListGen:7,routeValues:{day:'',month:'2026-11'}};
   const n=execute(seam+nSource(),options),o=execute(seam+listSource,options),expected=execute(seam+expectedPSource(),options);
   assert.equal(n.caught,undefined);assert.equal(o.caught,undefined,'a diagnostic failure never blocks the next original business operation');
-  assert.deepEqual(o.business,expected.business);assert.deepEqual(stateSnapshot(o.state),stateSnapshot(n.state));assert.deepEqual(o.counts,n.counts);assert.equal(o.returned,n.returned);
+  assert.deepEqual(o.business,expected.business);assert.deepEqual(stateSnapshot(o.state),stateSnapshot(expected.state));assert.deepEqual(o.counts,n.counts);assert.equal(o.returned,n.returned);
   assert.ok(o.stages.includes('L/list.init.enter'));assert.ok(!o.errorRecords.some(r=>r.msg.includes('diagnostic-only')));
   for(let g=1;g<=6;g++)if(!prefix.startsWith('L/probe.o.g'+g+'.ok'))assert.ok(o.stages.some(s=>s.startsWith('L/probe.o.g'+g+'.ok')));
  }

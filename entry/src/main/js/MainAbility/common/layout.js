@@ -75,4 +75,13 @@ function editor(info, open) {
     footY:footY,footerBottom:footerBottom,footX:foot.x,footW:foot.width,keysY:keysY,keyX:key.x,keyW:key.width,
     font:font,lineHeight:font*1.34,pad:round?Math.max(10,w*.026):Math.max(18,w*.047)};
 }
-export default {valid:valid,shapeBand:shapeBand,home:home,reader:reader,editor:editor};
+function status(info) {
+  valid(info);
+  var w = info.windowWidth, h = info.windowHeight, round = info.screenShape === 'circle';
+  var y = h * .32, height = h * .28, band = shapeBand(w, h, round, y, y + height, Math.max(12, w * .06));
+  var hit = Math.max(44, w * .106), navY = h * .73;
+  var nav = shapeBand(w, h, round, navY, navY + hit, Math.max(12, w * .06));
+  if (band.width < 2 * hit || nav.width < 2 * hit || navY + hit > h) throw new Error('Status window too small');
+  return {statusX:band.x,statusY:y,statusW:band.width,statusH:height,statusNavX:nav.x,statusNavY:navY,statusNavW:nav.width,statusHit:hit};
+}
+export default {valid:valid,shapeBand:shapeBand,home:home,reader:reader,editor:editor,status:status};

@@ -9,10 +9,10 @@ function probeApp(){try{var a=typeof $app==='undefined'?null:$app;trace(null,'L/
 export default {
  data:{ready:false,w:0,h:0,message:'',rows:[],days:[],loading:false,busy:false,empty:false,hasMore:false,hasPrev:false,offset:0,listGen:0,hit:46,hy:0,hx:0,hw:0,contentX:0,contentW:0,listY:0,listH:0,rowH:0,rowPad:0,titleH:0,metaH:0,rowCopyH:0,titleW:0,dayCopyW:0,titleFont:20,metaFont:13,headFont:20,navFont:16,sectionFont:16,headCenterW:0,dockX:0,dockY:0,dockW:0,newY:0,newH:0,sectionY:0,headerTitle:'',emptyText:'',dateLabel:'',sectionTitle:'',monthLabel:''},
  onInit:function(){trace(this,'L/index.onInit.enter');probeDef();probeApp();try{try{trace(this,'L/call.pre init='+typeof (list&&list.init));}catch(e){trace(this,'L/call.pre.throw',e);}list.init(this,'index');}catch(e){trace(this,'L/index.onInit.throw',e);throw e;}trace(this,'L/index.onInit.exit');},
- onShow:function(){shell.markVisible(true);trace(this,'L/index.onShow');trace(this,'L/index.refs='+refsType(this));try{shell.focus(this);}catch(e){trace(this,'L/index.onShow.focus.throw',e);throw e;}},
+ onShow:function(){shell.markVisible(true);trace(this,'L/index.onShow');trace(this,'L/index.refs='+refsType(this));try{if(this.alive===false)list.resume(this,'index');shell.focus(this);}catch(e){trace(this,'L/index.onShow.focus.throw',e);throw e;}},
  onHide:function(){shell.markVisible(false);trace(this,'L/index.onHide');try{list.destroy(this);}catch(e){trace(this,'L/index.onHide.destroy.throw',e);throw e;}},
  onDestroy:function(){shell.markVisible(false);trace(this,'L/index.onDestroy');try{list.destroy(this);}catch(e){trace(this,'L/index.onDestroy.destroy.throw',e);throw e;}},
- retry:function(){trace(this,'L/index.retry.enter');try{if(!this.ready)list.init(this,'index');else list.refresh(this);}catch(e){trace(this,'L/index.retry.throw',e);throw e;}trace(this,'L/index.retry.exit');},
+ retry:function(){trace(this,'L/index.retry.enter');if(this.alive===false||this.ready&&this.loading)return;try{if(!this.allowed&&shell.retryStore)shell.retryStore(this);if(!this.ready)list.resume(this,'index');else list.refresh(this);}catch(e){trace(this,'L/index.retry.throw',e);throw e;}trace(this,'L/index.retry.exit');},
  next:function(){list.next(this);},prev:function(){list.prev(this);},
  open:function(row){list.open(this,row);},onSwipe:function(e){list.swipe(this,e);},
  onScrollEnd:function(e){if(e&&e.direction==='bottom')list.next(this);},

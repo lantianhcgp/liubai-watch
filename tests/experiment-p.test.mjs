@@ -81,7 +81,7 @@ test('P writes, date expressions, labels and all list modes remain the independe
  }
 });
 test('P exact qm/today0/today ordering brackets g5 and precedes unchanged validation',()=>{
- const result=run({routeValues:{day:'',month:''}});ok(result);assert.equal(result.qmReads,2);assert.equal(result.reads.today,2);
+ const result=run({routeValues:{day:'',month:''}});ok(result);assert.equal(result.qmReads,1);assert.equal(result.reads.today,2);
  const prefixes=['L/probe.o.g4.ok t=','L/probe.p.qm t=','L/probe.p.today0 t=','L/probe.o.g5.ok t=','L/probe.p.today t=','L/probe.o.g6a.ok','L/probe.o.g6b.ok','L/probe.o.g6c.ok','L/probe.o.g6d.ok','L/probe.o.g6e.ok','L/probe.o.g6.ok'];
  let cursor=-1;for(const prefix of prefixes){const at=result.stages.findIndex((s,i)=>i>cursor&&s.startsWith(prefix));assert.ok(at>cursor,prefix);cursor=at;}
  const at=(stage)=>result.events.findIndex(e=>e[0]==='record'&&e[1]==='stage'&&e[2].startsWith(stage+' state='));
@@ -94,7 +94,7 @@ test('P five g6 setter failures report exact substage and same error, never late
  for(let i=0;i<fields.length;i++){
   const suffix=['a','b','c','d','e'][i],result=run({fail:{type:'set',key:fields[i]}});assert.equal(result.caught,result.sentinel);
   assert.equal(errors(result,'L/probe.o.g6'+suffix+'.throw').length,1);assert.equal(errors(result,'L/probe.o.g6.throw').length,1);
-  assert.ok(errors(result,'L/probe.o.g6'+suffix+'.throw')[0].msg.includes('message=Expected a function.'));
+  assert.equal(errors(result,'L/probe.o.g6'+suffix+'.throw')[0].msg,'L/probe.o.g6'+suffix+'.throw type=object');
   for(let j=0;j<i;j++)assert.ok(result.stages.includes('L/probe.o.g6'+['a','b','c','d','e'][j]+'.ok'));
   for(let j=i;j<fields.length;j++){assert.ok(!result.stages.includes('L/probe.o.g6'+['a','b','c','d','e'][j]+'.ok'));if(j>i)assert.ok(!result.events.some(e=>e[0]==='set'&&e[1]===fields[j]));}
   assert.ok(!result.stages.includes('L/probe.o.g6.ok'));assert.ok(!result.stages.includes('L/list.init.enter'));
@@ -103,7 +103,7 @@ test('P five g6 setter failures report exact substage and same error, never late
 test('P read-probe exceptions never coerce sentinel accessors or become business failures',()=>{
  for(const sentinel of [{},function opaqueError(){}]){
   let reads=0,coercions=0;for(const key of ['message','stack','code'])Object.defineProperty(sentinel,key,{get(){reads++;throw Error('no diagnostic getter');}});sentinel.toString=()=>{coercions++;throw Error('no diagnostic conversion');};
-  const result=run({today:'always-throw',sentinel});ok(result);assert.equal(reads,0);assert.equal(coercions,0);assert.equal(errors(result,'L/probe.p.today0.read.throw')[0].msg,'L/probe.p.today0.read.throw error');assert.equal(errors(result,'L/probe.p.today.read.throw')[0].msg,'L/probe.p.today.read.throw error');
+  const result=run({today:'always-throw',sentinel});ok(result);assert.equal(reads,0);assert.equal(coercions,0);assert.equal(errors(result,'L/probe.p.today0.read.throw')[0].msg,'L/probe.p.today0.read.throw type='+typeof sentinel);assert.equal(errors(result,'L/probe.p.today.read.throw')[0].msg,'L/probe.p.today.read.throw type='+typeof sentinel);
  }
 });
 test('P unknown today values are labels only, no object conversion or user string leakage',()=>{
@@ -120,7 +120,7 @@ test('P whole qm/today0/today construction failures are independently swallowed,
  }
 });
 test('P qm diagnostic read is independent from original g5 route read, never substitutes its value',()=>{
- const result=run({qmFirstThrow:true});ok(result);assert.equal(result.qmReads,2);assert.ok(!result.stages.some(s=>s.startsWith('L/probe.p.qm t=')));assert.equal(result.state.month,'2026-11');assert.equal(errors(result,'L/probe.o.g5.throw').length,0);
+ const result=run({qmFirstThrow:true});ok(result);assert.equal(result.qmReads,2);const qmLogs=result.stages.filter(s=>s.startsWith('L/probe.p.qm t='));assert.ok(qmLogs.length<=1);assert.ok(qmLogs.every(s=>s==='L/probe.p.qm t=string'));assert.ok(result.records.every(r=>!r.msg.includes(result.sentinel.message)));assert.equal(result.state.month,'2026-11');assert.equal(errors(result,'L/probe.o.g5.throw').length,0);
 });
 test('P original validation still reads day/month, returns invalid state, and runs no g6 assignments',()=>{
  for(const options of [{kind:'day',routeValues:{day:'2026-11-99',month:'2026-11'}},{routeValues:{day:'',month:'invalid'}},{fail:{type:'get',key:'month'}}]){
@@ -130,5 +130,5 @@ test('P original validation still reads day/month, returns invalid state, and ru
 test('P pre/write/post diagnostics add only bounded authorized reads and preserve scalar stage budget',()=>{
  const result=run();ok(result);const expected=['L/probe.p.qm t=string','L/probe.p.today0 t=undefined','L/probe.p.today t=string'];assert.deepEqual(result.stages.filter(s=>s.startsWith('L/probe.p.')),expected);
  for(const stage of result.stages.filter(s=>s.startsWith('L/probe.p.')||s.startsWith('L/probe.o.'))){assert.equal(typeof stage,'string');assert.ok(stage.length<=40,stage);}
- assert.equal(result.qmReads,2);assert.equal(result.reads.today,2);assert.equal(result.reads.month,1);
+ assert.equal(result.qmReads,1);assert.equal(result.reads.today,2);assert.equal(result.reads.month,1);
 });
