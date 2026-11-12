@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+from logsink_timer_compat import adapt
 
 ROOT = Path(__file__).resolve().parents[1]
 ENDPOINT = 'https://example.invalid/LIUBAI_LOG_ENDPOINT_PLACEHOLDER'
@@ -18,6 +19,7 @@ def main():
     data = (ROOT / 'vendor/logsink.js').read_bytes()
     assert hashlib.sha256(data).hexdigest() == CANONICAL_SHA256, 'Pinned logger drift'
     assert len(data) <= 3072 and b'.test(' not in data, 'Logger source gate'
+    data = adapt(data)
     common = args.project / 'entry/src/main/js/MainAbility/common'
     targets = [common/'logsink.js', common/'log-config.js']
     if any(p.exists() for p in targets):
@@ -28,7 +30,7 @@ def main():
         f.write(data)
     with targets[1].open('x') as f:
         f.write('// Public CI placeholder. Configure only after local download.\nexport default '+json.dumps(config,separators=(',', ':'))+';\n')
-    print('PASS pinned logger 2921B; public placeholders generated, no real credentials')
+    print('PASS pinned logger 2921B; timer-safe copy ' + str(len(data)) + 'B; public placeholders, no real credentials')
 
 
 if __name__ == '__main__':

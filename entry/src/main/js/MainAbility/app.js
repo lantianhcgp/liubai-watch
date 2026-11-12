@@ -12,7 +12,7 @@ var storeGen = 0, lifecycleGen = 0;
 var appActive = false, deadlineMode = false, initDeadline = 0;
 var diagQuiet = 0, diagQuietLast = '', diagGeometry = '', diagGeometryPage = null;
 // Diagnostic-only scalars; do not bind these to page data or storage.
-var diagLast = '', diagView = '', diagTimer = 0, diagBeat = 0, diagVisible = false, diagGen = 0, diagCancelFailed = false;
+var diagLast = '', diagView = '', diagTimer = null, diagBeat = 0, diagVisible = false, diagGen = 0, diagCancelFailed = false;
 // Own-data snapshot read: descriptor only, never executes page accessors.
 function ownScalar(p, key) {
   if (!p || typeof p !== 'object') return '';
@@ -65,22 +65,22 @@ function checkPreparation() {
 }
 function stopHeartbeat() {
   diagGen++;
-  try { clearTimeout(diagTimer); diagTimer = 0; diagCancelFailed = false; }
-  catch (ignored) { if (diagTimer) diagCancelFailed = true; }
+  try { if (diagTimer !== null) clearTimeout(diagTimer); diagTimer = null; diagCancelFailed = false; }
+  catch (ignored) { if (diagTimer !== null) diagCancelFailed = true; }
 }
 function heartbeat() {
   try {
     if (diagCancelFailed) {
-      if (diagTimer) {
-        try { clearTimeout(diagTimer); diagTimer = 0; diagCancelFailed = false; }
+      if (diagTimer !== null) {
+        try { clearTimeout(diagTimer); diagTimer = null; diagCancelFailed = false; }
         catch (ignored) { return; }
       } else diagCancelFailed = false;
     }
-    if (diagTimer || !diagVisible || !shell.isVisible() || state === 'destroyed' || diagBeat >= 6) return;
+    if (diagTimer !== null || !diagVisible || !shell.isVisible() || state === 'destroyed' || diagBeat >= 6) return;
     var gen = diagGen;
     diagTimer = setTimeout(function () {
       if (gen !== diagGen) return;
-      diagTimer = 0;
+      diagTimer = null;
       if (!diagVisible || !shell.isVisible() || state === 'destroyed' || diagBeat >= 6) return;
       diagBeat++;
       try { checkPreparation(); } catch (e) { reportError('S/app.deadline.callback', e); }
@@ -180,6 +180,8 @@ export default {
     diagQuiet = 0; diagQuietLast = ''; diagGeometry = ''; diagGeometryPage = null;
     trace('L/app.create.enter');
     trace('S/build.readiness');
+    trace('S/build.fit3.U');
+    // Retained lineage only; build.fit3.U identifies this candidate.
     trace('S/build.fit3.T');
 
     routeParams = {}; state = 'loading'; initError = null;

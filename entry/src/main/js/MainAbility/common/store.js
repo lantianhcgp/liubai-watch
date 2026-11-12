@@ -68,7 +68,7 @@ function clone(x) { return JSON.parse(JSON.stringify(x)); }
 function io(method, args, cb) {
   if (closed) return cb(error('Store disposed'));
   if (pending.length >= 2) return cb(error('Native I/O capacity reached'));
-  var done = false, timed = false, timer, cancel, nativeDone = false;
+  var done = false, timed = false, timer = null, cancel, nativeDone = false;
   var initializing = initActive, owner = initializing ? initOwner : null, stage = initializing ? ioStage(method, args.uri) : '';
   if (owner && owner.active) owner.deadline = new Date().getTime() + TIMEOUT;
   var writing = method === 'writeText';
@@ -85,7 +85,8 @@ function io(method, args, cb) {
   function finish(e, value, nativeFailure) {
     if (done) { if (timed && writing) { timed = false; rollback(); } return; }
     done = true;
-    try { clearTimeout(timer); } catch (ignored) {}
+    try { if (timer !== null) clearTimeout(timer); } catch (ignored) {}
+    timer = null;
     var at = pending.indexOf(cancel);
     if (at >= 0) pending.splice(at, 1);
     if (owner && !owner.active) return;
@@ -99,6 +100,8 @@ function io(method, args, cb) {
   cancel.owner = owner;
   pending.push(cancel);
   try { timer = setTimeout(function () {
+    // Native Lite owns an executing timeout until its callback returns.
+    timer = null;
     if (done) return;
     if (writing) { timed = true; fence = true; }
     var e = error('File ' + method + ' timeout'); e.timeout = true;
@@ -172,11 +175,12 @@ function pair(base, empty, cb, rootsOf) {
   var best = null, bestSlot = -1, found = false, roots = [], left = 2, failure = null;
   var sequential = serialReads, owner = initActive ? initOwner : null;
   function nextSlot() {
-    var done = false, timer, cancel;
+    var done = false, timer = null, cancel;
     function end(run, e) {
       if (done) return;
       done = true;
-      try { clearTimeout(timer); } catch (ignored) {}
+      try { if (timer !== null) clearTimeout(timer); } catch (ignored) {}
+      timer = null;
       var at = pending.indexOf(cancel);
       if (at >= 0) pending.splice(at, 1);
       if (owner && !owner.active) return;
@@ -185,7 +189,7 @@ function pair(base, empty, cb, rootsOf) {
     }
     cancel = function () { end(false); }; cancel.owner = owner;
     pending.push(cancel);
-    try { timer = setTimeout(function () { end(true); }, 50); }
+    try { timer = setTimeout(function () { timer = null; end(true); }, 50); }
     catch (e) { end(false, caughtError(e)); }
   }
   function part(slot) {
@@ -709,13 +713,13 @@ function init(cb) {
   }
   if (initNative) return deliver(cb, error('Native preparation still pending; retry after completion'));
   if (ready) return deliver(cb, null, true);
-  var owner = {active:true,fail:null,timer:0,deadline:new Date().getTime()+TIMEOUT}; initOwner = owner;
+  var owner = {active:true,fail:null,timer:null,deadline:new Date().getTime()+TIMEOUT}; initOwner = owner;
   initActive = true; initWaiters = [cb];
   function complete(e, value) {
     if (!owner.active) return;
     owner.active = false; initActive = false; initOwner = null;
-    try { clearTimeout(owner.timer); } catch (ignored) {}
-    owner.timer = 0;
+    try { if (owner.timer !== null) clearTimeout(owner.timer); } catch (ignored) {}
+    owner.timer = null;
     if (e) ready = false;
     if (e) {
       // Logical cancellation never releases native ownership. Existing late-write
@@ -736,7 +740,7 @@ function init(cb) {
     // Independent of individual I/O callbacks and their cancellation handles.
     // Logical expiry retains initNative and the existing uncertain-write fence.
     owner.timer = setTimeout(function watchInit() {
-      owner.timer = 0;
+      owner.timer = null;
       if (!owner.active || owner !== initOwner) return;
       var remaining = owner.deadline - new Date().getTime();
       if (remaining > 0) { owner.timer = setTimeout(watchInit, remaining); return; }
