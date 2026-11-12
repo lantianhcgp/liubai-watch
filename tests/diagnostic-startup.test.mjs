@@ -117,13 +117,14 @@ function deviceRun(baseline,mode,opts={}){
 }
 test('L native device/readiness stages report request, callback, failure and timeout without K behavior changes',()=>{
  for(const mode of ['ok','invalid','fail','timeout','callback-throw']){
-  const old=deviceRun(true,mode),current=deviceRun(false,mode);assert.deepEqual(current.business,old.business);assert.deepEqual(current.snapshot,mode==='callback-throw'?Object.assign({},old.snapshot,{ready:true,message:''}):old.snapshot);
+  const old=deviceRun(true,mode),current=deviceRun(false,mode);assert.deepEqual(current.business,old.business);assert.equal(current.snapshot.deviceTimer,null,'consumed native handle must be empty');assert.deepEqual(current.snapshot,Object.assign({},old.snapshot,{deviceTimer:null},mode==='callback-throw'?{ready:true,message:''}:{}));
   const seen=current.logs.filter(r=>r.tag==='stage').map(r=>r.stage);
   assert.ok(seen.includes('L/device.getInfo.enter'),'device request stage missing');
   if(mode==='ok')assert.ok(seen.includes('L/app.ready.wait')&&seen.includes('L/app.ready.dispatched'));
   if(mode==='fail')assert.ok(seen.includes('L/device.fail'));
   if(mode==='timeout')assert.ok(seen.includes('L/device.timeout'));
   if(mode==='callback-throw'){assert.equal(current.caught.message,'original geometry error');assert.ok(current.logs.some(r=>r.tag==='onerror'&&r.error===current.caught));}
+  const reused=old.snapshot.deviceTimer;assert.equal(typeof reused,'number');current.timer.timers.set(reused,{fn(){},due:7000,ms:1000});current.shell.clear(current.page);assert.ok(current.timer.timers.has(reused),'hide must not clear a native ID recycled after completion');
  }
 });
 test('L device synchronous throws and failed trace sinks cannot change original exceptions or callbacks',()=>{
@@ -131,7 +132,8 @@ test('L device synchronous throws and failed trace sinks cannot change original 
  const old=deviceRun(true,'throw',{deviceThrows:exact}),current=deviceRun(false,'throw',{deviceThrows:exact});
  assert.equal(old.caught,exact);assert.equal(current.caught,exact);assert.deepEqual(current.business,old.business);
  assert.ok(current.logs.some(r=>r.tag==='onerror'&&r.error===exact));
- const bad=deviceRun(false,'ok',{diagThrows:exact}),base=deviceRun(true,'ok');assert.deepEqual(bad.business,base.business);assert.deepEqual(bad.snapshot,base.snapshot);
+ const bad=deviceRun(false,'ok',{diagThrows:exact}),base=deviceRun(true,'ok');assert.deepEqual(bad.business,base.business);assert.equal(bad.snapshot.deviceTimer,null,'failed trace sink must not retain the consumed native handle');assert.deepEqual(bad.snapshot,Object.assign({},base.snapshot,{deviceTimer:null}));
+ const reused=base.snapshot.deviceTimer;assert.equal(typeof reused,'number');bad.timer.timers.set(reused,{fn(){},due:7000,ms:1000});bad.shell.clear(bad.page);assert.ok(bad.timer.timers.has(reused),'failed trace sink must not cause a recycled native ID to be cleared');
  const noApp=deviceRun(false,'ok',{noApp:true});assert.equal(noApp.business.at(-1)[1],'App store readiness unavailable');
 });
 

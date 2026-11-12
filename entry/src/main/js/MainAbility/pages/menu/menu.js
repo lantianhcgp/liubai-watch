@@ -2,6 +2,7 @@ import shell from '../../common/shell';
 import layout from '../../common/layout';
 import store from '../../common/store-page';
 import session from '../../common/session';
+function trace(p,s){try{if(shell.trace)shell.trace(p,s);}catch(ignored){}}
 // Frozen approved V3: public action rows and rendered controls are separate.
 function row(a,t,icon){return {action:a,title:t,icon:icon||'right',subtitle:''};}
 function control(a,t,icon,emphasis){return {action:a,label:t,icon:icon||'',emphasis:!!emphasis};}
@@ -13,12 +14,12 @@ export default {
   this.ready=false;this.allowed=false;this.busy=false;this.message='';this.loading=true;
   this.rows=[];this.displayRows=[];this.visibleRows=[];this.fonts=[];this.dock=[];this.offset=0;this.hint='';this.quiet=false;this.empty=false;
   if(['app','read','record','tool','confirm','exit','clipboard'].indexOf(this.mode)<0){this.message='Invalid menu mode';return;}
-  this.id=this.params.id||'';this.font=this.params.font||'normal';
+  trace(this,'V/menu.enter.'+this.mode);this.id=this.params.id||'';this.font=this.params.font||'normal';
   if(['compact','normal','large'].indexOf(this.font)<0)this.font='normal';
   this.title=this.mode==='read'?'\u66f4\u591a\u64cd\u4f5c':this.mode==='record'?'\u8fd9\u6761\u8bb0\u5f55':this.mode==='tool'?'\u952e\u76d8\u5de5\u5177':this.mode==='confirm'?'\u79fb\u5165\u56de\u6536\u7ad9':this.mode==='exit'?'\u9000\u51fa\u7f16\u8f91':this.mode==='clipboard'?'\u526a\u5207\u677f':'\u7b14\u8bb0\u672c';
   shell.init(this,function(info){
    if(!p.alive||p.gen!==gen)return;p.measure(info);
-   shell.ensure(p,function(e){if(!p.alive||p.gen!==gen)return;p.loading=false;if(e){p.message=String(e);return;}p.allowed=true;p.makeRows();});
+   shell.ensure(p,function(e){if(!p.alive||p.gen!==gen)return;p.loading=false;if(e){p.message=String(e);trace(p,'V/menu.fail');return;}p.allowed=true;p.makeRows();trace(p,'V/menu.ready.'+p.mode);});
   });
  },
  measure:function(info){
@@ -98,6 +99,7 @@ export default {
   shell.focus(this);
  },
  activate:function(a){
+  trace(this,'V/menu.click.'+a);
   if(!this.allowed||this.busy)return;
   if(a==='back'){this.back();return;}
   if(a==='paste'&&this.mode==='tool'){
@@ -132,13 +134,14 @@ export default {
   }
  },
  setFont:function(k){
+  trace(this,'V/menu.font.'+k);
   if(!this.allowed||this.busy||['compact','normal','large'].indexOf(k)<0)return;var p=this,gen=this.gen;this.busy=true;
   store.settingPut('read-'+this.id,{font:k,anchor:this.params.anchor||0,revision:this.params.revision},function(e){if(!p.alive||p.gen!==gen)return;p.busy=false;if(e){p.message=String(e);return;}p.font=k;});
  },
  back:function(){if(!this.allowed||this.busy)return;if(this.mode==='read')shell.nav(this,'read',{id:this.id,anchor:this.params.anchor||0,font:this.font});else if(this.mode==='record'||this.mode==='confirm')shell.nav(this,'read',{id:this.id,anchor:this.params.anchor||0,font:this.font});else if(this.mode==='tool'||this.mode==='exit'||this.mode==='clipboard')shell.nav(this,'edit',{id:this.id});else shell.nav(this,'index',{});},
  retry:function(){this.onInit();},
  onShow:function(){var p=this,gen=this.gen;if(!this.allowed){shell.focus(this);return;}shell.init(this,function(info){if(!p.alive||p.gen!==gen)return;p.measure(info);p.paint();});},
- onHide:function(){shell.clear(this);},
+ onHide:function(){trace(this,'V/menu.exit');shell.clear(this);},
  onDestroy:function(){this.alive=false;this.gen++;this.rows=[];this.visibleRows=[];this.displayRows=[];this.fonts=[];this.toolControls=[];this.dock=[];shell.clear(this);},
  onBackPress:function(){this.back();return true;}
 };

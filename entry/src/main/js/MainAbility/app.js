@@ -111,7 +111,7 @@ function tracePage(stage, p) {
           var knownReady = snapReady;
           // These business milestones follow successful ready assignments. Device
           // geometry alone is separately labelled and never proves editor ready.
-          if (knownReady === '' && (stage === 'S/index.done' || stage === 'S/history.done' || stage === 'S/edit.done')) knownReady = '1';
+          if (knownReady === '' && (stage === 'S/index.done' || stage === 'S/history.done' || stage === 'S/edit.done' || stage === 'V/read.ready' || stage.indexOf('V/menu.ready.') === 0)) knownReady = '1';
           diagView = ' ready=' + knownReady + diagGeometry;
         }
       } catch (ignored) { diagView = ' snapshot=blocked'; }
@@ -180,8 +180,9 @@ export default {
     diagQuiet = 0; diagQuietLast = ''; diagGeometry = ''; diagGeometryPage = null;
     trace('L/app.create.enter');
     trace('S/build.readiness');
+    trace('S/build.fit3.V');
     trace('S/build.fit3.U');
-    // Retained lineage only; build.fit3.U identifies this candidate.
+    // Retained lineage only; build.fit3.V identifies this candidate.
     trace('S/build.fit3.T');
 
     routeParams = {}; state = 'loading'; initError = null;

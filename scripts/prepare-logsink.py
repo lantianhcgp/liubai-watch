@@ -24,7 +24,7 @@ def main():
     targets = [common/'logsink.js', common/'log-config.js']
     if any(p.exists() for p in targets):
         raise SystemExit('Refusing existing generated module/runtime config')
-    config = {'endpoint':ENDPOINT, 'key':WRITE_KEY, 'app':'liubai', 'ver':'0.2.6'}
+    config = {'endpoint':ENDPOINT, 'key':WRITE_KEY, 'app':'liubai', 'ver':'0.2.6', 'capacity':64}
     common.mkdir(parents=True, exist_ok=True)
     with targets[0].open('xb') as f:
         f.write(data)

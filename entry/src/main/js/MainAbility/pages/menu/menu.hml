@@ -35,7 +35,7 @@
      <text class="label" style="width:{{mode==='clipboard'?contentW:contentW-rowIcon-rowGap}}px;height:{{r.textH}}px;margin-left:{{mode==='clipboard'?0:rowGap}}px;font-size:{{rowFont}}px;line-height:{{rowFont*1.4}}px;color:{{r.action==='delete-confirm'?'#eca18b':'#f1f0e8'}};">{{r.title}}</text>
     </div>
    </list-item>
-   <list-item if="{{hint}}" style="width:{{contentW}}px;height:{{hintH}}px;">
+   <list-item if="{{!!hint}}" style="width:{{contentW}}px;height:{{hintH}}px;">
     <div class="hint-box" style="width:{{contentW}}px;height:{{hintH}}px;">
      <text class="hint" style="width:{{contentW}}px;height:{{hintH-(quiet?16:7)}}px;font-size:{{hintFont}}px;line-height:{{hintFont*(quiet?1.7:1.5)}}px;margin-top:{{quiet?16:7}}px;">{{hint}}</text>
     </div>
@@ -48,10 +48,10 @@
   </div>
   <div class="dock" style="left:{{dockX}}px;top:{{dockY}}px;width:{{dockW}}px;height:{{hit}}px;">
    <div class="dock-control" for="{{(i,c) in dock}}" @click="activate(c.action)" style="width:{{dockCellW}}px;height:{{hit}}px;background-color:{{c.emphasis?'#e6c78c':'#171b1b'}};border-left-width:{{i?1:0}}px;">
-    <image if="{{c.icon}}" src="{{'/common/icons/'+c.icon+'_muted.png'}}" style="width:20px;height:20px;margin-right:{{w/412*7}}px;"></image>
+    <image if="{{!!c.icon}}" src="{{'/common/icons/'+c.icon+'_muted.png'}}" style="width:20px;height:20px;margin-right:{{w/412*7}}px;"></image>
     <text class="dock-label" style="height:28px;font-size:{{dockFont}}px;color:{{c.emphasis?'#252b25':'#adb1a9'}};">{{c.label}}</text>
    </div>
   </div>
-  <text class="notice" if="{{message}}" @click="retry" style="left:{{contentX}}px;top:{{noticeY}}px;width:{{contentW}}px;height:24px;">{{message}}</text>
+  <text class="notice" if="{{!!message}}" @click="retry" style="left:{{contentX}}px;top:{{noticeY}}px;width:{{contentW}}px;height:24px;">{{message}}</text>
  </stack>
 </stack>
