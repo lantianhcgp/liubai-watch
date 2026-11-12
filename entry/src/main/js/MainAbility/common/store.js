@@ -7,6 +7,17 @@ var PAGE = 6, MAX_PAGES = 256, CHUNK = 2800, MAX_BODY = 32768;
 var TIMEOUT = 10000, ready = false, closed = false, busy = false;
 // Preparation has one owner. A watchdog settles JS, not the native operation.
 var initActive = false, initNative = 0, initWaiters = [], traceHook = null, initOwner = null;
+// Application-selected profile; default retains the standalone Store contract.
+var serialReads = false;
+function setSerialReads(value) { if (!busy && !initActive && !initNative) serialReads = value === true; }
+function checkInitDeadline() {
+  var owner = initOwner;
+  if (!owner || !owner.active || !owner.fail) return false;
+  if (new Date().getTime() < owner.deadline) return true;
+  trace('S/store.watchdog');
+  owner.fail(error('Store initialization timeout'));
+  return false;
+}
 function setTrace(fn) { traceHook = typeof fn === 'function' ? fn : null; }
 function trace(stage) { try { if (traceHook) traceHook(stage); } catch (ignored) {} }
 function ioStage(method, uri) {
@@ -59,6 +70,7 @@ function io(method, args, cb) {
   if (pending.length >= 2) return cb(error('Native I/O capacity reached'));
   var done = false, timed = false, timer, cancel, nativeDone = false;
   var initializing = initActive, owner = initializing ? initOwner : null, stage = initializing ? ioStage(method, args.uri) : '';
+  if (owner && owner.active) owner.deadline = new Date().getTime() + TIMEOUT;
   var writing = method === 'writeText';
   function nativeEnd() { if (nativeDone) return; nativeDone = true; if (initializing) initNative--; }
   function rollback() {
@@ -158,6 +170,24 @@ function unpack(text) {
 }
 function pair(base, empty, cb, rootsOf) {
   var best = null, bestSlot = -1, found = false, roots = [], left = 2, failure = null;
+  var sequential = serialReads, owner = initActive ? initOwner : null;
+  function nextSlot() {
+    var done = false, timer, cancel;
+    function end(run, e) {
+      if (done) return;
+      done = true;
+      try { clearTimeout(timer); } catch (ignored) {}
+      var at = pending.indexOf(cancel);
+      if (at >= 0) pending.splice(at, 1);
+      if (owner && !owner.active) return;
+      if (run && !closed) part(1);
+      else cb(e || error('Store disposed'));
+    }
+    cancel = function () { end(false); }; cancel.owner = owner;
+    pending.push(cancel);
+    try { timer = setTimeout(function () { end(true); }, 50); }
+    catch (e) { end(false, caughtError(e)); }
+  }
   function part(slot) {
     read(base + slot + '.json', function (e, text, nativeFailure) {
       var absent = false, corrupt = false;
@@ -185,13 +215,21 @@ function pair(base, empty, cb, rootsOf) {
       }
       // Drain BOTH reads on every path before releasing the serialized task.
       // Otherwise a failed slot could leave stale I/O overlapping the next job.
-      if (--left) return;
+      if (--left) {
+        if (sequential) {
+          // A logical timeout/throw does not prove the first native read ended.
+          // Do not start a second call over a retained original operation.
+          if (e && !nativeFailure && !corrupt) return cb(failure || e);
+          nextSlot();
+        }
+        return;
+      }
       if (failure) return cb(failure);
       if (!best && found) return cb(error('Corrupt storage: both generations damaged'));
       cb(null, best || {seq: -1, data: empty}, roots);
     });
   }
-  part(0); part(1);
+  part(0); if (!sequential) part(1);
 }
 function commit(base, old, data, cb) {
   listResume = null;
@@ -671,10 +709,14 @@ function init(cb) {
   }
   if (initNative) return deliver(cb, error('Native preparation still pending; retry after completion'));
   if (ready) return deliver(cb, null, true);
-  var owner = {active:true,fail:null}; initOwner = owner;
+  var owner = {active:true,fail:null,timer:0,deadline:new Date().getTime()+TIMEOUT}; initOwner = owner;
   initActive = true; initWaiters = [cb];
   function complete(e, value) {
+    if (!owner.active) return;
     owner.active = false; initActive = false; initOwner = null;
+    try { clearTimeout(owner.timer); } catch (ignored) {}
+    owner.timer = 0;
+    if (e) ready = false;
     if (e) {
       // Logical cancellation never releases native ownership. Existing late-write
       // rollback remains fenced; stale preparation callbacks cannot continue.
@@ -691,6 +733,16 @@ function init(cb) {
   trace('S/store.begin');
   task(complete, function (done) {
     owner.fail = done;
+    // Independent of individual I/O callbacks and their cancellation handles.
+    // Logical expiry retains initNative and the existing uncertain-write fence.
+    owner.timer = setTimeout(function watchInit() {
+      owner.timer = 0;
+      if (!owner.active || owner !== initOwner) return;
+      var remaining = owner.deadline - new Date().getTime();
+      if (remaining > 0) { owner.timer = setTimeout(watchInit, remaining); return; }
+      trace('S/store.watchdog');
+      done(error('Store initialization timeout'));
+    }, TIMEOUT);
     mkdir(ROOT, function (e) {
       if (e) return done(e);
       if (closed) return done(error('Store disposed'));
@@ -708,4 +760,5 @@ function init(cb) {
 function dispose() { listResume = null; closed = true; ready = false; while (pending.length) pending[0](); while(queue.length)deliver(queue.shift().cb,error('Store disposed')); }
 export default {init: init, list: list, load: load, save: save, flag: flag,
   draftGet: draftGet, draftPut: draftPut, draftClear: draftClear,
-  settingGet: auxiliaryGet, settingPut: auxiliaryPut, dispose: dispose, setTrace: setTrace};
+  settingGet: auxiliaryGet, settingPut: auxiliaryPut, dispose: dispose, setTrace: setTrace,
+  setSerialReads: setSerialReads, checkInitDeadline: checkInitDeadline};
