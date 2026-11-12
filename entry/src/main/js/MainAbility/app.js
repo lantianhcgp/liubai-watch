@@ -180,9 +180,10 @@ export default {
     diagQuiet = 0; diagQuietLast = ''; diagGeometry = ''; diagGeometryPage = null;
     trace('L/app.create.enter');
     trace('S/build.readiness');
+    trace('S/build.fit3.W');
     trace('S/build.fit3.V');
     trace('S/build.fit3.U');
-    // Retained lineage only; build.fit3.V identifies this candidate.
+    // Retained lineage only; build.fit3.W identifies this candidate.
     trace('S/build.fit3.T');
 
     routeParams = {}; state = 'loading'; initError = null;

@@ -65,8 +65,36 @@ function hash(s) {
 }
 function seal(seq, data) { return JSON.stringify({v: 1, seq: seq, data: data, hash: hash(JSON.stringify(data))}); }
 function clone(x) { return JSON.parse(JSON.stringify(x)); }
-function io(method, args, cb) {
+// Recovery starts inside the catalog callback. Leave each native callback before
+// another recovery I/O; serial slot reads alone did not fence c1->g0/g1->d0.
+function recoveryStep(run, cb) {
+  var owner = initOwner, timer = null, settled = false, cancel, first = !initOwner.recoveryQueued;
+  if (first) { owner.recoveryQueued = true; trace('W/recover.queued'); }
+  function end(execute, e) {
+    if (settled) return;
+    settled = true;
+    if (timer !== null) clearTimeout(timer);
+    timer = null;
+    var at = pending.indexOf(cancel);
+    if (at >= 0) pending.splice(at, 1);
+    if (!owner.active) return;
+    if (!execute || closed) return cb(e || error('Store disposed'));
+    if (first) trace('W/recover.dispatch');
+    try { run(); }
+    catch (caught) { if (owner.active && owner.fail) owner.fail(caughtError(caught)); else throw caught; }
+  }
+  cancel = function () { end(false); }; cancel.owner = owner;
+  pending.push(cancel);
+  try {
+    timer = setTimeout(function () { timer = null; end(true); }, 50);
+    if (timer === null || timer === undefined) { timer = null; end(false, error('Recovery timer unavailable')); }
+  } catch (caught) { end(false, caughtError(caught)); }
+}
+function io(method, args, cb, dispatched) {
   if (closed) return cb(error('Store disposed'));
+  if (!dispatched && serialReads && initOwner && initOwner.active && initOwner.recovery) {
+    return recoveryStep(function () { io(method, args, cb, true); }, cb);
+  }
   if (pending.length >= 2) return cb(error('Native I/O capacity reached'));
   var done = false, timed = false, timer = null, cancel, nativeDone = false;
   var initializing = initActive, owner = initializing ? initOwner : null, stage = initializing ? ioStage(method, args.uri) : '';
@@ -431,8 +459,9 @@ function gcRecover(c, cb) {
   var p = 0;
   gcCollect(ROOT, 'draft', function (e) {
     if (e) return cb(e);
+    trace('W/recover.draft.ok');
     function step() {
-      if (p > c.data.pages || p >= MAX_PAGES) return cb(null);
+      if (p > c.data.pages || p >= MAX_PAGES) { trace('W/recover.pages.ok'); return cb(null); }
       var n = p++;
       gcCollect(ROOT + '/p' + n, n === c.data.pages ? 'orphan' : 'index', function (pe) {
         if (pe) return cb(pe);
@@ -754,7 +783,7 @@ function init(cb) {
       catalog(function (ce, c) {
         if (ce) return done(ce);
         if (closed) return done(error('Store disposed'));
-        if (c.seq >= 0) { trace('S/store.recover'); return gcRecover(c, function (ge) { if (closed) ge = ge || error('Store disposed'); if (initNative) ge = ge || error('Native preparation still pending'); if (!ge) ready = true; done(ge, !ge); }); }
+        if (c.seq >= 0) { owner.recovery = true; trace('S/store.recover'); return gcRecover(c, function (ge) { if (closed) ge = ge || error('Store disposed'); if (initNative) ge = ge || error('Native preparation still pending'); if (!ge) ready = true; done(ge, !ge); }); }
         trace('S/store.first.commit');
         commit(ROOT + '/c', c, {pages: 0}, function (we) { if (closed) we = we || error('Store disposed'); if (!we) ready = true; done(we, !we); });
       });

@@ -19,7 +19,7 @@
    <div class="command" @click="save"><text class="done">&#x5B8C;&#x6210;</text></div>
   </div>
   <text class="status" style="left: {{ footX }}px; top: {{ keysY - 14 }}px; width: {{ footW }}px;" if="{{ open }}">{{ hasPinyin ? pinyin : viewCounter }}</text>
-  <stack class="key-viewport" if="{{ open }}" @touchstart="startKey" @touchmove="moveKey" @touchend="endKey" @longpress="longKey" style="left: {{ keyX }}px; top: {{ keysY }}px; width: {{ keyW }}px;">
+  <stack class="key-viewport" if="{{ open }}" @click="clickKey" @touchstart="startKey" @touchmove="moveKey" @touchend="endKey" @touchcancel="cancelKey" @longpress="longKey" style="left: {{ keyX }}px; top: {{ keysY }}px; width: {{ keyW }}px;">
    <image class="key-sheet" src="{{ image }}" style="width: {{ sheetWidth }}px; left: {{ sheetOffset }}px;"></image>
   </stack>
   <div class="keybar" if="{{ open && !hasPinyin }}" style="left: {{ footX }}px; top: {{ footY }}px; width: {{ footW }}px;">

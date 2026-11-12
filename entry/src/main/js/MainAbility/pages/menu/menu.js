@@ -16,7 +16,7 @@ export default {
   if(['app','read','record','tool','confirm','exit','clipboard'].indexOf(this.mode)<0){this.message='Invalid menu mode';return;}
   trace(this,'V/menu.enter.'+this.mode);this.id=this.params.id||'';this.font=this.params.font||'normal';
   if(['compact','normal','large'].indexOf(this.font)<0)this.font='normal';
-  this.title=this.mode==='read'?'\u66f4\u591a\u64cd\u4f5c':this.mode==='record'?'\u8fd9\u6761\u8bb0\u5f55':this.mode==='tool'?'\u952e\u76d8\u5de5\u5177':this.mode==='confirm'?'\u79fb\u5165\u56de\u6536\u7ad9':this.mode==='exit'?'\u9000\u51fa\u7f16\u8f91':this.mode==='clipboard'?'\u526a\u5207\u677f':'\u7b14\u8bb0\u672c';
+  this.title=this.mode==='read'?'\u66f4\u591a\u64cd\u4f5c':this.mode==='record'?'\u8fd9\u6761\u8bb0\u5f55':this.mode==='tool'?'\u952e\u76d8\u5de5\u5177':this.mode==='confirm'?'\u79fb\u5165\u56de\u6536\u7ad9':this.mode==='exit'?'\u9000\u51fa\u7f16\u8f91':this.mode==='clipboard'?'\u526a\u8d34\u677f':'\u7b14\u8bb0\u672c';
   shell.init(this,function(info){
    if(!p.alive||p.gen!==gen)return;p.measure(info);
    shell.ensure(p,function(e){if(!p.alive||p.gen!==gen)return;p.loading=false;if(e){p.message=String(e);trace(p,'V/menu.fail');return;}p.allowed=true;p.makeRows();trace(p,'V/menu.ready.'+p.mode);});
@@ -36,7 +36,13 @@ export default {
   this.hintFont=this.mode==='tool'?12:this.mode==='app'?19*u:13;
   this.hintH=this.mode==='tool'?60:this.mode==='app'?82*u:53;
   this.dockX=g.dockX;this.dockY=g.dockY;this.dockW=g.dockW;this.dockFont=Math.max(16,18*u);this.dockCellW=g.dockW/Math.max(1,this.dock.length);
-  this.noticeY=g.dockY-24;
+  if(this.mode==='tool'){
+   // Compact only this short tool page; longer menus retain native scrolling.
+   this.dockY=Math.min(g.dockY,this.listY+71+2*this.rowH+this.hintH+8);
+   this.listH=this.dockY-this.listY-8;
+   this.slots=Math.max(1,Math.floor(this.listH/this.rowH));
+  }
+  this.noticeY=this.dockY-24;
   this.emptyY=Math.max(this.listY+28,g.h*.285);this.emptyIconSize=43*u;this.emptyIconGap=18*u;
   this.emptyTitleFont=25*u;this.emptyTitleH=35*u;this.emptyTitleGap=13*u;this.emptyPromptFont=18*u;this.emptyPromptH=58*u;
   this.emptyH=this.emptyIconSize+this.emptyIconGap+this.emptyTitleH+this.emptyTitleGap+this.emptyPromptH;
@@ -55,17 +61,17 @@ export default {
    this.dock=[control('back','\u8fd4\u56de\u9605\u8bfb','back')];
   }else if(this.mode==='tool'){
    // Keep these callback action tokens/order for existing callers; only V3's two text rows render.
-   this.rows=[row('left','\u524d\u79fb'),row('right','\u540e\u79fb'),row('home','\u79fb\u5230\u6b63\u6587\u5f00\u5934','back'),row('end','\u79fb\u5230\u6b63\u6587\u7ed3\u5c3e','right'),row('type','\u7c7b\u578b'),row('copy','\u590d\u5236\u5168\u6587'),row('paste','\u526a\u5207\u677f')];
+   this.rows=[row('left','\u524d\u79fb'),row('right','\u540e\u79fb'),row('home','\u79fb\u5230\u6b63\u6587\u5f00\u5934','document_start'),row('end','\u79fb\u5230\u6b63\u6587\u7ed3\u5c3e','document_end'),row('type','\u7c7b\u578b'),row('copy','\u590d\u5236\u5168\u6587'),row('paste','\u526a\u8d34\u677f')];
    this.displayRows=[this.rows[2],this.rows[3]];
-   this.toolControls=[control('left','\u524d\u79fb'),control('type','\u7c7b\u578b'),control('paste','\u526a\u5207\u677f'),control('right','\u540e\u79fb')];
+   this.toolControls=[control('left','\u524d\u79fb','cursor_left'),control('type','\u7c7b\u578b'),control('paste','\u526a\u8d34\u677f','clipboard'),control('right','\u540e\u79fb','cursor_right')];
    var s=session.get(),type=s&&s.id===this.id&&s.type>=0&&s.type<4?s.type:0;
    this.typeImage='/common/keyboard/common/key'+type+'.png';
    this.hint='\u5de5\u5177\u53ea\u8c03\u6574\u8f93\u5165\u4f4d\u7f6e\uff0c\u4e0d\u6539\u52a8\u5df2\u4fdd\u5b58\u7684\u539f\u6587\u3002';
-   this.dock=[control('back','\u8fd4\u56de\u7f16\u8f91','back')];
+   this.dock=[control('back','\u8fd4\u56de\u7f16\u8f91','return_arrow')];
   }else if(this.mode==='clipboard'){
    var cs=session.clipboardList();
    for(var i=0;i<cs.length&&i<8;i++)this.rows.push(row('paste:'+cs[i].index,session.clipboardGet(cs[i].index),''));
-   if(!this.rows.length){this.empty=true;this.emptyIcon='copy';this.emptyTitle='\u8fd9\u91cc\u8fd8\u6ca1\u6709\u5185\u5bb9';this.emptyPrompt='\u5148\u4ece\u8bb0\u5f55\u83dc\u5355\u590d\u5236\u3002\n\u5b83\u4e0d\u662f\u624b\u673a\u7cfb\u7edf\u526a\u5207\u677f\u3002';}
+   if(!this.rows.length){this.empty=true;this.emptyIcon='copy';this.emptyTitle='\u8fd9\u91cc\u8fd8\u6ca1\u6709\u5185\u5bb9';this.emptyPrompt='\u5148\u4ece\u8bb0\u5f55\u83dc\u5355\u590d\u5236\u3002\n\u5b83\u4e0d\u662f\u624b\u673a\u7cfb\u7edf\u526a\u8d34\u677f\u3002';}
    this.dock=[control('back','\u8fd4\u56de\u952e\u76d8','back')];
   }else if(this.mode==='confirm'){
    this.rows=[row('cancel','\u53d6\u6d88'),row('delete','\u79fb\u5230\u56de\u6536\u7ad9','trash')];

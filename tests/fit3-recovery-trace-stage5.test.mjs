@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+const root=new URL('../entry/src/main/js/MainAbility/',import.meta.url);
+function load(n,imports){const x={result:null,imports,console,Date,setTimeout,clearTimeout};const src=fs.readFileSync(new URL(n,root),'utf8').replace(/^import (\w+) from ['"]([^'"]+)['"];?$/gm,(_,k,p)=>'var '+k+'=imports['+JSON.stringify(p)+'];').replace('export default','result=');vm.runInNewContext(src,x);return x.result;}
+function seal(data){const s=JSON.stringify(data);let h=2166136261;for(let i=0;i<s.length;i++)h=((h^s.charCodeAt(i))*16777619)>>>0;return JSON.stringify({v:1,seq:0,data,hash:String(h)});}
+test('W build identity is explicit while preserving earlier lineage markers',()=>{const s=fs.readFileSync(new URL('app.js',root),'utf8');for(const n of ['W','V','U','T'])assert.ok(s.includes("trace('S/build.fit3."+n+"')"),n);});
+test('W existing-root recovery emits queued and dispatched milestones, without record content',async()=>{const events=[],file={mkdir:o=>o.success(),readText:o=>o.uri.endsWith('/c0.json')?o.success({text:seal({pages:0})}):o.fail('absent',301)};const u=load('common/utf8.js',{}),s=load('common/store.js',{'@system.file':file,'./utf8.js':u});s.setSerialReads(true);s.setTrace(x=>events.push(x));try{await new Promise((resolve,reject)=>s.init(e=>e?reject(e):resolve()));const expected=['S/store.recover','W/recover.queued','W/recover.dispatch','W/recover.draft.ok','W/recover.pages.ok','S/store.ready'];let pos=-1;for(const token of expected){const next=events.indexOf(token,pos+1);assert.ok(next>pos,token+' after '+pos+' in '+events.join(','));pos=next;}assert.equal(events.filter(x=>x==='W/recover.queued').length,1);assert.equal(events.filter(x=>x==='W/recover.dispatch').length,1);assert.ok(events.every(x=>!x.includes('internal:')&&!x.includes('absent')));}finally{s.dispose();}});
