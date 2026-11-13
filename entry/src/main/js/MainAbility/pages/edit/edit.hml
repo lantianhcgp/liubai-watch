@@ -11,12 +11,12 @@
   <list class="crown" ref="crown" @scrollend="onScroll" @swipe="bodySwipe" style="width: {{ w }}px; height: {{ h }}px;"><list-item class="sensor" style="width: {{ w }}px; height: {{ h }}px;"></list-item></list>
   <text class="line" for="{{ (i, line) in lines }}" style="left: {{ line.x }}px; top: {{ line.y }}px; width: {{ line.width }}px; height: {{ line.height }}px; font-size: {{ line.font }}px;">{{ line.text }}</text>
   <div class="caret" if="{{ caretShow }}" style="left: {{ caretX }}px; top: {{ caretY }}px; height: {{ caretH }}px;"></div>
-  <div class="body-hit" @click="pickLine" style="left: 0px; top: {{ hy + hit + 5 }}px; width: {{ w }}px; height: {{ (open ? keysY : footY) - 17 - hy - hit - 5 }}px;"></div>
+  <div class="body-hit" @click="pickLine" style="left: 0px; top: {{ bodyTop }}px; width: {{ w }}px; height: {{ bodyH }}px;"></div>
   <div class="header" style="left: {{ hx }}px; top: {{ hy }}px; width: {{ hw }}px; height: {{ hit }}px;">
    <div class="command" @click="cancel"><text class="cancel">&#x53D6;&#x6D88;</text></div>
    <div class="middle" if="{{ !open }}" style="width: {{ hw - 92 }}px;"><text class="title">{{ title }}</text></div>
    <div class="middle" if="{{ open }}" style="width: {{ hw - 92 }}px;"><div class="icon" @click="toggle"><text class="arrow">&#x2304;</text></div><div class="icon" @click="tools"><text class="dots">&#x2022;&#x2022;&#x2022;</text></div></div>
-   <div class="command" @click="save"><text class="done">&#x5B8C;&#x6210;</text></div>
+   <div class="command" @click="complete"><text class="done">&#x5B8C;&#x6210;</text></div>
   </div>
   <text class="status" style="left: {{ footX }}px; top: {{ keysY - 14 }}px; width: {{ footW }}px;" if="{{ open }}">{{ hasPinyin ? pinyin : viewCounter }}</text>
   <stack class="key-viewport" if="{{ open }}" @click="clickKey" @touchstart="startKey" @touchmove="moveKey" @touchend="endKey" @touchcancel="cancelKey" @longpress="longKey" style="left: {{ keyX }}px; top: {{ keysY }}px; width: {{ keyW }}px;">
@@ -37,6 +37,6 @@
    <div class="expand" @click="toggle" style="width: {{ footW - 98 }}px;"><text class="expand-label">&#x5C55;&#x5F00;&#x952E;&#x76D8;</text></div>
    <div class="fold-nav" @click="next"><text class="nav-label">&#x2304;</text></div>
   </div>
-  <text class="error" if="{{ message !== '' }}" style="left: {{ hx }}px; top: {{ hy + 46 }}px; width: {{ hw }}px;">{{ message }}</text>
+  <div class="error-box" if="{{ noticeText !== '' }}" style="left: {{ noticeX }}px; top: {{ noticeY }}px; width: {{ noticeW }}px; height: {{ noticeH }}px;"><text class="error" style="width: {{ noticeW }}px;">{{ noticeText }}</text></div>
  </stack>
 </stack>

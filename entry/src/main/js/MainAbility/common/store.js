@@ -8,9 +8,9 @@ var TIMEOUT = 10000, ready = false, closed = false, busy = false;
 // Preparation has one owner. A watchdog settles JS, not the native operation.
 var initActive = false, initNative = 0, initWaiters = [], traceHook = null, initOwner = null;
 // Application-selected profile; default retains the standalone Store contract.
-var serialReads = false, recoveryFallback = false;
+var serialReads = false, recoveryFallback = false, taskOwner = null, taskNative = 0;
 function setSerialReads(value, fallback) {
-  if (!busy && !initActive && !initNative) { serialReads = value === true; recoveryFallback = serialReads && fallback === true; }
+  if (!busy && !initActive && !initNative && !taskNative) { serialReads = value === true; recoveryFallback = serialReads && fallback === true; }
 }
 function checkInitDeadline() {
   var owner = initOwner;
@@ -104,17 +104,41 @@ function recoveryStep(run, cb) {
     }
   } catch (caught) { timer = null; if (recoveryFallback) defer(); else end(false, caughtError(caught)); }
 }
+// A post-init task owns one independent clock and one bounded continuation.
+// Native callbacks only settle/queue. Business continuations run after return,
+// even when a short timer cannot be allocated or silently loses dispatch.
+function taskStep(owner, run) {
+  if (!owner.active) return;
+  var timer = null, done = false, cancel;
+  function end(execute) {
+    if (done) return; done = true;
+    if (owner.resume === resume) owner.resume = null;
+    if (timer !== null) clearTimeout(timer); timer = null;
+    var at = pending.indexOf(cancel); if (at >= 0) pending.splice(at, 1);
+    if (!execute || !owner.active || closed) return;
+    try { run(); } catch (e) { if (owner.active) owner.fail(caughtError(e)); else throw e; }
+  }
+  function resume() { end(true); }
+  if (owner.resume) { owner.fail(error('Task continuation capacity reached')); return; }
+  cancel = function () { end(false); }; cancel.owner = owner;
+  pending.push(cancel); owner.resume = resume;
+  try { timer = setTimeout(function () { timer = null; end(true); }, 50); }
+  catch (ignored) { timer = null; }
+  if (timer === null || timer === undefined) { timer = null; trace('Y/io.defer'); }
+}
 function io(method, args, cb, dispatched) {
   if (closed) return cb(error('Store disposed'));
+  if (taskOwner && taskNative) return cb(error('Native operation still pending; wait for completion'));
   if (!dispatched && serialReads && initOwner && initOwner.active && initOwner.recovery) {
     return recoveryStep(function () { io(method, args, cb, true); }, cb);
   }
   if (pending.length >= 2) return cb(error('Native I/O capacity reached'));
   var done = false, timed = false, timer = null, cancel, nativeDone = false;
-  var initializing = initActive, owner = initializing ? initOwner : null, stage = initializing ? ioStage(method, args.uri) : '';
+  var initializing = initActive, operational = !initializing && !!taskOwner;
+  var owner = initializing ? initOwner : taskOwner, stage = initializing ? ioStage(method, args.uri) : '';
   if (owner && owner.active) owner.deadline = new Date().getTime() + TIMEOUT;
   var writing = method === 'writeText';
-  function nativeEnd() { if (nativeDone) return; nativeDone = true; if (initializing) initNative--; }
+  function nativeEnd() { if (nativeDone) return; nativeDone = true; if (initializing) initNative--; if (operational) taskNative--; }
   function rollback() {
     // A late native write may still happen AFTER a watchdog fires. Fence all
     // retries until its actual completion and removal; never reuse this URI.
@@ -132,6 +156,8 @@ function io(method, args, cb, dispatched) {
     var at = pending.indexOf(cancel);
     if (at >= 0) pending.splice(at, 1);
     if (owner && !owner.active) return;
+    if (operational && owner.expire === expire) owner.expire = null;
+    if (operational) return taskStep(owner, function () { cb(e, value, nativeFailure === true); });
     try { cb(e, value, nativeFailure === true); }
     catch (caught) { if (owner && owner.active && owner.fail) { try { owner.fail(caughtError(caught)); } catch (ignored) {} } throw caught; }
   }
@@ -141,15 +167,21 @@ function io(method, args, cb, dispatched) {
   };
   cancel.owner = owner;
   pending.push(cancel);
-  try { timer = setTimeout(function () {
-    // Native Lite owns an executing timeout until its callback returns.
-    timer = null;
+  function expire() {
     if (done) return;
     if (writing) { timed = true; fence = true; }
     var e = error('File ' + method + ' timeout'); e.timeout = true;
     trace(stage ? stage + '.timeout' : 'S/io.timeout');
     finish(e);
+  }
+  if (operational) { owner.expire = expire; owner.elapsed = 0; }
+  try { timer = setTimeout(function () {
+    // Native Lite owns an executing timeout until its callback returns.
+    timer = null; expire();
   }, TIMEOUT); } catch (e) { finish(caughtError(e)); return; }
+  if (timer === null || timer === undefined) {
+    timer = null; finish(error('File deadline unavailable')); return;
+  }
   args.success = function (v) { nativeEnd(); if (!done && stage) trace(stage + '.ok'); finish(null, v); };
   args.fail = function (d, c) {
     nativeEnd();
@@ -161,6 +193,7 @@ function io(method, args, cb, dispatched) {
     finish(e, undefined, nativeFailure);
   };
   if (initializing) initNative++;
+  if (operational) taskNative++;
   if (stage) trace(stage + '.begin');
   // A throw can follow native acceptance. Only its real callback ends ownership.
   try { File[method](args); } catch (e) { if (done) throw e; if (writing) { timed = true; fence = true; } finish(caughtError(e)); }
@@ -217,6 +250,8 @@ function pair(base, empty, cb, rootsOf) {
   var best = null, bestSlot = -1, found = false, roots = [], left = 2, failure = null;
   var sequential = serialReads, owner = initActive ? initOwner : null;
   function nextSlot() {
+    // The preceding operational callback has already left native code.
+    if (taskOwner) { part(1); return; }
     if (recoveryFallback && owner && owner.active && owner.recovery) {
       return recoveryStep(function () { part(1); }, cb);
     }
@@ -331,6 +366,7 @@ function page(p, cb) {
 function task(cb, work, initializing, priority) {
   if (closed) return deliver(cb, error('Store disposed'));
   if (fence) return deliver(cb, error('Uncertain native write; wait for rollback'));
+  if (!busy && taskNative) return deliver(cb, error('Native operation still pending; wait for completion'));
   if (!ready && !initializing) return deliver(cb, error('Store not initialized'));
   if (priority && savePending) return deliver(cb,error('Save already in progress'));
   if (busy && initializing) return deliver(cb,error('Store busy initializing'));
@@ -341,10 +377,34 @@ function task(cb, work, initializing, priority) {
   runTask(job);
 }
 function runTask(job){
-  busy=true;var done=false;
+  busy=true;var done=false,owner=null;
   function end(e,v){if(done)return;done=true;busy=false;if(job.priority)savePending=false;
+    if(owner){
+      owner.active=false;owner.resume=null;owner.expire=null;
+      if(owner.timer!==null)clearTimeout(owner.timer);owner.timer=null;
+      if(taskOwner===owner)taskOwner=null;
+      var handles=pending.slice();for(var i=0;i<handles.length;i++)if(handles[i].owner===owner)handles[i]();
+    }
     if(e) { forgetLocations(); listResume = null; }
-    try{deliver(job.cb,e,v);}finally{if(closed||fence){while(queue.length)deliver(queue.shift().cb,error(closed?'Store disposed':'Uncertain native write; wait for rollback'));savePending=false;}else if(!busy&&queue.length)runTask(queue.shift());}
+    try{deliver(job.cb,e,v);}finally{if(closed||fence||taskNative){while(queue.length)deliver(queue.shift().cb,error(closed?'Store disposed':fence?'Uncertain native write; wait for rollback':'Native operation still pending; wait for completion'));savePending=false;}else if(!busy&&queue.length)runTask(queue.shift());}
+  }
+  if(recoveryFallback&&ready&&!initActive){
+    owner={active:true,timer:null,resume:null,expire:null,elapsed:0,deadline:0,fail:end};taskOwner=owner;
+    function arm(){
+      try{owner.timer=setTimeout(watch,250);}catch(ignored){owner.timer=null;}
+      if(owner.timer===null||owner.timer===undefined){owner.timer=null;end(error('Task watchdog unavailable'));}
+    }
+    function watch(){
+      owner.timer=null;if(!owner.active)return;
+      if(closed){end(error('Store disposed'));return;}
+      if(owner.resume)owner.resume();
+      else if(owner.expire){
+        owner.elapsed+=250;
+        if(owner.elapsed>=TIMEOUT||new Date().getTime()>=owner.deadline)owner.expire();
+      }
+      if(owner.active)arm();
+    }
+    arm();if(!owner.active)return;
   }
   try{job.work(end);}catch(e){if(done)throw e;end(caughtError(e));}
 }
@@ -833,7 +893,7 @@ function init(cb) {
     });
   }, true);
 }
-function dispose() { listResume = null; closed = true; ready = false; while (pending.length) pending[0](); while(queue.length)deliver(queue.shift().cb,error('Store disposed')); }
+function dispose() { listResume = null; closed = true; ready = false; if(taskOwner)taskOwner.fail(error('Store disposed')); while (pending.length) pending[0](); while(queue.length)deliver(queue.shift().cb,error('Store disposed')); }
 export default {init: init, list: list, load: load, save: save, flag: flag,
   draftGet: draftGet, draftPut: draftPut, draftClear: draftClear,
   settingGet: auxiliaryGet, settingPut: auxiliaryPut, dispose: dispose, setTrace: setTrace,
