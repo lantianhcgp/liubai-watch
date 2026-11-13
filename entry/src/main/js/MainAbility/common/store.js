@@ -234,6 +234,20 @@ function pair(base, empty, cb, rootsOf) {
     }
     cancel = function () { end(false); }; cancel.owner = owner;
     pending.push(cancel);
+    if (!owner) {
+      function arm(delay) {
+        try { timer = setTimeout(function () { timer = null; end(true); }, delay); }
+        catch (e) { timer = null; return caughtError(e); }
+        if (timer === null || timer === undefined) { timer = null; return error('Slot timer unavailable'); }
+        return null;
+      }
+      var unavailable = arm(50);
+      if (unavailable) {
+        trace('Y/io.defer'); unavailable = arm(250);
+        if (unavailable) end(false, unavailable);
+      }
+      return;
+    }
     try { timer = setTimeout(function () { timer = null; end(true); }, 50); }
     catch (e) { end(false, caughtError(e)); }
   }
