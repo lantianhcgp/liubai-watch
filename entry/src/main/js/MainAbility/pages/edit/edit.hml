@@ -1,42 +1,42 @@
 <stack class="page" @swipe="bodySwipe">
  <div class="loading" if="{{ !ready && !shellReady }}" @click="retry"><text class="notice">{{ message }}</text></div>
- <stack class="surface" if="{{ shellReady && !ready }}" style="width: {{ w }}px; height: {{ h }}px;">
-  <div class="wait-message" style="left: {{ statusX }}px; top: {{ statusY }}px; width: {{ statusW }}px; height: {{ statusH }}px;"><text class="notice" style="width: {{ statusW }}px; height: {{ statusH }}px;">{{ message }}</text></div>
-  <div class="wait-nav" style="left: {{ statusNavX }}px; top: {{ statusNavY }}px; width: {{ statusNavW }}px; height: {{ statusHit }}px;">
-   <div class="wait-command" @click="waitingBack" style="width: {{ statusNavW / 2 }}px; height: {{ statusHit }}px;"><text class="cancel">&#x8FD4;&#x56DE;</text></div>
-   <div class="wait-command" @click="retry" style="width: {{ statusNavW / 2 }}px; height: {{ statusHit }}px;"><text class="done">&#x91CD;&#x8BD5;</text></div>
+ <stack class="surface" if="{{ shellReady && !ready }}" style="width: {{ w }}; height: {{ h }};">
+  <div class="wait-message" style="left: {{ statusX }}; top: {{ statusY }}; width: {{ statusW }}; height: {{ statusH }};"><text class="notice" style="width: {{ statusW }}; height: {{ statusH }};">{{ message }}</text></div>
+  <div class="wait-nav" style="left: {{ statusNavX }}; top: {{ statusNavY }}; width: {{ statusNavW }}; height: {{ statusHit }};">
+   <div class="wait-command" @click="waitingBack" style="width: {{ statusNavW / 2 }}; height: {{ statusHit }};"><text class="cancel">&#x8FD4;&#x56DE;</text></div>
+   <div class="wait-command" @click="retry" style="width: {{ statusNavW / 2 }}; height: {{ statusHit }};"><text class="done">&#x91CD;&#x8BD5;</text></div>
   </div>
  </stack>
- <stack class="surface" if="{{ ready }}" style="width: {{ w }}px; height: {{ h }}px;">
-  <list class="crown" ref="crown" @scrollend="onScroll" @swipe="bodySwipe" style="width: {{ w }}px; height: {{ h }}px;"><list-item class="sensor" style="width: {{ w }}px; height: {{ h }}px;"></list-item></list>
-  <text class="line" for="{{ (i, line) in lines }}" style="left: {{ line.x }}px; top: {{ line.y }}px; width: {{ line.width }}px; height: {{ line.height }}px; font-size: {{ line.font }}px;">{{ line.text }}</text>
-  <div class="caret" if="{{ caretShow }}" style="left: {{ caretX }}px; top: {{ caretY }}px; height: {{ caretH }}px;"></div>
-  <div class="body-hit" @click="pickLine" style="left: 0px; top: {{ bodyTop }}px; width: {{ w }}px; height: {{ bodyH }}px;"></div>
-  <div class="header" style="left: {{ hx }}px; top: {{ hy }}px; width: {{ hw }}px; height: {{ hit }}px;">
+ <stack class="surface" if="{{ ready }}" style="width: {{ w }}; height: {{ h }};">
+  <list class="crown" ref="crown" @scrollend="onScroll" @swipe="bodySwipe" style="width: {{ w }}; height: {{ h }};"><list-item class="sensor" style="width: {{ w }}; height: {{ h }};"></list-item></list>
+  <text class="line" for="{{ (i, line) in lines }}" style="left: {{ line.x }}; top: {{ line.y }}; width: {{ line.width }}; height: {{ line.height }}; font-size: {{ line.font }};">{{ line.text }}</text>
+  <div class="caret" if="{{ caretShow }}" style="left: {{ caretX }}; top: {{ caretY }}; height: {{ caretH }};"></div>
+  <div class="body-hit" @click="pickLine" style="left: 0px; top: {{ bodyTop }}px; width: {{ w }}; height: {{ bodyH }};"></div>
+  <div class="header" style="left: {{ hx }}; top: {{ hy }}; width: {{ hw }}; height: {{ hit }};">
    <div class="command" @click="cancel"><text class="cancel">&#x53D6;&#x6D88;</text></div>
-   <div class="middle" if="{{ !open }}" style="width: {{ hw - 92 }}px;"><text class="title">{{ title }}</text></div>
-   <div class="middle" if="{{ open }}" style="width: {{ hw - 92 }}px;"><div class="icon" @click="toggle"><text class="arrow">&#x2304;</text></div><div class="icon" @click="tools"><text class="dots">&#x2022;&#x2022;&#x2022;</text></div></div>
+   <div class="middle" if="{{ !open }}" style="width: {{ hw - 92 }};"><text class="title">{{ title }}</text></div>
+   <div class="middle" if="{{ open }}" style="width: {{ hw - 92 }};"><div class="icon" @click="toggle"><text class="arrow">&#x2304;</text></div><div class="icon" @click="tools"><text class="dots">&#x2022;&#x2022;&#x2022;</text></div></div>
    <div class="command" @click="complete"><text class="done">&#x5B8C;&#x6210;</text></div>
   </div>
-  <text class="status" style="left: {{ footX }}px; top: {{ keysY - 14 }}px; width: {{ footW }}px;" if="{{ open }}">{{ hasPinyin ? pinyin : viewCounter }}</text>
-  <stack class="key-viewport" if="{{ open }}" @click="clickKey" @touchstart="startKey" @touchmove="moveKey" @touchend="endKey" @touchcancel="cancelKey" @longpress="longKey" style="left: {{ keyX }}px; top: {{ keysY }}px; width: {{ keyW }}px;">
-   <image class="key-sheet" src="{{ image }}" style="width: {{ sheetWidth }}px; left: {{ sheetOffset }}px;"></image>
+  <text class="status" style="left: {{ footX }}; top: {{ keysY - 14 }}; width: {{ footW }};" if="{{ open }}">{{ hasPinyin ? pinyin : viewCounter }}</text>
+  <stack class="key-viewport" if="{{ open }}" @click="clickKey" @touchstart="startKey" @touchmove="moveKey" @touchend="endKey" @touchcancel="cancelKey" @longpress="longKey" style="left: {{ keyX }}; top: {{ keysY }}; width: {{ keyW }};">
+   <image class="key-sheet" src="{{ image }}" style="width: {{ sheetWidth }}; left: {{ sheetOffset }};"></image>
   </stack>
-  <div class="keybar" if="{{ open && !hasPinyin }}" style="left: {{ footX }}px; top: {{ footY }}px; width: {{ footW }}px;">
+  <div class="keybar" if="{{ open && !hasPinyin }}" style="left: {{ footX }}; top: {{ footY }}; width: {{ footW }};">
    <div class="key-mode" @click="mode"><image class="type-img" src="{{ typeImage }}"></image></div>
-   <div class="space" @click="space" style="width: {{ spaceW }}px;"><image class="space-symbol" src="/common/keyboard/rect/space.png" style="width: {{ spaceW }}px; height:44px;"></image></div>
+   <div class="space" @click="space" style="width: {{ spaceW }};"><image class="space-symbol" src="/common/keyboard/rect/space.png" style="width: {{ spaceW }}; height:44px;"></image></div>
    <div class="small-key" @click="del"><text class="key-label">&#x232B;</text></div>
    <div class="small-key" @click="enter"><text class="key-label">&#x21B5;</text></div>
   </div>
-  <div class="keybar" if="{{ open && hasPinyin }}" style="left: {{ footX }}px; top: {{ footY }}px; width: {{ footW }}px;">
-   <list class="candidates" style="width: {{ footW - 49 }}px;" scrollpage="true"><list-item class="candidate" for="{{ (i,c) in candidates }}" @click="choose(i)"><text class="candidate-text">{{ c.text }}</text></list-item></list>
+  <div class="keybar" if="{{ open && hasPinyin }}" style="left: {{ footX }}; top: {{ footY }}; width: {{ footW }};">
+   <list class="candidates" style="width: {{ footW - 49 }};" scrollpage="true"><list-item class="candidate" for="{{ (i,c) in candidates }}" @click="choose(i)"><text class="candidate-text">{{ c.text }}</text></list-item></list>
    <div class="small-key" @click="del"><text class="key-label">&#x232B;</text></div>
   </div>
-  <div class="folded-bar" if="{{ !open }}" style="left: {{ footX }}px; top: {{ footY }}px; width: {{ footW }}px;">
+  <div class="folded-bar" if="{{ !open }}" style="left: {{ footX }}; top: {{ footY }}; width: {{ footW }};">
    <div class="fold-nav" @click="prev"><text class="nav-label">&#x2303;</text></div>
-   <div class="expand" @click="toggle" style="width: {{ footW - 98 }}px;"><text class="expand-label">&#x5C55;&#x5F00;&#x952E;&#x76D8;</text></div>
+   <div class="expand" @click="toggle" style="width: {{ footW - 98 }};"><text class="expand-label">&#x5C55;&#x5F00;&#x952E;&#x76D8;</text></div>
    <div class="fold-nav" @click="next"><text class="nav-label">&#x2304;</text></div>
   </div>
-  <div class="error-box" if="{{ noticeText !== '' }}" style="left: {{ noticeX }}px; top: {{ noticeY }}px; width: {{ noticeW }}px; height: {{ noticeH }}px;"><text class="error" style="width: {{ noticeW }}px;">{{ noticeText }}</text></div>
+  <div class="error-box" if="{{ noticeText !== '' }}" style="left: {{ noticeX }}; top: {{ noticeY }}; width: {{ noticeW }}; height: {{ noticeH }};"><text class="error" style="width: {{ noticeW }};">{{ noticeText }}</text></div>
  </stack>
 </stack>
