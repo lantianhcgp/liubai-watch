@@ -8,8 +8,10 @@ var TIMEOUT = 10000, ready = false, closed = false, busy = false;
 // Preparation has one owner. A watchdog settles JS, not the native operation.
 var initActive = false, initNative = 0, initWaiters = [], traceHook = null, initOwner = null;
 // Application-selected profile; default retains the standalone Store contract.
-var serialReads = false;
-function setSerialReads(value) { if (!busy && !initActive && !initNative) serialReads = value === true; }
+var serialReads = false, recoveryFallback = false;
+function setSerialReads(value, fallback) {
+  if (!busy && !initActive && !initNative) { serialReads = value === true; recoveryFallback = serialReads && fallback === true; }
+}
 function checkInitDeadline() {
   var owner = initOwner;
   if (!owner || !owner.active || !owner.fail) return false;
@@ -68,11 +70,12 @@ function clone(x) { return JSON.parse(JSON.stringify(x)); }
 // Recovery starts inside the catalog callback. Leave each native callback before
 // another recovery I/O; serial slot reads alone did not fence c1->g0/g1->d0.
 function recoveryStep(run, cb) {
-  var owner = initOwner, timer = null, settled = false, cancel, first = !initOwner.recoveryQueued;
+  var owner = initOwner, timer = null, settled = false, cancel, resume = null, first = !initOwner.recoveryQueued;
   if (first) { owner.recoveryQueued = true; trace('W/recover.queued'); }
   function end(execute, e) {
     if (settled) return;
     settled = true;
+    if (owner.resume === resume) owner.resume = null;
     if (timer !== null) clearTimeout(timer);
     timer = null;
     var at = pending.indexOf(cancel);
@@ -85,10 +88,21 @@ function recoveryStep(run, cb) {
   }
   cancel = function () { end(false); }; cancel.owner = owner;
   pending.push(cancel);
+  function defer() {
+    // One bounded continuation; never recurse into a file callback or create a
+    // second native owner when a short timer cannot be allocated.
+    if (!owner.watchLive || owner.resume) return end(false, error('Recovery timer unavailable'));
+    resume = function () { end(true); };
+    owner.resume = resume; owner.resumeAt = new Date().getTime() + 50;
+    trace('X/recover.watch');
+  }
   try {
     timer = setTimeout(function () { timer = null; end(true); }, 50);
-    if (timer === null || timer === undefined) { timer = null; end(false, error('Recovery timer unavailable')); }
-  } catch (caught) { end(false, caughtError(caught)); }
+    if (timer === null || timer === undefined) {
+      timer = null;
+      if (recoveryFallback) defer(); else end(false, error('Recovery timer unavailable'));
+    }
+  } catch (caught) { timer = null; if (recoveryFallback) defer(); else end(false, caughtError(caught)); }
 }
 function io(method, args, cb, dispatched) {
   if (closed) return cb(error('Store disposed'));
@@ -203,6 +217,9 @@ function pair(base, empty, cb, rootsOf) {
   var best = null, bestSlot = -1, found = false, roots = [], left = 2, failure = null;
   var sequential = serialReads, owner = initActive ? initOwner : null;
   function nextSlot() {
+    if (recoveryFallback && owner && owner.active && owner.recovery) {
+      return recoveryStep(function () { part(1); }, cb);
+    }
     var done = false, timer = null, cancel;
     function end(run, e) {
       if (done) return;
@@ -746,7 +763,7 @@ function init(cb) {
   initActive = true; initWaiters = [cb];
   function complete(e, value) {
     if (!owner.active) return;
-    owner.active = false; initActive = false; initOwner = null;
+    owner.active = false; owner.watchLive = false; owner.resume = null; initActive = false; initOwner = null;
     try { if (owner.timer !== null) clearTimeout(owner.timer); } catch (ignored) {}
     owner.timer = null;
     if (e) ready = false;
@@ -768,14 +785,26 @@ function init(cb) {
     owner.fail = done;
     // Independent of individual I/O callbacks and their cancellation handles.
     // Logical expiry retains initNative and the existing uncertain-write fence.
-    owner.timer = setTimeout(function watchInit() {
+    function watchInit() {
       owner.timer = null;
       if (!owner.active || owner !== initOwner) return;
-      var remaining = owner.deadline - new Date().getTime();
-      if (remaining > 0) { owner.timer = setTimeout(watchInit, remaining); return; }
-      trace('S/store.watchdog');
-      done(error('Store initialization timeout'));
-    }, TIMEOUT);
+      var now = new Date().getTime(), remaining = owner.deadline - now;
+      if (remaining <= 0) { trace('S/store.watchdog'); done(error('Store initialization timeout')); return; }
+      if (owner.resume && now >= owner.resumeAt) {
+        var resume = owner.resume; owner.resume = null; resume();
+        if (!owner.active) return;
+        remaining = owner.deadline - new Date().getTime();
+      }
+      armWatch(recoveryFallback ? Math.min(250, remaining) : remaining);
+    }
+    function armWatch(delay) {
+      try { owner.timer = setTimeout(watchInit, delay); }
+      catch (caught) { owner.timer = null; owner.watchLive = false; done(caughtError(caught)); return; }
+      owner.watchLive = owner.timer !== null && owner.timer !== undefined;
+      if (!owner.watchLive) { owner.timer = null; done(error('Initialization watchdog unavailable')); }
+    }
+    armWatch(recoveryFallback ? 250 : TIMEOUT);
+    if (!owner.active) return;
     mkdir(ROOT, function (e) {
       if (e) return done(e);
       if (closed) return done(error('Store disposed'));

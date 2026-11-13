@@ -171,7 +171,7 @@ export default {
     if (appActive && state !== 'destroyed') { trace('S/app.create.shared'); return; }
     appActive = true;
     deadlineMode = typeof Store.checkInitDeadline === 'function';
-    if (typeof Store.setSerialReads === 'function') Store.setSerialReads(true);
+    if (typeof Store.setSerialReads === 'function') Store.setSerialReads(true, true);
     try { L.init(logConfig); } catch (e) { reportError('L/app.logger.init', e); throw e; }
     shell.setVisibilityHook(function (v) { diagVisible = v; if (v) { heartbeat(); } else { stopHeartbeat(); } });
     shell.markVisible(true);
